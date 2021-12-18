@@ -49,11 +49,11 @@ class Sketchpad {
 
 	}
 
-	resize() {
+	resize( width = window.innerWidth, height = window.innerHeight ) {
 
-		this.stage.resize();
-		this.sketch.resize();
-		this.renderer.resize();
+		this.stage.resize( width, height );
+		this.sketch.resize( width, height );
+		this.renderer.resize( width, height );
 		this.needsResize = false;
 
 	}

@@ -8,3 +8,5 @@ const sketch = new Sketch( sketchpad );
 sketch.stage.add( new LinearGradient() );
 
 sketchpad.init( sketch );
+
+
