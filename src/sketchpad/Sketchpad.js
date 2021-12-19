@@ -1,22 +1,29 @@
+import { WebGLRenderer } from 'three';
 import { Ticker } from './misc/Ticker';
-import { Renderer } from './three/Renderer';
-import { Stage } from './three/Stage';
 
 class Sketchpad {
 
 	constructor( {
+		container = 'sketch',
 		fps = 60,
-		// Stage
-		background, camera, cameraStart, cameraLookAt,
-		// Renderer
-		container, renderer, sfx, stage,
+		renderer = new WebGLRenderer( {
+			powerPreference: 'high-performance',
+			antialias: false,
+			stencil: false,
+			depth: false
+		} ),
 	} = {} ) {
 
-		if ( ! stage ) stage = new Stage( {
-			background, camera, cameraStart, cameraLookAt
-		} );
-		this.stage = stage;
-		this.renderer = new Renderer( { container, renderer, sfx, stage } );
+		if ( typeof container === 'string' )
+			container = document.getElementById( container );
+		if ( ! container ) container = document.body;
+
+		this.renderer = renderer;
+		this.canvas = renderer.domElement;
+		container.appendChild( this.canvas );
+
+		this.pixelRatio = Math.min( window.devicePixelRatio, 2 );
+		renderer.setPixelRatio( this.pixelRatio );
 
 		this.needsResize = true;
 
@@ -29,6 +36,7 @@ class Sketchpad {
 	init( sketch ) {
 
 		this.sketch = sketch;
+		this.sketch.init( this.renderer );
 
 		this.onResize = function () {
 
@@ -44,16 +52,14 @@ class Sketchpad {
 	dispose() {
 
 		this.ticker.stop();
-
 		window.removeEventListener( 'resize', this.onResize );
 
 	}
 
 	resize( width = window.innerWidth, height = window.innerHeight ) {
 
-		this.stage.resize( width, height );
-		this.sketch.resize( width, height );
-		this.renderer.resize( width, height );
+		this.renderer.setSize( width, height );
+		this.sketch.resize( width, height, this.pixelRatio );
 		this.needsResize = false;
 
 	}
@@ -62,7 +68,6 @@ class Sketchpad {
 
 		if ( this.needsResize ) this.resize();
 		this.sketch.tick( time, delta );
-		this.renderer.tick( time, delta );
 
 	}
 

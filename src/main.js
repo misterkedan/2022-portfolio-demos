@@ -4,7 +4,7 @@ import { LinearGradient } from './sketchpad/three/LinearGradient';
 
 const sketchpad = new Sketchpad();
 
-const sketch = new Sketch( sketchpad );
+const sketch = new Sketch();
 sketch.stage.add( new LinearGradient() );
 
 sketchpad.init( sketch );

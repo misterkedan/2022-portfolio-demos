@@ -1,22 +1,39 @@
+import { PostProcessing } from './three/postprocessing/PostProcessing';
+import { Stage } from './three/Stage';
+
 class Sketch {
 
-	constructor( sketchpad ) {
+	constructor( {
+		stage,
+		background,
+		camera,
+		cameraStart,
+		cameraLookAt,
+	} = {} ) {
 
-		this.sketchpad = sketchpad;
-		this.stage = sketchpad.stage;
-		this.renderer = sketchpad.renderer;
+		if ( ! stage ) stage = new Stage( {
+			background, camera, cameraStart, cameraLookAt
+		} );
+		this.stage = stage;
+
+	}
+
+	init( renderer ) {
+
+		this.effects = new PostProcessing( { renderer, stage: this.stage } );
+
+	}
+
+	resize( width, height, pixelRatio ) {
+
+		this.stage.resize( width, height, pixelRatio );
+		this.effects.resize( width, height, pixelRatio );
 
 	}
 
 	tick() {
 
-		// Override in subclasses
-
-	}
-
-	resize() {
-
-		// Override in subclasses
+		this.effects.tick();
 
 	}
 
