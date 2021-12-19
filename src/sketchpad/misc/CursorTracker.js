@@ -20,9 +20,7 @@ class CursorTracker {
 		this.resize( width, height );
 
 		this.modeX = x;
-
 		this.modeY = y;
-
 		this.onChange = onChange;
 
 		this.onMouseMove = this.track.bind( this );
