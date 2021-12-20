@@ -21,6 +21,7 @@ class Sketchpad {
 		this.renderer = renderer;
 		this.canvas = renderer.domElement;
 		container.appendChild( this.canvas );
+		container.style.touchAction = 'none';
 
 		this.pixelRatio = Math.min( window.devicePixelRatio, 2 );
 		renderer.setPixelRatio( this.pixelRatio );
