@@ -2,7 +2,7 @@ import { Sketch } from './sketchpad/Sketch';
 import { Sketchpad } from './sketchpad/Sketchpad';
 import { LinearGradient } from './sketchpad/three/LinearGradient';
 
-const sketchpad = new Sketchpad();
+const sketchpad = new Sketchpad( { container: 'background' } );
 
 const sketch = new Sketch();
 sketch.stage.add( new LinearGradient() );

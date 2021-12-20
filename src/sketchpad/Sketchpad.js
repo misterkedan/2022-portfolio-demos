@@ -14,17 +14,15 @@ class Sketchpad {
 		} ),
 	} = {} ) {
 
+		this.renderer = renderer;
+		this.canvas = renderer.domElement;
+		this.pixelRatio = Math.min( window.devicePixelRatio, 2 );
+
 		if ( typeof container === 'string' )
 			container = document.getElementById( container );
 		if ( ! container ) container = document.body;
-
-		this.renderer = renderer;
-		this.canvas = renderer.domElement;
 		container.appendChild( this.canvas );
 		container.style.touchAction = 'none';
-
-		this.pixelRatio = Math.min( window.devicePixelRatio, 2 );
-		renderer.setPixelRatio( this.pixelRatio );
 
 		this.needsResize = true;
 
@@ -59,6 +57,7 @@ class Sketchpad {
 
 	resize( width = window.innerWidth, height = window.innerHeight ) {
 
+		this.renderer.setPixelRatio( this.pixelRatio );
 		this.renderer.setSize( width, height );
 		this.sketch.resize( width, height, this.pixelRatio );
 		this.needsResize = false;
