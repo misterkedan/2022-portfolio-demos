@@ -1,13 +1,11 @@
-import { RainSketch } from './sketches/rain/RainSketch';
-import { Sketch } from './sketchpad/Sketch';
 import { Sketchpad } from './sketchpad/Sketchpad';
-import { LinearGradient } from './sketchpad/three/LinearGradient';
-
-const sketchpad = new Sketchpad( { container: 'background' } );
+import { RainSketch } from './sketches/rain/RainSketch';
 
 const sketch = new RainSketch();
-//sketch.stage.add( new LinearGradient() );
 
+const sketchpad = new Sketchpad( {
+	container: 'background',
+} );
 sketchpad.init( sketch );
 
 

@@ -5,6 +5,8 @@ class Sketchpad {
 
 	constructor( {
 		container = 'sketch',
+		width,
+		height,
 		fps = 60,
 		renderer = new WebGLRenderer( {
 			powerPreference: 'high-performance',
@@ -24,7 +26,8 @@ class Sketchpad {
 		container.appendChild( this.canvas );
 		container.style.touchAction = 'none';
 
-		this.needsResize = true;
+		this.width = ( width > 0 ) ? width : undefined;
+		this.height = ( height > 0 ) ? height : undefined;
 
 		this.fps = fps;
 		this.onTick = this.tick.bind( this );
@@ -32,9 +35,12 @@ class Sketchpad {
 
 	}
 
-	init( sketch ) {
+	init( sketch = this.sketch ) {
 
 		this.sketch = sketch;
+
+		this.resize();
+
 		this.sketch.init( this.renderer );
 
 		this.onResize = function () {
@@ -55,11 +61,15 @@ class Sketchpad {
 
 	}
 
-	resize( width = window.innerWidth, height = window.innerHeight ) {
+	resize( width = this.width, height = this.height ) {
+
+		if ( ! width ) width = window.innerWidth;
+		if ( ! height ) height = window.innerHeight;
 
 		this.renderer.setPixelRatio( this.pixelRatio );
 		this.renderer.setSize( width, height );
 		this.sketch.resize( width, height, this.pixelRatio );
+
 		this.needsResize = false;
 
 	}

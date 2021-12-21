@@ -34,7 +34,7 @@ class Sketch {
 	resize( width, height, pixelRatio ) {
 
 		this.stage.resize( width, height );
-		this.effects.resize( width, height, pixelRatio );
+		this.effects?.resize( width, height, pixelRatio );
 
 	}
 

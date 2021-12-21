@@ -12,10 +12,14 @@ class CursorTracker {
 			bottom = 0.02,
 			left = 0.02,
 		} = {},
+		margin,
 		enabled = true,
+		debug = false,
 		onChange,
 	} = {} ) {
 
+		if ( typeof margin === 'number' )
+			top = right = bottom = left = margin;
 		this.margin = { top, right, bottom, left };
 		this.hitbox = { top, left, width, height };
 		this.resize( width, height );
@@ -25,7 +29,7 @@ class CursorTracker {
 
 		this.modeX = x;
 		this.modeY = y;
-		this.onChange = onChange;
+		this.onChange = ( debug ) ? this.log : onChange;
 
 		this.target = target;
 		this.onMouseMove = this.track.bind( this );

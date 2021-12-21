@@ -11,17 +11,18 @@ class RainSketchControls {
 
 		this.sketch = sketch;
 
-		this.cameraLerper = new CameraLerper( sketch.stage.camera, {
-			bounds: new Vector3( 3, 10, 0 ),
-		} );
-		this.cameraLerper.camera.position.setY( 5 );
+		const { cameraBounds, cameraIntro } = sketch.config;
 
-		this.tracker = new CursorTracker( {
-			y: CursorTracker.NORMALIZE,
-			margin:{
-				top: 0.1, right: 0.1, bottom: 0.1, left: 0.1
+		this.cameraLerper = new CameraLerper(
+			sketch.stage.camera,
+			{
+				bounds: new Vector3(
+					cameraBounds.x, cameraBounds.y, cameraBounds.z
+				),
 			}
-		} );
+		).set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
+
+		this.tracker = new CursorTracker( { y: CursorTracker.NORMALIZE } );
 		this.intensity = 0.5;
 
 		if ( gui ) this.buildGUI();
@@ -44,11 +45,22 @@ class RainSketchControls {
 		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
 
-		if ( window.innerWidth < 1000 ) this.gui.close();
+		if ( window.innerWidth < sketch.config.guiMinWidth ) this.gui.close();
+
+	}
+
+	resize( width, height ) {
+
+		this.tracker.resize( width, height );
 
 	}
 
 	tick() {
+
+		const {
+			intensityLerpSpeed, materialOpacity, bloomStrength,
+			speed, minCount, meshLerpSpeed,
+		} = this.sketch.config;
 
 		// XY
 		this.cameraLerper.update( 1 - 2 * this.tracker.x, this.tracker.y );
@@ -56,25 +68,25 @@ class RainSketchControls {
 		// X
 		this.targetIntensity = 1 - Math.abs( this.tracker.x - 0.5 ) * 2;
 		this.intensity = MathUtils.lerp(
-			this.intensity, this.targetIntensity, 0.03
+			this.intensity, this.targetIntensity, intensityLerpSpeed
 		);
 
 		this.sketch.mesh.material.opacity = MathUtils.lerp(
-			0.6, 1, this.intensity
+			materialOpacity.min, materialOpacity.max, this.intensity
 		);
 		this.sketch.effects.passes.bloom.strength = MathUtils.lerp(
-			0.3, 0.8, this.intensity
+			bloomStrength.min, bloomStrength.max, this.intensity
 		);
 		this.sketch.speed = MathUtils.lerp(
-			0.003, 0.008, this.intensity
+			speed.min, speed.max, this.intensity
 		);
 
 		// Y
 		this.targetCount = MathUtils.lerp(
-			40, this.sketch.maxCount, this.tracker.y
+			minCount, this.sketch.maxCount, this.tracker.y
 		);
 		this.sketch.mesh.count = Math.round( MathUtils.lerp(
-			this.sketch.mesh.count, this.targetCount, 0.015
+			this.sketch.mesh.count, this.targetCount, meshLerpSpeed
 		) );
 
 	}

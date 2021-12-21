@@ -17,6 +17,16 @@ class CameraLerper {
 		this.target = new Vector3();
 		this.origin = new Vector3().copy( camera.position );
 
+		return this;
+
+	}
+
+	set( x = 0, y = 0, z = 0 ) {
+
+		this.camera.position.set( x, y, z );
+
+		return this;
+
 	}
 
 	update( x = 0, y = 0, z = 0 ) {
@@ -27,6 +37,8 @@ class CameraLerper {
 
 		this.camera.position.lerp( this.target, this.speed );
 		this.camera.lookAt( this.lookAt );
+
+		return this;
 
 	}
 
