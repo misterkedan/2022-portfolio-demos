@@ -24,9 +24,16 @@ class Sketch {
 
 	}
 
+	dispose() {
+
+		//this.stage.dispose();
+		this.effects.dispose();
+
+	}
+
 	resize( width, height, pixelRatio ) {
 
-		this.stage.resize( width, height, pixelRatio );
+		this.stage.resize( width, height );
 		this.effects.resize( width, height, pixelRatio );
 
 	}
@@ -34,6 +41,24 @@ class Sketch {
 	tick() {
 
 		this.effects.tick();
+
+	}
+
+	/*-------------------------------------------------------------------------/
+
+		Stage shortcutss
+
+	/-------------------------------------------------------------------------*/
+
+	add( object3D ) {
+
+		this.stage.add( object3D );
+
+	}
+
+	remove( object3D ) {
+
+		this.stage.remove( object3D );
 
 	}
 

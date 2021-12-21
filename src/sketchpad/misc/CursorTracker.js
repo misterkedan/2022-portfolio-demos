@@ -12,6 +12,7 @@ class CursorTracker {
 			bottom = 0.02,
 			left = 0.02,
 		} = {},
+		enabled = true,
 		onChange,
 	} = {} ) {
 
@@ -19,10 +20,14 @@ class CursorTracker {
 		this.hitbox = { top, left, width, height };
 		this.resize( width, height );
 
+		this.x = 0.5;
+		this.y = 0.5;
+
 		this.modeX = x;
 		this.modeY = y;
 		this.onChange = onChange;
 
+		this.target = target;
 		this.onMouseMove = this.track.bind( this );
 		this.onTouchMove = function ( event ) {
 
@@ -30,16 +35,32 @@ class CursorTracker {
 			this.track( event.targetTouches[ 0 ] );
 
 		}.bind( this );
-		target.addEventListener( 'touchmove', this.onTouchMove );
-		target.addEventListener( 'mousemove', this.onMouseMove );
-		this.target = target;
+
+		if ( enabled ) this.enable();
+
+	}
+
+	enable() {
+
+		if ( this._enabled ) return;
+		this.target.addEventListener( 'touchmove', this.onTouchMove );
+		this.target.addEventListener( 'mousemove', this.onMouseMove );
+		this._enabled = true;
+
+	}
+
+	disable() {
+
+		if ( ! this._enabled ) return;
+		this.target.removeEventListener( 'touchmove', this.onTouchMove );
+		this.target.removeEventListener( 'mousemove', this.onMouseMove );
+		this._enabled = false;
 
 	}
 
 	dispose() {
 
-		this.target.removeEventListener( 'touchmove', this.onTouchMove );
-		this.target.removeEventListener( 'mousemove', this.onMouseMove );
+		this.disable();
 
 	}
 

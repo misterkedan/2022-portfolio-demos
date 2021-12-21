@@ -20,7 +20,7 @@ class PostProcessing {
 		this.composer = new EffectComposer( renderer, this.renderTarget );
 
 		this.passes = {
-			render: new RenderPass()
+			render: new RenderPass( stage.scene, stage.camera )
 		};
 
 		if ( passes instanceof Pass ) this.passes.sfx = passes;
@@ -30,7 +30,23 @@ class PostProcessing {
 			pass => this.composer.addPass( pass )
 		);
 
-		if ( stage ) this.stage = stage;
+	}
+
+	add( name, pass ) {
+
+		this.passes[ name ] = pass;
+		this.composer.addPass( pass );
+
+	}
+
+	remove( name ) {
+
+		const pass = this.passes[ name ];
+		if ( ! pass ) return;
+
+		this.composer.removePass( pass );
+		pass?.dispose?.();
+		delete this.passes[ name ];
 
 	}
 
@@ -50,17 +66,10 @@ class PostProcessing {
 
 	}
 
-	get stage() {
+	dispose() {
 
-		return this._stage;
-
-	}
-
-	set stage( stage ) {
-
-		this._stage = stage;
-		this.passes.render.scene = stage.scene;
-		this.passes.render.camera = stage.camera;
+		Object.values( this.passes ).forEach( pass => pass?.dispose?.() );
+		Object.values( this ).forEach( property => property?.dispose?.() );
 
 	}
 

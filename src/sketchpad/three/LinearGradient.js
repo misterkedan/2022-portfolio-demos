@@ -16,17 +16,13 @@ class LinearGradient extends Mesh {
 		const material = new ShaderMaterial( {
 			...LinearGradient.shader,
 			uniforms: {
-				uAngle:  { value: 0 },
-				uColor1: { value: 0 },
-				uColor2: { value: 0 },
+				uAngle:  { value: angle },
+				uColor1: { value: new Color( color1 ) },
+				uColor2: { value: new Color( color2 ) },
 			},
 		} );
 
 		super( geometry, material );
-
-		this.angle = angle;
-		this.color1 = color1;
-		this.color2 = color2;
 
 	}
 
@@ -50,7 +46,7 @@ class LinearGradient extends Mesh {
 
 	set color1( value ) {
 
-		this.material.uniforms.uColor1.value = new Color( value );
+		this.material.uniforms.uColor1.value = value;
 
 	}
 
@@ -62,7 +58,7 @@ class LinearGradient extends Mesh {
 
 	set color2( value ) {
 
-		this.material.uniforms.uColor2.value = new Color( value );
+		this.material.uniforms.uColor2.value = value;
 
 	}
 
