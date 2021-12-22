@@ -28,6 +28,11 @@ let config = {
 		animejs: 'anime',
 		three: 'THREE'
 	},
+	resolve: {
+		alias: {
+			keda: path.resolve( __dirname, 'src/keda/' ),
+		}
+	}
 };
 
 module.exports = ( env, argv ) => {

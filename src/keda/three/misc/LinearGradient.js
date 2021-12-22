@@ -1,8 +1,8 @@
 import { Color, Mesh, PlaneGeometry, ShaderMaterial } from 'three';
 
-import varyingUV from '../glsl/varyingUV.vert.glsl';
-import bayerMatrixDither from '../glsl/bayerMatrixDither.glsl';
-import linearGradient from '../glsl/linearGradient.glsl';
+import varyingUV from 'keda/glsl/varyingUV.vert.glsl';
+import bayerMatrixDither from 'keda/glsl/bayerMatrixDither.glsl';
+import linearGradient from 'keda/glsl/linearGradient.glsl';
 
 class LinearGradient extends Mesh {
 

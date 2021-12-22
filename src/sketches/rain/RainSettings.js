@@ -1,7 +1,11 @@
 const offsetY = - 5;
 const innerRadius = 0.6;
 
-const RainSketchConfig = {
+export default {
+
+	title: 'Rain II',
+
+	// Scene
 
 	cameraStart: { x: 0, y: 5, z: 10 },
 
@@ -36,9 +40,11 @@ const RainSketchConfig = {
 
 	// Controls
 
+	gui: false,
+	guiMinWidth: 1000,
+
 	cameraBounds: { x: 3, y: 10, z: 0 },
 	cameraIntro: { x: 0, y: 4, z: 4 },
-	guiMinWidth: 1000,
 
 	intensityLerpSpeed: 0.03,
 	materialOpacity: { min: 0.6, max: 1 },
@@ -48,5 +54,3 @@ const RainSketchConfig = {
 	meshLerpSpeed: 0.015,
 
 };
-
-export { RainSketchConfig };

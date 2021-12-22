@@ -7,29 +7,36 @@ import {
 	RingGeometry,
 	Vector3
 } from 'three';
-import { Vesuna } from 'vesuna';
-import { Sketch } from '../../sketchpad/Sketch';
-import { LinearGradient } from '../../sketchpad/three/LinearGradient';
-import { DitheredUnrealBloomPass } from '../../sketchpad/three/postprocessing/DitheredUnrealBloomPass';
-import { RainSketchConfig } from './RainSketchConfig';
-import { RainSketchControls } from './RainSketchControls';
+import { Random } from 'vesuna';
+
+import { LinearGradient } from 'keda/three/misc/LinearGradient';
+import { BloomPass } from 'keda/three/postprocessing/BloomPass';
+import { Sketch } from 'keda/three/Sketch';
+
+import { RainControls } from './RainControls';
+import defaultSettings from './RainSettings';
 
 class RainSketch extends Sketch {
 
-	constructor( config = { ...RainSketchConfig } ) {
+	constructor( settings = {} ) {
 
-		const { x, y, z } = config.cameraStart;
+		settings = {
+			...defaultSettings,
+			...settings
+		};
+
+		const { x, y, z } = settings.cameraStart;
 		super( { cameraStart: new Vector3( x, y, z ) } );
 
-		this.background = new LinearGradient( config.background );
+		this.background = new LinearGradient( settings.background );
 		this.add( this.background );
 
-		this.config = config;
-		this.speed = config.speed.min;
-		this.y = config.offsetY;
-		this.originZ = config.originZ;
+		this.settings = settings;
+		this.speed = settings.speed.min;
+		this.y = settings.offsetY;
+		this.originZ = settings.originZ;
 
-		//this.build();
+		this.random = new Random();
 
 	}
 
@@ -37,14 +44,14 @@ class RainSketch extends Sketch {
 
 		// Create InstancedMesh
 
-		const { innerRadius, outerRadius, thetaSegments } = this.config.geometry;
+		const { innerRadius, outerRadius, thetaSegments } = this.settings.geometry;
 		const geometry = new RingGeometry( innerRadius, outerRadius, thetaSegments );
 		geometry.rotateX( - Math.PI / 2 );
 
-		const material = new MeshBasicMaterial( this.config.material );
+		const material = new MeshBasicMaterial( this.settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
 
-		const { instances } = this.config;
+		const { instances } = this.settings;
 		this.mesh = new InstancedMesh( geometry, material, instances );
 		this.add( this.mesh );
 
@@ -55,7 +62,6 @@ class RainSketch extends Sketch {
 		const progress = new Float32Array( instances );
 		this.x = new Float32Array( instances );
 		this.z = new Float32Array( instances );
-		this.random = new Vesuna();
 
 		for ( let i = 0; i < instances; i ++ ) {
 
@@ -83,24 +89,27 @@ class RainSketch extends Sketch {
 
 		const { aspect } = this.stage.camera;
 
-		this.maxCount = this.config.instances;
+		this.maxCount = this.settings.instances;
 		this.maxCount = ( aspect < 1 )
-			? Math.round( this.config.instances * aspect )
-			: this.config.instances;
+			? Math.round( this.settings.instances * aspect )
+			: this.settings.instances;
 
-		this.width = this.stage.getVisibleWidth( this.originZ );
-		this.depth = this.width * this.config.ratio / aspect;
+		this.width = this.stage.getVisibleWidth(
+			this.settings.originZ
+		);
+		this.depth = this.width * this.settings.ratio / aspect;
 
 	}
 
 	randomizeDummy( i ) {
 
-		const angle = this.random.number( 0, this.config.maxAngle );
+		const angle = this.random.number( 0, this.settings.maxAngle );
 
 		this.dummy.position.set(
 			Math.cos( angle ) * this.random.amount() * this.width,
 			this.y,
-			Math.sin( angle ) * this.random.amount() * this.depth + this.originZ
+			Math.sin( angle ) * this.random.amount() * this.depth
+				+ this.settings.originZ
 		);
 
 		this.x[ i ] = this.dummy.position.x;
@@ -152,14 +161,10 @@ class RainSketch extends Sketch {
 
 		super.init( sketchpad );
 
-		this.effects.add( 'bloom', new DitheredUnrealBloomPass(
-			this.config.bloom
-		) );
+		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
 		this.build();
-		this.controls = new RainSketchControls( this, {
-			gui: false,
-		} );
+		this.controls = new RainControls( this );
 
 	}
 

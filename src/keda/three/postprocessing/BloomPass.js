@@ -19,7 +19,7 @@ import bayerMatrixDither from '../../glsl/bayerMatrixDither.glsl';
  * Reference:
  * - https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/Bloom/
  */
-class DitheredUnrealBloomPass extends UnrealBloomPass {
+class BloomPass extends UnrealBloomPass {
 
 	constructor( { strength = 0.6, radius = 1.0, threshold = 0.3 } = {} ) {
 
@@ -95,4 +95,4 @@ class DitheredUnrealBloomPass extends UnrealBloomPass {
 
 }
 
-export { DitheredUnrealBloomPass };
+export { BloomPass };

@@ -1,5 +1,5 @@
-import { PostProcessing } from './three/postprocessing/PostProcessing';
-import { Stage } from './three/Stage';
+import { PostProcessing } from './postprocessing/PostProcessing';
+import { Stage } from './Stage';
 
 class Sketch {
 

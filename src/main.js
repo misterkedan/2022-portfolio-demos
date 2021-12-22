@@ -1,4 +1,4 @@
-import { Sketchpad } from './sketchpad/Sketchpad';
+import { Sketchpad } from './keda/three/Sketchpad';
 import { RainSketch } from './sketches/rain/RainSketch';
 
 const sketch = new RainSketch();
