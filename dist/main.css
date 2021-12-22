@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
 
 html {
 	font-size: 62.5%;
 }
 
 body {
-	font-family: 'Roboto Mono', monospace;
+	font-family: 'JetBrains Mono', monospace;
 	font-size: 1.6rem;
     background: #000000;
     color: #ffffff;
@@ -47,7 +47,7 @@ body, div, canvas, p, h1, h2 {
 	display: block;
 	font-size: 7.2rem;
 	line-height: 0.67em;
-	margin-bottom: 0.12em;
+	margin-bottom: 0.1em;
 }
 
 #title__job {
