@@ -148,16 +148,15 @@ class RainSketch extends Sketch {
 
 	/-------------------------------------------------------------------------*/
 
-	init( renderer ) {
+	init( sketchpad ) {
 
-		super.init( renderer );
-
-		this.build();
+		super.init( sketchpad );
 
 		this.effects.add( 'bloom', new DitheredUnrealBloomPass(
 			this.config.bloom
 		) );
 
+		this.build();
 		this.controls = new RainSketchControls( this, {
 			gui: false,
 		} );

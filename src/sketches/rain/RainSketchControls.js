@@ -12,17 +12,12 @@ class RainSketchControls {
 		this.sketch = sketch;
 
 		const { cameraBounds, cameraIntro } = sketch.config;
+		this.cameraLerper = new CameraLerper( sketch.stage.camera, {
+			bounds: new Vector3( cameraBounds.x, cameraBounds.y, cameraBounds.z ),
+		} ).set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
 
-		this.cameraLerper = new CameraLerper(
-			sketch.stage.camera,
-			{
-				bounds: new Vector3(
-					cameraBounds.x, cameraBounds.y, cameraBounds.z
-				),
-			}
-		).set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
-
-		this.tracker = new CursorTracker( { y: CursorTracker.NORMALIZE } );
+		const { width, height } = sketch.sketchpad;
+		this.tracker = new CursorTracker( { width, height } );
 		this.intensity = 0.5;
 
 		if ( gui ) this.buildGUI();
@@ -63,10 +58,10 @@ class RainSketchControls {
 		} = this.sketch.config;
 
 		// XY
-		this.cameraLerper.update( 1 - 2 * this.tracker.x, this.tracker.y );
+		this.cameraLerper.update( this.tracker.reversePolarizeX, this.tracker.y );
 
 		// X
-		this.targetIntensity = 1 - Math.abs( this.tracker.x - 0.5 ) * 2;
+		this.targetIntensity = this.tracker.centerX;
 		this.intensity = MathUtils.lerp(
 			this.intensity, this.targetIntensity, intensityLerpSpeed
 		);

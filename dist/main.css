@@ -34,6 +34,7 @@ body, div, canvas, p, h1, h2 {
 }
 
 #title {
+	user-select: none;
 	text-transform: uppercase;
 	text-shadow: 0 0.2em 0.4em rgba( 0, 0, 0, 0.3 );
 }

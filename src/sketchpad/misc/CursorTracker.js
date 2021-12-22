@@ -2,47 +2,56 @@ class CursorTracker {
 
 	constructor( {
 		target = window,
-		x = CursorTracker.NORMALIZE,
-		y = CursorTracker.INVERT,
 		width = window.innerWidth,
 		height = window.innerHeight,
-		margin: {
-			top = 0.02,
-			right = 0.02,
-			bottom = 0.02,
-			left = 0.02,
-		} = {},
-		margin,
+		margin = 0.02,
+		marginTop, marginRight, marginBottom, marginLeft,
 		enabled = true,
 		debug = false,
 		onChange,
 	} = {} ) {
 
-		if ( typeof margin === 'number' )
-			top = right = bottom = left = margin;
-		this.margin = { top, right, bottom, left };
-		this.hitbox = { top, left, width, height };
+		const isNumber = n => n * 1 === n;
+		this.margin = {
+			top: ( isNumber( marginTop ) ) ? marginTop : margin,
+			right: ( isNumber( marginRight ) ) ? marginRight : margin,
+			bottom: ( isNumber( marginBottom ) ) ? marginBottom : margin,
+			left: ( isNumber( marginLeft ) ) ? marginLeft : margin,
+		};
+		this.hitbox = {
+			top: this.margin.top, left: this.margin.left,
+			width, height
+		};
 		this.resize( width, height );
 
-		this.x = 0.5;
-		this.y = 0.5;
-
-		this.modeX = x;
-		this.modeY = y;
-		this.onChange = ( debug ) ? this.log : onChange;
+		this._x = this._y = 0.5;
 
 		this.target = target;
-		this.onMouseMove = this.track.bind( this );
+		this.onMouseMove = function ( event ) {
+
+			if ( event.preventDefault ) event.preventDefault();
+			this.track( event.clientX, event.clientY );
+
+		}.bind( this );
 		this.onTouchMove = function ( event ) {
 
 			event.preventDefault();
-			this.track( event.targetTouches[ 0 ] );
+			this.onMouseMove( event.targetTouches[ 0 ] );
 
 		}.bind( this );
+
+		this.onChange = onChange;
+		if ( debug ) this.onDebug = this.log;
 
 		if ( enabled ) this.enable();
 
 	}
+
+	/*-------------------------------------------------------------------------/
+
+		Event handling
+
+	/-------------------------------------------------------------------------*/
 
 	enable() {
 
@@ -68,27 +77,46 @@ class CursorTracker {
 
 	}
 
-	track( event ) {
+	/*-------------------------------------------------------------------------/
+
+		Update
+
+	/-------------------------------------------------------------------------*/
+
+	track( clientX, clientY ) {
 
 		let hasChanged;
 
-		if ( this.clientX !== event.clientX ) {
+		if ( this.clientX !== clientX ) {
 
-			this.clientX = event.clientX;
-			this.x = this.processX( event.clientX );
-			hasChanged = true;
+			this.clientX = clientX;
+			const x = this.normalizeX;
+			if ( this._x !== x ) {
 
-		}
+				this._x = x;
+				hasChanged = true;
 
-		if ( this.clientY !== event.clientY ) {
-
-			this.clientY = event.clientY;
-			this.y = this.processY( event.clientY );
-			hasChanged = true;
+			}
 
 		}
 
-		if ( hasChanged && this.onChange ) this.onChange();
+		if ( this.clientY !== clientY ) {
+
+			this.clientY = clientY;
+			const y = this.normalizeY;
+			if ( this._y !== y ) {
+
+				this._y = y;
+				hasChanged = true;
+
+			}
+
+		}
+
+		if ( ! hasChanged ) return;
+
+		this.onChange?.();
+		this.onDebug?.();
 
 	}
 
@@ -106,69 +134,121 @@ class CursorTracker {
 
 	}
 
-	normalizeX( x ) {
-
-		return CursorTracker.clamp( ( x - this.offsetX ) / this.hitbox.width );
-
-	}
-
-	normalizeY( y ) {
-
-		return CursorTracker.clamp( ( y - this.offsetY ) / this.hitbox.height );
-
-	}
-
 	log() {
 
-		console.log( { x: this.x, y: this.y } );
+		const {
+			x, y,
+			reverseX, reverseY,
+			polarizeX, polarizeY,
+			reversePolarizeX, reversePolarizeY,
+			centerX, centerY,
+			reverseCenterX, reverseCenterY,
+		} = this;
+
+		console.log( {
+			x, y,
+			reverseX, reverseY,
+			polarizeX, polarizeY,
+			reversePolarizeX, reversePolarizeY,
+			centerX, centerY,
+			reverseCenterX, reverseCenterY,
+		} );
 
 	}
 
 	/*-------------------------------------------------------------------------/
 
-		Getters & Setters
+		Read-only
 
 	/-------------------------------------------------------------------------*/
 
-	get modeX() {
+	get x() {
 
-		return this._modeX;
-
-	}
-
-	set modeX( modeX ) {
-
-		this._modeX = modeX;
-
-		const processorsX = {
-			[ CursorTracker.NORMALIZE ]: x => this.normalizeX( x ),
-			[ CursorTracker.INVERT ]: x => 1 - this.normalizeX( x ),
-			[ CursorTracker.SIGNED ]: x => this.normalizeX( x ) * 2 - 1,
-			[ CursorTracker.SIGNED_INVERT ]:
-				x => ( 1 - this.normalizeX( x ) ) * 2 - 1,
-		};
-		this.processX = processorsX[ modeX ];
+		return this._x;
 
 	}
 
-	get modeY() {
+	get y() {
 
-		return this._modeY;
+		return this._y;
 
 	}
 
-	set modeY( modeY ) {
+	get normalizeX() {
 
-		this._modeY = modeY;
+		return CursorTracker.normalize(
+			( this.clientX - this.offsetX ),
+			this.hitbox.width
+		);
 
-		const processorsY = {
-			[ CursorTracker.NORMALIZE ]: y => this.normalizeY( y ),
-			[ CursorTracker.INVERT ]: y => 1 - this.normalizeY( y ),
-			[ CursorTracker.SIGNED ]: y => this.normalizeY( y ) * 2 - 1,
-			[ CursorTracker.SIGNED_INVERT ]:
-				y => ( 1 - this.normalizeY( y ) ) * 2 - 1,
-		};
-		this.processY = processorsY[ modeY ];
+	}
+
+	get normalizeY() {
+
+		return CursorTracker.normalize(
+			( this.clientY - this.offsetY ),
+			this.hitbox.height
+		);
+
+	}
+
+	get reverseX() {
+
+		return CursorTracker.reverse( this._x );
+
+	}
+
+	get reverseY() {
+
+		return CursorTracker.reverse( this._y );
+
+	}
+
+	get polarizeX() {
+
+		return CursorTracker.polarize( this._x );
+
+	}
+
+	get polarizeY() {
+
+		return CursorTracker.polarize( this._y );
+
+	}
+
+	get reversePolarizeX() {
+
+		return CursorTracker.reversePolarize( this._x );
+
+	}
+
+	get reversePolarizeY() {
+
+		return CursorTracker.reversePolarize( this._y );
+
+	}
+
+	get centerX() {
+
+		return CursorTracker.center( this._x );
+
+	}
+
+	get centerY() {
+
+		return CursorTracker.center( this._y );
+
+	}
+
+	get reverseCenterX() {
+
+		return CursorTracker.reverseCenter( this._x );
+
+	}
+
+	get reverseCenterY() {
+
+		return CursorTracker.reverseCenter( this._y );
 
 	}
 
@@ -180,11 +260,13 @@ class CursorTracker {
 
 /-----------------------------------------------------------------------------*/
 
-CursorTracker.NORMALIZE = 'normalize';			// 0 > 1
-CursorTracker.INVERT = 'invert';				// 1 > 0
-CursorTracker.SIGNED = 'signed';				// -1 > 1
-CursorTracker.SIGNED_INVERT = 'signedInvert';	// 1 > -1
-
 CursorTracker.clamp = n => n > 1 ? 1 : n < 0 ? 0 : n;
+CursorTracker.normalize =
+	( n, total ) => CursorTracker.clamp( n / total ); 		// 0 > 1
+CursorTracker.reverse = n => 1 - n; 						// 1 > 0
+CursorTracker.polarize = n => ( n * 2 ) - 1;				// -1 > 1
+CursorTracker.reversePolarize = n => 1 - ( n * 2 );			// 1 > -1
+CursorTracker.center = n => 1 - Math.abs( n - 0.5 ) * 2;	// 0 > 1 > 0
+CursorTracker.reverseCenter = n => Math.abs( n - 0.5 ) * 2;	// 1 > 0 > 1
 
 export { CursorTracker };

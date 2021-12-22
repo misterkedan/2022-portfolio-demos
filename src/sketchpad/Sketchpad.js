@@ -38,10 +38,8 @@ class Sketchpad {
 	init( sketch = this.sketch ) {
 
 		this.sketch = sketch;
-
 		this.resize();
-
-		this.sketch.init( this.renderer );
+		this.sketch.init( this );
 
 		this.onResize = function () {
 

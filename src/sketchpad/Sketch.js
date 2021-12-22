@@ -18,9 +18,13 @@ class Sketch {
 
 	}
 
-	init( renderer ) {
+	init( sketchpad ) {
 
-		this.effects = new PostProcessing( { renderer, stage: this.stage } );
+		this.sketchpad = sketchpad;
+		this.effects = new PostProcessing( {
+			renderer: sketchpad.renderer,
+			stage: this.stage
+		} );
 
 	}
 
