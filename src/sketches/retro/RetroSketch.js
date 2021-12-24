@@ -1,6 +1,10 @@
-import RetroSettings from './RetroSettings';
-import { RetroControls } from './RetroControls';
-import GPGPU_y_shader from './glsl/GPGPU_y.frag';
+import {
+	BufferGeometry,
+	BufferAttribute,
+	LineBasicMaterial,
+	LineSegments,
+	Vector3
+} from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
 import { LinearGradient } from 'keda/three/misc/LinearGradient';
@@ -8,11 +12,9 @@ import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 import { toVector3 } from 'keda/three/utils/Utils';
 
-import { LineBasicMaterial } from 'three';
-import { LineSegments } from 'three';
-import { BufferGeometry } from 'three';
-import { BufferAttribute } from 'three';
-
+import { RetroControls } from './RetroControls';
+import { RetroSettings } from './RetroSettings';
+import GPGPU_y_shader from './glsl/GPGPU_y.frag';
 
 class RetroSketch extends Sketch {
 
@@ -22,10 +24,8 @@ class RetroSketch extends Sketch {
 
 		const cameraStart = toVector3( settings.cameraStart );
 		const cameraLookAt = toVector3( settings.cameraLookAt );
-
 		super( { cameraStart, cameraLookAt } );
-
-		this.stage.camera.far = 50;
+		this.stage.camera.far = settings.cameraFar;
 
 		this.background = new LinearGradient( settings.background );
 		this.add( this.background );
@@ -44,6 +44,9 @@ class RetroSketch extends Sketch {
 		const depth = tilesZ * tileDepth;
 		const offsetX = - width / 2;
 		const offsetZ = 5 - depth;
+
+		if ( this.settings.debug ) console.log( { points, tiles } );
+		this.distance = - offsetZ;
 
 		const pointsX = tilesX + 1;
 		const pointsZ = tilesZ + 1;
@@ -139,8 +142,9 @@ class RetroSketch extends Sketch {
 		const material = new LineBasicMaterial( this.settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
 
-		const lines = new LineSegments( geometry, material );
-		this.add( lines );
+		const grid = new LineSegments( geometry, material );
+		this.add( grid );
+		this.grid = grid;
 
 		// GPGPU
 
@@ -150,15 +154,13 @@ class RetroSketch extends Sketch {
 		this.GPGPU.addVariable( 'y', {
 			shader: GPGPU_y_shader,
 			uniforms: {
-				uDistance: { value: 0 },
+				uAmp: { value: 2.0 },
+				uDistance: { value: 0.0 },
+				uNoiseScale: { value: new Vector3( 0.1, 0.03, 0.07 ) },
 				GPGPU_startX: { value: this.GPGPU.startX },
 				GPGPU_startZ: { value: this.GPGPU.startZ },
 			}
 		} );
-
-		if ( this.settings.debug ) console.log( { points, tiles } );
-
-		this.distance = - offsetZ;
 
 	}
 
@@ -205,9 +207,9 @@ class RetroSketch extends Sketch {
 
 	}
 
-	tick( time, delta ) {
+	tick() {
 
-		this.distance = this.distance + delta * 0.01;
+		this.distance = this.distance + this.settings.speed;
 		const offsetZ = this.distance % 8;
 
 		if ( this.shader ) this.shader.uniforms.uOffsetZ.value = offsetZ;
@@ -215,6 +217,7 @@ class RetroSketch extends Sketch {
 		this.GPGPU.tick();
 
 		this.controls.tick();
+
 		super.tick();
 
 	}

@@ -48,6 +48,9 @@ class Sketchpad {
 		}.bind( this );
 		window.addEventListener( 'resize', this.onResize );
 
+		this.onTouchStart = event => event.preventDefault();
+		this.canvas.addEventListener( 'touchstart', this.onTouchStart );
+
 		this.ticker.start();
 
 	}
@@ -56,6 +59,7 @@ class Sketchpad {
 
 		this.ticker.stop();
 		window.removeEventListener( 'resize', this.onResize );
+		window.removeEventListener( 'touchstart', this.onTouchStart );
 
 	}
 

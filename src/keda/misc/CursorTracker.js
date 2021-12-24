@@ -26,7 +26,7 @@ class CursorTracker {
 		};
 		this.resize( width, height );
 
-		this._x = this._y = 0.5;
+		this.x = this.y = 0.5;
 
 		this.target = target;
 		this.onMouseMove = function ( event ) {
@@ -93,9 +93,9 @@ class CursorTracker {
 
 			this.clientX = clientX;
 			const x = this.normalizeX;
-			if ( this._x !== x ) {
+			if ( this.x !== x ) {
 
-				this._x = x;
+				this.x = x;
 				hasChanged = true;
 
 			}
@@ -106,9 +106,9 @@ class CursorTracker {
 
 			this.clientY = clientY;
 			const y = this.normalizeY;
-			if ( this._y !== y ) {
+			if ( this.y !== y ) {
 
-				this._y = y;
+				this.y = y;
 				hasChanged = true;
 
 			}
@@ -164,18 +164,6 @@ class CursorTracker {
 
 	/-------------------------------------------------------------------------*/
 
-	get x() {
-
-		return this._x;
-
-	}
-
-	get y() {
-
-		return this._y;
-
-	}
-
 	get normalizeX() {
 
 		return CursorTracker.normalize(
@@ -196,61 +184,61 @@ class CursorTracker {
 
 	get reverseX() {
 
-		return CursorTracker.reverse( this._x );
+		return CursorTracker.reverse( this.x );
 
 	}
 
 	get reverseY() {
 
-		return CursorTracker.reverse( this._y );
+		return CursorTracker.reverse( this.y );
 
 	}
 
 	get polarizeX() {
 
-		return CursorTracker.polarize( this._x );
+		return CursorTracker.polarize( this.x );
 
 	}
 
 	get polarizeY() {
 
-		return CursorTracker.polarize( this._y );
+		return CursorTracker.polarize( this.y );
 
 	}
 
 	get reversePolarizeX() {
 
-		return CursorTracker.reversePolarize( this._x );
+		return CursorTracker.reversePolarize( this.x );
 
 	}
 
 	get reversePolarizeY() {
 
-		return CursorTracker.reversePolarize( this._y );
+		return CursorTracker.reversePolarize( this.y );
 
 	}
 
 	get centerX() {
 
-		return CursorTracker.center( this._x );
+		return CursorTracker.center( this.x );
 
 	}
 
 	get centerY() {
 
-		return CursorTracker.center( this._y );
+		return CursorTracker.center( this.y );
 
 	}
 
 	get reverseCenterX() {
 
-		return CursorTracker.reverseCenter( this._x );
+		return CursorTracker.reverseCenter( this.x );
 
 	}
 
 	get reverseCenterY() {
 
-		return CursorTracker.reverseCenter( this._y );
+		return CursorTracker.reverseCenter( this.y );
 
 	}
 

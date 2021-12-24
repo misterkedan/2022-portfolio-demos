@@ -61,6 +61,11 @@ class GPGPU {
 
 	}
 
+	getUniform( variable, uniform ) {
+
+		return this.variables[ variable ].uniforms[ uniform ].value;
+
+	}
 	setUniform( variable, uniform, value ) {
 
 		this.variables[ variable ].uniforms[ uniform ].value = value;

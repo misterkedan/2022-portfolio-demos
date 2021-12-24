@@ -3,7 +3,9 @@ import simplex3D from 'keda/glsl/simplex3D.glsl';
 
 export default /*glsl*/`
 
+uniform float uAmp;
 uniform float uDistance;
+uniform vec3 uNoiseScale;
 uniform sampler2D GPGPU_startX;
 uniform sampler2D GPGPU_startZ;
 uniform sampler2D GPGPU_y;
@@ -20,11 +22,17 @@ void main() {
 
 	z -= uDistance;
 
-	float noise = simplex3D( x * 0.1, z * 0.05, mod( x, 2.0 ) * 0.08 );
-	float largeNoise = simplex3D( x * 0.03, z * 0.03, 1.0 ) * 0.5;
-	float targetY = 1.5 * ( clamp( noise, -0.3, 0.3 ) + largeNoise );
-	y = targetY;
-	//y = mix( -0.5, targetY, clamp( abs( pow( x, 5.0 ) ), 0.0, 1.0 ) );
+	float noise = simplex3D( 
+		x * uNoiseScale.x,
+		mod( x, 2.0 ) *uNoiseScale.y,
+		z * uNoiseScale.z
+	);
+
+	float largeNoise = uAmp * ( 
+		simplex3D( x * 0.03, z * 0.03, uNoiseScale.x ) * 0.7 - 1.0
+	);
+
+	y = uAmp * ( clamp( noise * uAmp, -0.3, 0.3 ) + largeNoise );
 
 	gl_FragColor = packFloat( y );
 

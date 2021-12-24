@@ -2,19 +2,57 @@ import { Controls } from 'keda/three/Controls';
 
 class RetroControls extends Controls {
 
-	//constructor( sketch ) {
+	initTracker() {
 
-	//	super( sketch );
+		super.initTracker();
 
-	//	if ( sketch.settings.gui ) this.initGUI();
+		this.tracker.y = 0.75;
+		this.intensity = 0.5;
 
-	//}
+	}
+
+	initGUI() {
+
+		const { sketch } = this;
+
+		this.gui = new Controls.GUI( { title: sketch.settings.title } );
+
+		const colors = this.gui.addFolder( 'Colors' );
+		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
+		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
+		colors.addColor( sketch.grid.material, 'color' );
+
+		const bloom = this.gui.addFolder( 'Bloom' );
+		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
+		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
+		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
+
+		if ( window.innerWidth < sketch.settings.guiMinWidth ) this.gui.close();
+
+	}
 
 	tick() {
 
-		this.camera.update(
-			this.tracker.polarizeX,
-			this.tracker.reverseY
+		this.camera.update( this.tracker.reversePolarizeX, this.tracker.reverseY );
+
+		const { lerp } = Controls;
+		const {
+			lerpSpeed, noiseScaleX, noiseScaleY, amp, opacity,
+		} = this.sketch.settings;
+
+		this.targetIntensity = this.tracker.x;
+		this.intensity = lerp( this.intensity, this.targetIntensity, lerpSpeed );
+
+		const noiseScale = this.sketch.GPGPU.getUniform( 'y', 'uNoiseScale' );
+		noiseScale.x = lerp( noiseScaleX.min, noiseScaleX.max, this.intensity );
+		noiseScale.y = lerp( noiseScaleY.min, noiseScaleY.max, this.intensity );
+
+		this.sketch.GPGPU.setUniform( 'y', 'uAmp', lerp(
+			amp.min, amp.max, this.intensity
+		) );
+
+		this.sketch.grid.material.opacity = lerp(
+			opacity.min, opacity.max, this.tracker.y
 		);
 
 	}
