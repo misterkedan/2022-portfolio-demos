@@ -1,7 +1,6 @@
 import RetroSettings from './RetroSettings';
 import { RetroControls } from './RetroControls';
 import GPGPU_y_shader from './glsl/GPGPU_y.frag';
-import GPGPU_z_shader from './glsl/GPGPU_z.frag';
 
 import { Sketch } from 'keda/three/Sketch';
 import { LinearGradient } from 'keda/three/misc/LinearGradient';
@@ -13,8 +12,7 @@ import { LineBasicMaterial } from 'three';
 import { LineSegments } from 'three';
 import { BufferGeometry } from 'three';
 import { BufferAttribute } from 'three';
-import { PointsMaterial } from 'three';
-import { Points } from 'three';
+
 
 class RetroSketch extends Sketch {
 
@@ -144,52 +142,35 @@ class RetroSketch extends Sketch {
 		const lines = new LineSegments( geometry, material );
 		this.add( lines );
 
-		// Particles
-
-		//const particlesMaterial = new PointsMaterial( {
-		//	size: 0.01, color: 0x0099ff
-		//} );
-		//particlesMaterial.onBeforeCompile = this.editShader.bind( this );
-
-		//const particles = new Points( geometry, particlesMaterial );
-		//this.add( particles );
-
 		// GPGPU
 
 		this.GPGPU.addConstant( 'startX', positionsX );
-		this.GPGPU.addConstant( 'startZ', positionsX );
+		this.GPGPU.addConstant( 'startZ', positionsZ );
 
 		this.GPGPU.addVariable( 'y', {
 			shader: GPGPU_y_shader,
 			uniforms: {
-				uTime: { value: 0 },
+				uDistance: { value: 0 },
 				GPGPU_startX: { value: this.GPGPU.startX },
 				GPGPU_startZ: { value: this.GPGPU.startZ },
 			}
 		} );
 
-		this.GPGPU.addVariable( 'z', {
-			data: positionZ,
-			shader: GPGPU_z_shader,
-			uniforms: {
-				uTime: { value: 0 },
-			}
-		} );
-
 		if ( this.settings.debug ) console.log( { points, tiles } );
+
+		this.distance = - offsetZ;
 
 	}
 
 	editShader( shader ) {
 
-		//shader.uniforms.GPGPU_x = { value: this.GPGPU.x };
 		shader.uniforms.GPGPU_y = { value: this.GPGPU.y };
-		shader.uniforms.GPGPU_z = { value: this.GPGPU.z };
+		shader.uniforms.uOffsetZ = { value: 0 };
 
 		const insertA = /*glsl*/`
 		attribute vec2 GPGPU_target;
 		uniform sampler2D GPGPU_y;
-		uniform sampler2D GPGPU_z;
+		uniform float uOffsetZ;
 		${ GPGPU.FloatPack.glsl }
 		`;
 		const tokenA = '#include <common>';
@@ -200,7 +181,7 @@ class RetroSketch extends Sketch {
 
 		const insertB = /*glsl*/`
 			transformed.y += unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
-			transformed.z += unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
+			transformed.z += uOffsetZ;
 		`;
 		const tokenB = '#include <begin_vertex>';
 		shader.vertexShader = shader.vertexShader.replace(
@@ -224,10 +205,13 @@ class RetroSketch extends Sketch {
 
 	}
 
-	tick( time ) {
+	tick( time, delta ) {
 
-		this.GPGPU.setUniform( 'y', 'uTime', time );
-		this.GPGPU.setUniform( 'z', 'uTime', time );
+		this.distance = this.distance + delta * 0.01;
+		const offsetZ = this.distance % 8;
+
+		if ( this.shader ) this.shader.uniforms.uOffsetZ.value = offsetZ;
+		this.GPGPU.setUniform( 'y', 'uDistance', this.distance - offsetZ );
 		this.GPGPU.tick();
 
 		this.controls.tick();

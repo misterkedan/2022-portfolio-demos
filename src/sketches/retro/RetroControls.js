@@ -13,7 +13,7 @@ class RetroControls extends Controls {
 	tick() {
 
 		this.camera.update(
-			this.tracker.reversePolarizeX,
+			this.tracker.polarizeX,
 			this.tracker.reverseY
 		);
 
