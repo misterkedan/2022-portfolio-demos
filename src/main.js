@@ -1,7 +1,14 @@
-import { Sketchpad } from './keda/three/Sketchpad';
+import { Sketchpad } from 'keda/three/Sketchpad';
 import { RainSketch } from './sketches/rain/RainSketch';
+import { RetroSketch } from './sketches/retro/RetroSketch';
 
-const sketch = new RainSketch();
+const sketches = {
+	rain: () => new RainSketch(),
+	retro: () => new RetroSketch(),
+};
+
+//const sketch = new RainSketch();
+const sketch = sketches.retro();
 
 const sketchpad = new Sketchpad( {
 	container: 'background',

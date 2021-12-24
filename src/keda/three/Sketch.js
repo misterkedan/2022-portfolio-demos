@@ -1,3 +1,4 @@
+import { Random } from 'vesuna';
 import { PostProcessing } from './postprocessing/PostProcessing';
 import { Stage } from './Stage';
 
@@ -9,12 +10,15 @@ class Sketch {
 		camera,
 		cameraStart,
 		cameraLookAt,
+		random = new Random(),
 	} = {} ) {
 
 		if ( ! stage ) stage = new Stage( {
 			background, camera, cameraStart, cameraLookAt
 		} );
 		this.stage = stage;
+
+		if ( random ) this.random = random;
 
 	}
 

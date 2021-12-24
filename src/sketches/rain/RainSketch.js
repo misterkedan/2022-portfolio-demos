@@ -5,38 +5,33 @@ import {
 	MeshBasicMaterial,
 	Object3D,
 	RingGeometry,
-	Vector3
 } from 'three';
-import { Random } from 'vesuna';
-
+import { Sketch } from 'keda/three/Sketch';
 import { LinearGradient } from 'keda/three/misc/LinearGradient';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import { Sketch } from 'keda/three/Sketch';
-
 import { RainControls } from './RainControls';
-import defaultSettings from './RainSettings';
+import { RainSettings } from './RainSettings';
 
 class RainSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
-		settings = {
-			...defaultSettings,
-			...settings
-		};
+		super();
 
-		const { x, y, z } = settings.cameraStart;
-		super( { cameraStart: new Vector3( x, y, z ) } );
+		this.settings = { ...RainSettings, ...settings };
 
-		this.background = new LinearGradient( settings.background );
+		this.stage.camera.position.set(
+			this.settings.cameraStart.x,
+			this.settings.cameraStart.y,
+			this.settings.cameraStart.z,
+		);
+
+		this.background = new LinearGradient( this.settings.background );
 		this.add( this.background );
 
-		this.settings = settings;
-		this.speed = settings.speed.min;
-		this.y = settings.offsetY;
-		this.originZ = settings.originZ;
-
-		this.random = new Random();
+		this.speed = this.settings.speed.min;
+		this.y = this.settings.offsetY;
+		this.originZ = this.settings.originZ;
 
 	}
 
@@ -65,7 +60,7 @@ class RainSketch extends Sketch {
 
 		for ( let i = 0; i < instances; i ++ ) {
 
-			this.randomizeDummy( i );
+			this.randomizePositionAt( i );
 
 			const amount = this.random.amount();
 			this.dummy.scale.set( amount, amount, amount );
@@ -82,38 +77,6 @@ class RainSketch extends Sketch {
 
 		this.mesh.instanceMatrix.setUsage( DynamicDrawUsage );
 		this.mesh.count = this.maxCount;
-
-	}
-
-	updateAspect() {
-
-		const { aspect } = this.stage.camera;
-
-		this.maxCount = this.settings.instances;
-		this.maxCount = ( aspect < 1 )
-			? Math.round( this.settings.instances * aspect )
-			: this.settings.instances;
-
-		this.width = this.stage.getVisibleWidth(
-			this.settings.originZ
-		);
-		this.depth = this.width * this.settings.ratio / aspect;
-
-	}
-
-	randomizeDummy( i ) {
-
-		const angle = this.random.number( 0, this.settings.maxAngle );
-
-		this.dummy.position.set(
-			Math.cos( angle ) * this.random.amount() * this.width,
-			this.y,
-			Math.sin( angle ) * this.random.amount() * this.depth
-				+ this.settings.originZ
-		);
-
-		this.x[ i ] = this.dummy.position.x;
-		this.z[ i ] = this.dummy.position.z;
 
 	}
 
@@ -148,6 +111,38 @@ class RainSketch extends Sketch {
 		shader.fragmentShader = shader.fragmentShader
 			.replace( common, common + fragDefs )
 			.replace( fragToken, fragEdit );
+
+	}
+
+	randomizePositionAt( i ) {
+
+		const angle = this.random.number( 0, this.settings.maxAngle );
+
+		this.dummy.position.set(
+			Math.cos( angle ) * this.random.amount() * this.width,
+			this.y,
+			Math.sin( angle ) * this.random.amount() * this.depth
+				+ this.settings.originZ
+		);
+
+		this.x[ i ] = this.dummy.position.x;
+		this.z[ i ] = this.dummy.position.z;
+
+	}
+
+	updateAspect() {
+
+		const { aspect } = this.stage.camera;
+
+		this.maxCount = this.settings.instances;
+		this.maxCount = ( aspect < 1 )
+			? Math.round( this.settings.instances * aspect )
+			: this.settings.instances;
+
+		this.width = this.stage.getVisibleWidth(
+			this.settings.originZ
+		);
+		this.depth = this.width * this.settings.ratio / aspect;
 
 	}
 
@@ -188,7 +183,7 @@ class RainSketch extends Sketch {
 			if ( progress > 1 ) {
 
 				progress = 0;
-				this.randomizeDummy( i );
+				this.randomizePositionAt( i );
 
 			} else {
 

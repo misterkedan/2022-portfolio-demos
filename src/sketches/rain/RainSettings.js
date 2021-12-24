@@ -1,7 +1,7 @@
 const offsetY = - 5;
 const innerRadius = 0.6;
 
-export default {
+const RainSettings = {
 
 	title: 'Rain II',
 
@@ -54,3 +54,5 @@ export default {
 	meshLerpSpeed: 0.015,
 
 };
+
+export { RainSettings };

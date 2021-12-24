@@ -2,6 +2,7 @@ import { MathUtils } from 'three';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { CursorTracker } from 'keda/misc/CursorTracker';
 import { CameraLerper } from 'keda/three/utils/CameraLerper';
+import { toVector3 } from './utils/Utils';
 
 class Controls {
 
@@ -11,9 +12,9 @@ class Controls {
 	} = {} ) {
 
 		this.sketch = sketch;
-
 		if ( tracker ) this.initTracker();
 		if ( camera ) this.initCamera();
+		if ( sketch.settings.gui ) this.initGUI();
 
 	}
 
@@ -32,7 +33,22 @@ class Controls {
 
 	initCamera() {
 
-		this.camera = new CameraLerper( this.sketch.stage.camera );
+		const { settings, stage } = this.sketch;
+
+		let lookAt = toVector3( settings.cameraLookAt );
+		let bounds = toVector3( settings.cameraBounds );
+		let speed = settings.cameraLerpSpeed;
+
+		this.camera = new CameraLerper(
+			stage.camera,
+			{ lookAt, bounds, speed }
+		);
+
+	}
+
+	initGUI() {
+
+		this.gui = new GUI();
 
 	}
 
@@ -50,7 +66,8 @@ class Controls {
 
 	tick() {
 
-		// Override
+		if ( this.tracker && this.camera )
+			this.camera.update( this.tracker.reversePolarizeX, this.tracker.y );
 
 	}
 

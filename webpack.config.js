@@ -14,25 +14,19 @@ let config = {
 				test: /\.js$/,
 				exclude: [ /node_modules/ ],
 				loader: 'babel-loader',
-				options: { presets: [ '@babel/preset-env' ] }
+				options: { presets: [ '@babel/preset-env' ] },
 			}, {
 				test: /\.(glsl)$/,
-				exclude: /(node_modules)/,
-				use: [
-					'raw-loader'
-				]
-			}
-		]
-	},
-	externals: {
-		animejs: 'anime',
-		three: 'THREE'
+				exclude: [ /node_modules/ ],
+				loader: 'raw-loader',
+			},
+		],
 	},
 	resolve: {
 		alias: {
 			keda: path.resolve( __dirname, 'src/keda/' ),
-		}
-	}
+		},
+	},
 };
 
 module.exports = ( env, argv ) => {
@@ -56,6 +50,10 @@ module.exports = ( env, argv ) => {
 	return {
 		...config,
 		mode: 'production',
+		externals: {
+			animejs: 'anime',
+			three: 'THREE',
+		},
 		optimization: {
 			minimize: true,
 			usedExports: true,

@@ -11,12 +11,14 @@ class CursorTracker {
 		onChange,
 	} = {} ) {
 
-		const isNumber = n => n * 1 === n;
+		const validateMargin = n => ( typeof n === 'number' && n >= 0 )
+			? n
+			: margin;
 		this.margin = {
-			top: ( isNumber( marginTop ) ) ? marginTop : margin,
-			right: ( isNumber( marginRight ) ) ? marginRight : margin,
-			bottom: ( isNumber( marginBottom ) ) ? marginBottom : margin,
-			left: ( isNumber( marginLeft ) ) ? marginLeft : margin,
+			top: validateMargin( marginTop ),
+			right: validateMargin( marginRight ),
+			bottom: validateMargin( marginBottom ),
+			left: validateMargin( marginLeft ),
 		};
 		this.hitbox = {
 			top: this.margin.top, left: this.margin.left,
