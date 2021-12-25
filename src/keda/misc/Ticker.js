@@ -105,7 +105,7 @@ class Ticker {
 		else return;
 
 		const { now } = this;
-		let delta = Math.min( Ticker.maxDelta, now - this._last );
+		let delta = Math.min( now - this._last, Ticker.maxDelta );
 
 		this._last = now;
 		this._delta += delta;
@@ -114,10 +114,10 @@ class Ticker {
 		let diff = this._frameDuration - this._delta;
 		if ( diff <= 0 ) {
 
-			const normalizedDelta = this._frameDuration || delta;
+			delta = Math.max( this._frameDuration + diff, delta );
 
 			this.callbacks.forEach(
-				callback => callback.call( this, this.elapsed, normalizedDelta )
+				callback => callback.call( this, this.elapsed, delta )
 			);
 
 			this._delta = Math.abs( diff );

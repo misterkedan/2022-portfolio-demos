@@ -194,9 +194,9 @@ class HoloscanSketch extends Sketch {
 
 	}
 
-	tick() {
+	tick( time, delta ) {
 
-		this.shader.uniforms.uDistance.value += this.settings.speed.value;
+		this.shader.uniforms.uDistance.value += this.settings.speed.value * delta;
 		this.controls.tick();
 		super.tick();
 
