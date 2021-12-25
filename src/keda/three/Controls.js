@@ -80,6 +80,7 @@ class Controls {
 /-----------------------------------------------------------------------------*/
 
 Controls.GUI = GUI;
+Controls.GUI_MINIFY_BREAKPOINT = 1000;
 Controls.lerp = MathUtils.lerp;
 
 export { Controls };

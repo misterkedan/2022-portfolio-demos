@@ -32,7 +32,6 @@ const RetroSettings = {
 	speed: 0.16,
 
 	gui: false,
-	guiMinWidth: 1000,
 
 	// Controls
 

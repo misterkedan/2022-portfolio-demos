@@ -41,7 +41,6 @@ const RainSettings = {
 	// Controls
 
 	gui: false,
-	guiMinWidth: 1000,
 
 	cameraBounds: { x: 3, y: 10, z: 0 },
 	cameraIntro: { x: 0, y: 4, z: 4 },

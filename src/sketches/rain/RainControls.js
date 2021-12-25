@@ -16,20 +16,20 @@ class RainControls extends Controls {
 	initGUI() {
 
 		const { sketch } = this;
+		const gui = new Controls.GUI( { title: sketch.settings.title } );
 
-		this.gui = new Controls.GUI( { title: sketch.settings.title } );
-
-		const colors = this.gui.addFolder( 'Colors' );
+		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
 		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
 		colors.addColor( sketch.mesh.material, 'color' );
 
-		const bloom = this.gui.addFolder( 'Bloom' );
+		const bloom = gui.addFolder( 'Bloom' );
 		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
 
-		if ( window.innerWidth < sketch.settings.guiMinWidth ) this.gui.close();
+		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
+		this.gui = gui;
 
 	}
 

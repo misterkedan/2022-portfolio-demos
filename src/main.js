@@ -7,7 +7,7 @@ const sketches = {
 	retro: () => new RetroSketch(),
 };
 
-//const sketch = new RainSketch();
+//const sketch = sketches.rain();
 const sketch = sketches.retro();
 
 const sketchpad = new Sketchpad( {
