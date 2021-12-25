@@ -1,6 +1,6 @@
 import { Controls } from 'keda/three/Controls';
 
-class RetroControls extends Controls {
+class HoloscanControls extends Controls {
 
 	initTracker() {
 
@@ -63,4 +63,4 @@ class RetroControls extends Controls {
 
 }
 
-export { RetroControls };
+export { HoloscanControls };

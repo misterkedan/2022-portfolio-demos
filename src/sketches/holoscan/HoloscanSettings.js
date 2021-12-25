@@ -1,6 +1,6 @@
-const RetroSettings = {
+const HoloscanSettings = {
 
-	title: 'Retrogrid',
+	title: 'Holoscan',
 
 	tilesX: 400,
 	tilesZ: 200,
@@ -29,8 +29,6 @@ const RetroSettings = {
 		threshold: 0.25,
 	},
 
-	debug: true,
-
 	// Controls
 
 	gui: false,
@@ -44,4 +42,4 @@ const RetroSettings = {
 
 };
 
-export { RetroSettings };
+export { HoloscanSettings };

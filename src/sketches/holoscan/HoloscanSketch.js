@@ -11,14 +11,14 @@ import { LinearGradient } from 'keda/three/misc/LinearGradient';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
 
-import { RetroControls } from './RetroControls';
-import { RetroSettings } from './RetroSettings';
+import { HoloscanControls } from './HoloscanControls';
+import { HoloscanSettings } from './HoloscanSettings';
 
-class RetroSketch extends Sketch {
+class HoloscanSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
-		settings = { ...RetroSettings, ...settings };
+		settings = { ...HoloscanSettings, ...settings };
 
 		const { cameraStart, cameraLookAt } = settings;
 		super( { cameraStart, cameraLookAt } );
@@ -190,7 +190,7 @@ class RetroSketch extends Sketch {
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
 		this.build();
-		this.controls = new RetroControls( this );
+		this.controls = new HoloscanControls( this );
 
 	}
 
@@ -204,4 +204,4 @@ class RetroSketch extends Sketch {
 
 }
 
-export { RetroSketch };
+export { HoloscanSketch };
