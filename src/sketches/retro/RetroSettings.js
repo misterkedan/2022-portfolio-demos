@@ -2,26 +2,15 @@ const RetroSettings = {
 
 	title: 'Retrogrid',
 
+	tilesX: 400,
+	tilesZ: 200,
+	tileWidth: 0.4,
+	tileDepth: 0.4,
+
 	background: {
 		color1: 0x003e8f,
 		color2: 0x680085,
-		//color1: 0x26004d,
-		//color2: 0x67344d,
 	},
-
-	bloom: {
-		strength: 0.8,
-		radius: 0.8,
-		threshold: 0.25,
-	},
-
-	cameraStart: { x: 0, y: 0.2, z: 5 },
-	cameraLookAt: { x: 0, y: 0, z: - 5 },
-	cameraBounds: { x: 5, y: 10, z: 0 },
-	cameraFar: 50,
-
-	tilesX: 250,
-	tilesZ: 170,
 
 	material: {
 		color: 0xff582e,
@@ -29,17 +18,29 @@ const RetroSettings = {
 		transparent: true,
 	},
 
-	speed: 0.16,
+	offsetZ: 10,
+	cameraStart: { x: 0, y: 0, z: 5 },
+	cameraLookAt: { x: 0, y: 0, z: - 5 },
+	cameraBounds: { x: 5, y: 10, z: 0 },
 
-	gui: false,
+	bloom: {
+		strength: 0.8,
+		radius: 0.8,
+		threshold: 0.25,
+	},
+
+	debug: true,
 
 	// Controls
+
+	gui: false,
 
 	lerpSpeed: 0.01,
 	noiseScaleX: { min: 0.01, max: 0.25 },
 	noiseScaleY: { min: 0, max: 0.1 },
 	amp: { min: 1, max: 2.5 },
 	opacity: { min: 0.4, max: 0.8 },
+	speed: { min: 0.03, max: 0.15, value: 0.1 },
 
 };
 

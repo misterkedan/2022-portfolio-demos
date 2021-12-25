@@ -9,12 +9,10 @@ import {
 import { Sketch } from 'keda/three/Sketch';
 import { LinearGradient } from 'keda/three/misc/LinearGradient';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import { GPGPU } from 'keda/three/gpgpu/GPGPU';
-import { toVector3 } from 'keda/three/utils/Utils';
+import simplex3D from 'keda/glsl/simplex3D.glsl';
 
 import { RetroControls } from './RetroControls';
 import { RetroSettings } from './RetroSettings';
-import GPGPU_y_shader from './glsl/GPGPU_y.frag';
 
 class RetroSketch extends Sketch {
 
@@ -22,12 +20,11 @@ class RetroSketch extends Sketch {
 
 		settings = { ...RetroSettings, ...settings };
 
-		const cameraStart = toVector3( settings.cameraStart );
-		const cameraLookAt = toVector3( settings.cameraLookAt );
+		const { cameraStart, cameraLookAt } = settings;
 		super( { cameraStart, cameraLookAt } );
-		this.stage.camera.far = settings.cameraFar;
 
 		this.background = new LinearGradient( settings.background );
+		this.background.quaternion.copy( this.stage.camera.quaternion );
 		this.add( this.background );
 
 		this.settings = settings;
@@ -36,41 +33,30 @@ class RetroSketch extends Sketch {
 
 	build() {
 
-		const { tilesX, tilesZ } = this.settings;
+		const { tilesX, tilesZ, tileWidth, tileDepth } = this.settings;
 
-		const tileWidth = 0.4;
-		const tileDepth = 0.4;
 		const width = tilesX * tileWidth;
 		const depth = tilesZ * tileDepth;
 		const offsetX = - width / 2;
-		const offsetZ = 5 - depth;
-
-		if ( this.settings.debug ) console.log( { points, tiles } );
-		this.distance = - offsetZ;
+		const offsetZ = - depth;
 
 		const pointsX = tilesX + 1;
 		const pointsZ = tilesZ + 1;
 
 		const tiles = tilesX * tilesZ;
 		const points = pointsX * pointsZ;
-		const vertices = tiles * 8;
+		const vertices = tiles * 8; // 2 points * 4 lines
+
+		if ( this.settings.debug ) console.log( { points, tiles } );
 
 		const positions = new Float32Array( vertices * 3 );
-		const targets = new Float32Array( vertices * 2 );
-
-		this.GPGPU = new GPGPU( points );
-		const { textureSize } = this.GPGPU;
 
 		// Compute tiles
 
 		const positionsX = new Float32Array( points );
 		const positionsZ = new Float32Array( points );
-		const targetsX = new Float32Array( points );
-		const targetsZ = new Float32Array( points );
 		let positionX = 0;
 		let positionZ = 0;
-		let targetX = 0;
-		let targetZ = 0;
 		let pointX = 0;
 		let pointZ = 0;
 
@@ -78,9 +64,6 @@ class RetroSketch extends Sketch {
 
 			positionsX[ positionX ++ ] = offsetX + tileWidth * pointX;
 			positionsZ[ positionZ ++ ] = offsetZ + tileDepth * pointZ;
-
-			targetsX[ targetX ++ ] = ( point % textureSize ) / textureSize;
-			targetsZ[ targetZ ++ ] = ~ ~ ( point / textureSize ) / textureSize;
 
 			pointX = ( pointX + 1 ) % pointsX;
 			if ( pointX === 0 ) pointZ ++;
@@ -90,7 +73,6 @@ class RetroSketch extends Sketch {
 		// Fill geometry
 
 		let position = 0;
-		let target = 0;
 		let tileX = 0;
 		let tileZ = 0;
 
@@ -104,8 +86,6 @@ class RetroSketch extends Sketch {
 			positions[ position ++ ] = positionsX[ index ];
 			positions[ position ++ ] = 0;
 			positions[ position ++ ] = positionsZ[ index ];
-			targets[ target ++ ] = targetsX[ index ];
-			targets[ target ++ ] = targetsZ[ index ];
 
 		};
 
@@ -135,7 +115,6 @@ class RetroSketch extends Sketch {
 
 		const geometry = new BufferGeometry();
 		geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-		geometry.setAttribute( 'GPGPU_target', new BufferAttribute( targets, 2 ) );
 
 		// Lines
 
@@ -143,38 +122,33 @@ class RetroSketch extends Sketch {
 		material.onBeforeCompile = this.editShader.bind( this );
 
 		const grid = new LineSegments( geometry, material );
+		grid.position.set( 0, 0, this.settings.offsetZ );
 		this.add( grid );
 		this.grid = grid;
 
-		// GPGPU
+		// Define uniforms
 
-		this.GPGPU.addConstant( 'startX', positionsX );
-		this.GPGPU.addConstant( 'startZ', positionsZ );
-
-		this.GPGPU.addVariable( 'y', {
-			shader: GPGPU_y_shader,
+		this.shader = {
 			uniforms: {
 				uAmp: { value: 2.0 },
 				uDistance: { value: 0.0 },
 				uNoiseScale: { value: new Vector3( 0.1, 0.03, 0.07 ) },
-				GPGPU_startX: { value: this.GPGPU.startX },
-				GPGPU_startZ: { value: this.GPGPU.startZ },
-			}
-		} );
+			},
+		};
 
 	}
 
 	editShader( shader ) {
 
-		shader.uniforms.GPGPU_y = { value: this.GPGPU.y };
-		shader.uniforms.uOffsetZ = { value: 0 };
+		Object.assign( shader.uniforms, this.shader.uniforms );
 
 		const insertA = /*glsl*/`
-		attribute vec2 GPGPU_target;
-		uniform sampler2D GPGPU_y;
-		uniform float uOffsetZ;
-		${ GPGPU.FloatPack.glsl }
+		uniform float uAmp;
+		uniform float uDistance;
+		uniform vec3 uNoiseScale;
+		${ simplex3D }
 		`;
+
 		const tokenA = '#include <common>';
 		shader.vertexShader = shader.vertexShader.replace(
 			tokenA,
@@ -182,8 +156,23 @@ class RetroSketch extends Sketch {
 		);
 
 		const insertB = /*glsl*/`
-			transformed.y += unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
-			transformed.z += uOffsetZ;
+			// Z
+			transformed.z += mod( uDistance, 0.4 );
+
+			// Y
+			float x = position.x;
+			float z = uDistance - transformed.z;
+			float noise = simplex3D( 
+				x * uNoiseScale.x,
+				mod( x, 2.0 ) *uNoiseScale.y,
+				z * uNoiseScale.z
+			);
+
+			float largeNoise = uAmp * (
+				simplex3D( x * 0.03, z * 0.03, uNoiseScale.x ) * 0.7 - 1.0
+			);
+
+			transformed.y = uAmp * ( clamp( noise * uAmp, -0.3, 0.3 ) + largeNoise );
 		`;
 		const tokenB = '#include <begin_vertex>';
 		shader.vertexShader = shader.vertexShader.replace(
@@ -200,8 +189,6 @@ class RetroSketch extends Sketch {
 		super.init( sketchpad );
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
-		GPGPU.init( sketchpad.renderer );
-
 		this.build();
 		this.controls = new RetroControls( this );
 
@@ -209,15 +196,8 @@ class RetroSketch extends Sketch {
 
 	tick() {
 
-		this.distance = this.distance + this.settings.speed;
-		const offsetZ = this.distance % 8;
-
-		if ( this.shader ) this.shader.uniforms.uOffsetZ.value = offsetZ;
-		this.GPGPU.setUniform( 'y', 'uDistance', this.distance - offsetZ );
-		this.GPGPU.tick();
-
+		this.shader.uniforms.uDistance.value += this.settings.speed.value;
 		this.controls.tick();
-
 		super.tick();
 
 	}

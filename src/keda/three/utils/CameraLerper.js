@@ -3,15 +3,15 @@ import { Vector3 } from 'three';
 class CameraLerper {
 
 	constructor( camera, {
-		lookAt = new Vector3( 0, 0, 0 ),
-		bounds = new Vector3( 5, 5, 0 ),
+		lookAt = { x: 0, y: 0, z: 0 },
+		bounds = { x: 5, y: 5, z: 0 },
 		speed = 0.02,
 	} = {} ) {
 
 		this.camera = camera;
 
-		this.lookAt = lookAt;
-		this.bounds = bounds;
+		this.lookAt = new Vector3( lookAt.x, lookAt.y, lookAt.z );
+		this.bounds = new Vector3( bounds.x, bounds.y, bounds.z );
 		this.speed = speed;
 
 		this.target = new Vector3();

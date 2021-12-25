@@ -37,22 +37,26 @@ class RetroControls extends Controls {
 
 		const { lerp } = Controls;
 		const {
-			lerpSpeed, noiseScaleX, noiseScaleY, amp, opacity,
+			lerpSpeed, noiseScaleX, noiseScaleY, amp, opacity, speed,
 		} = this.sketch.settings;
 
 		this.targetIntensity = this.tracker.x;
 		this.intensity = lerp( this.intensity, this.targetIntensity, lerpSpeed );
 
-		const noiseScale = this.sketch.GPGPU.getUniform( 'y', 'uNoiseScale' );
+		const noiseScale = this.sketch.shader.uniforms.uNoiseScale.value;
 		noiseScale.x = lerp( noiseScaleX.min, noiseScaleX.max, this.intensity );
 		noiseScale.y = lerp( noiseScaleY.min, noiseScaleY.max, this.intensity );
 
-		this.sketch.GPGPU.setUniform( 'y', 'uAmp', lerp(
+		this.sketch.shader.uniforms.uAmp.value = lerp(
 			amp.min, amp.max, this.intensity
-		) );
+		);
 
 		this.sketch.grid.material.opacity = lerp(
 			opacity.min, opacity.max, this.tracker.y
+		);
+
+		this.sketch.settings.speed.value = lerp(
+			speed.min, speed.max, this.tracker.y
 		);
 
 	}

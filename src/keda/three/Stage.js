@@ -5,16 +5,22 @@ class Stage {
 	constructor( {
 		background,
 		camera = new PerspectiveCamera(),
-		cameraStart = new Vector3( 10, 10, 10 ),
-		cameraLookAt = new Vector3( 0, 0, 0 ),
+		cameraNear = 0.1,
+		cameraFar = 1000,
+		cameraFov = 50,
+		cameraStart = { x: 10, y:10, z: 10 },
+		cameraLookAt = { x: 0, y:0, z: 0 },
 	} = {} ) {
 
 		this.scene = new Scene();
 		if ( background ) this.scene.background = background;
 
+		camera.near = cameraNear;
+		camera.far = cameraFar;
+		camera.fov = cameraFov;
+		camera.position.set( cameraStart.x, cameraStart.y, cameraStart.z );
+		camera.lookAt( cameraLookAt.x, cameraLookAt.y, cameraLookAt.z );
 		this.camera = camera;
-		camera.position.copy( cameraStart );
-		camera.lookAt( cameraLookAt );
 
 	}
 

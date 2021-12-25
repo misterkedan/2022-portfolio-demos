@@ -2,7 +2,6 @@ import { MathUtils } from 'three';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { CursorTracker } from 'keda/misc/CursorTracker';
 import { CameraLerper } from 'keda/three/utils/CameraLerper';
-import { toVector3 } from './utils/Utils';
 
 class Controls {
 
@@ -35,9 +34,9 @@ class Controls {
 
 		const { settings, stage } = this.sketch;
 
-		let lookAt = toVector3( settings.cameraLookAt );
-		let bounds = toVector3( settings.cameraBounds );
-		let speed = settings.cameraLerpSpeed;
+		const lookAt = settings.cameraLookAt;
+		const bounds = settings.cameraBounds;
+		const speed = settings.cameraLerpSpeed;
 
 		this.camera = new CameraLerper(
 			stage.camera,
