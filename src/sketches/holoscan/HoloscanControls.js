@@ -2,11 +2,11 @@ import { Controls } from 'keda/three/Controls';
 
 class HoloscanControls extends Controls {
 
-	initTracker() {
+	initCamera() {
 
-		super.initTracker();
+		super.initCamera();
 
-		this.tracker.y = 0.75;
+		this.amplitude = 0.5;
 		this.intensity = 0.5;
 
 	}
@@ -31,32 +31,56 @@ class HoloscanControls extends Controls {
 
 	}
 
-	tick() {
-
-		this.camera.update( this.tracker.reversePolarizeX, this.tracker.reverseY );
+	tick( time, delta ) {
 
 		const { lerp } = Controls;
-		const {
-			lerpSpeed, noiseScaleX, noiseScaleY, amp, opacity, speed,
-		} = this.sketch.settings;
+		const { sketch, tracker } = this;
+		const { settings } = sketch;
+		const lerpSpeed = this.sketch.settings.lerpSpeed * delta;
 
-		this.targetIntensity = this.tracker.x;
-		this.intensity = lerp( this.intensity, this.targetIntensity, lerpSpeed );
+		this.cameraLerper
+			.update( tracker.reversePolarizeX, tracker.reverseY )
+			.tick( time, delta );
+
+		// X
+
+		const targetAmplitude = tracker.x;
+		this.amplitude = lerp( this.amplitude, targetAmplitude, lerpSpeed );
 
 		const noiseScale = this.sketch.shader.uniforms.uNoiseScale.value;
-		noiseScale.x = lerp( noiseScaleX.min, noiseScaleX.max, this.intensity );
-		noiseScale.y = lerp( noiseScaleY.min, noiseScaleY.max, this.intensity );
-
-		this.sketch.shader.uniforms.uAmp.value = lerp(
-			amp.min, amp.max, this.intensity
+		noiseScale.x = lerp(
+			settings.noiseScaleX.min,
+			settings.noiseScaleX.max,
+			this.amplitude
 		);
 
-		this.sketch.grid.material.opacity = lerp(
-			opacity.min, opacity.max, this.tracker.y
+		noiseScale.y = lerp(
+			settings.noiseScaleY.min,
+			settings.noiseScaleY.max,
+			this.amplitude
 		);
 
-		this.sketch.settings.speed.value = lerp(
-			speed.min, speed.max, this.tracker.y
+		sketch.shader.uniforms.uAmp.value = lerp(
+			settings.amp.min,
+			settings.amp.max,
+			this.amplitude
+		);
+
+		// Y
+
+		const targetIntensity = tracker.y;
+		this.intensity = lerp( this.intensity, targetIntensity, lerpSpeed );
+
+		sketch.grid.material.opacity = lerp(
+			settings.opacity.min,
+			settings.opacity.max,
+			this.intensity
+		);
+
+		settings.speed.value = lerp(
+			settings.speed.min,
+			settings.speed.max,
+			this.intensity
 		);
 
 	}

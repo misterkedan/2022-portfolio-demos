@@ -1,7 +1,7 @@
 import { MathUtils } from 'three';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { CursorTracker } from 'keda/misc/CursorTracker';
-import { CameraLerper } from 'keda/three/utils/CameraLerper';
+import { CameraLerper } from 'keda/three/misc/CameraLerper';
 
 class Controls {
 
@@ -37,10 +37,10 @@ class Controls {
 		const lookAt = settings.cameraLookAt;
 		const bounds = settings.cameraBounds;
 		const speed = settings.cameraLerpSpeed;
+		const intro = settings.cameraIntro;
 
-		this.camera = new CameraLerper(
-			stage.camera,
-			{ lookAt, bounds, speed }
+		this.cameraLerper = new CameraLerper(
+			stage.camera, { lookAt, bounds, speed, intro }
 		);
 
 	}
@@ -63,10 +63,17 @@ class Controls {
 
 	}
 
-	tick() {
+	tick( time, delta ) {
 
-		if ( this.tracker && this.camera )
-			this.camera.update( this.tracker.reversePolarizeX, this.tracker.y );
+		if ( this.tracker && this.cameraLerper ) {
+
+			this.cameraLerper.update(
+				this.tracker.reversePolarizeX,
+				this.tracker.y
+			);
+			this.cameraLerper.tick( time, delta );
+
+		}
 
 	}
 

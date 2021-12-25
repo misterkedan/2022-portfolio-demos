@@ -1,5 +1,5 @@
 import { Random } from 'vesuna';
-import { PostProcessing } from './postprocessing/PostProcessing';
+import { Effects } from './postprocessing/Effects';
 import { Stage } from './Stage';
 
 class Sketch {
@@ -25,7 +25,7 @@ class Sketch {
 	init( sketchpad ) {
 
 		this.sketchpad = sketchpad;
-		this.effects = new PostProcessing( {
+		this.effects = new Effects( {
 			renderer: sketchpad.renderer,
 			stage: this.stage
 		} );
@@ -34,7 +34,7 @@ class Sketch {
 
 	dispose() {
 
-		//this.stage.dispose();
+		this.stage.dispose();
 		this.effects.dispose();
 
 	}

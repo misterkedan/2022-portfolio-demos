@@ -12,6 +12,8 @@ const sketch = sketches.holoscan();
 
 const sketchpad = new Sketchpad( {
 	container: 'background',
-	fps: 60,
+	//fps: 240,
+	//fps: 5,
+	//fps: 0,
 } );
 sketchpad.init( sketch );

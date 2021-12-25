@@ -5,7 +5,7 @@ class CameraLerper {
 	constructor( camera, {
 		lookAt = { x: 0, y: 0, z: 0 },
 		bounds = { x: 5, y: 5, z: 0 },
-		speed = 0.02,
+		speed = 0.002,
 	} = {} ) {
 
 		this.camera = camera;
@@ -17,14 +17,11 @@ class CameraLerper {
 		this.target = new Vector3();
 		this.origin = new Vector3().copy( camera.position );
 
-		return this;
-
 	}
 
 	set( x = 0, y = 0, z = 0 ) {
 
 		this.camera.position.set( x, y, z );
-
 		return this;
 
 	}
@@ -34,10 +31,14 @@ class CameraLerper {
 		this.target.x = this.origin.x + this.bounds.x * x;
 		this.target.y = this.origin.y + this.bounds.y * y;
 		this.target.z = this.origin.z + this.bounds.z * z;
+		return this;
 
-		this.camera.position.lerp( this.target, this.speed );
+	}
+
+	tick( time, delta ) {
+
+		this.camera.position.lerp( this.target, this.speed * delta );
 		this.camera.lookAt( this.lookAt );
-
 		return this;
 
 	}

@@ -33,7 +33,7 @@ const HoloscanSettings = {
 
 	gui: false,
 
-	lerpSpeed: 0.01,
+	lerpSpeed: 0.0007,
 	noiseScaleX: { min: 0.01, max: 0.25 },
 	noiseScaleY: { min: 0, max: 0.1 },
 	amp: { min: 1, max: 2.5 },

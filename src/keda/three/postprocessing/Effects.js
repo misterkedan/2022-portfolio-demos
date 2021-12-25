@@ -4,7 +4,7 @@ import { Pass } from 'three/examples/jsm/postprocessing/Pass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { FXAAPass } from './FXAAPass';
 
-class PostProcessing {
+class Effects {
 
 	constructor( {
 		passes = { fxaa: new FXAAPass() },
@@ -75,4 +75,4 @@ class PostProcessing {
 
 }
 
-export { PostProcessing };
+export { Effects };

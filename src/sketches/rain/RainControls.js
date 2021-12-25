@@ -1,4 +1,3 @@
-
 import { Controls } from 'keda/three/Controls';
 
 class RainControls extends Controls {
@@ -38,52 +37,56 @@ class RainControls extends Controls {
 		super.initCamera();
 
 		const { cameraBounds, cameraIntro } = this.sketch.settings;
-		this.camera.bounds.set( cameraBounds.x, cameraBounds.y, cameraBounds.z );
-		this.camera.set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
+		this.cameraLerper.bounds.set( cameraBounds.x, cameraBounds.y, cameraBounds.z );
+		this.cameraLerper.set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
 
 	}
 
-	tick() {
+	tick( time, delta ) {
 
 		const { lerp } = Controls;
 		const { sketch, tracker } = this;
-		const {
-			intensityLerpSpeed, materialOpacity, bloomStrength,
-			speed, minCount, meshLerpSpeed,
-		} = sketch.settings;
+		const { settings } = sketch;
 
-		// XY
-		this.camera.update( tracker.reversePolarizeX, tracker.y );
+		const lerpSpeed = settings.lerpSpeed * delta;
+
+		this.cameraLerper
+			.update( tracker.reversePolarizeX, tracker.y )
+			.tick( time, delta );
 
 		// X
-		this.targetIntensity = tracker.centerX;
+
+		const targetIntensity = tracker.centerX;
 		this.intensity = lerp(
-			this.intensity, this.targetIntensity,
-			intensityLerpSpeed
+			this.intensity,
+			targetIntensity,
+			lerpSpeed
 		);
 
 		sketch.mesh.material.opacity = lerp(
-			materialOpacity.min, materialOpacity.max,
+			settings.opacity.min,
+			settings.opacity.max,
 			this.intensity
 		);
 		sketch.effects.passes.bloom.strength = lerp(
-			bloomStrength.min, bloomStrength.max,
+			settings.bloomStrength.min,
+			settings.bloomStrength.max,
 			this.intensity
 		);
 		sketch.speed = lerp(
-			speed.min, speed.max,
+			settings.speed.min,
+			settings.speed.max,
 			this.intensity
 		);
 
 		// Y
-		this.targetCount = lerp(
-			minCount, sketch.maxCount,
+
+		const targetCount = lerp(
+			settings.minCount,
+			sketch.maxCount,
 			tracker.y
 		);
-		sketch.mesh.count = Math.round( lerp(
-			sketch.mesh.count, this.targetCount,
-			meshLerpSpeed
-		) );
+		sketch.mesh.count = lerp( sketch.mesh.count, targetCount, lerpSpeed );
 
 	}
 

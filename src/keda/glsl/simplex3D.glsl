@@ -62,7 +62,7 @@ float simplex3D( float vx, float vy, float vz ) {
   	vec3 p2 = vec3( a1.xy,h.z );
   	vec3 p3 = vec3( a1.zw,h.w );
 
-	//Normalise gradients
+	// Normalise gradients
   	vec4 norm = taylorInvSqrt( 
 		vec4( dot( p0, p0 ), dot( p1, p1 ), dot( p2, p2 ), dot( p3, p3 ) )
 	);

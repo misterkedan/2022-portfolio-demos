@@ -173,13 +173,17 @@ class RainSketch extends Sketch {
 
 	}
 
-	tick() {
+	tick( time, delta ) {
+
+		const speed = this.speed * delta;
+
+		if ( ! speed ) return super.tick();
 
 		const progressArray = this.mesh.geometry.attributes.aProgress.array;
 
 		for ( let i = 0; i < this.mesh.count; i ++ ) {
 
-			let progress = progressArray[ i ] + this.speed;
+			let progress = progressArray[ i ] + speed;
 			if ( progress > 1 ) {
 
 				progress = 0;
@@ -203,7 +207,8 @@ class RainSketch extends Sketch {
 		this.mesh.instanceMatrix.needsUpdate = true;
 		this.mesh.geometry.attributes.aProgress.needsUpdate = true;
 
-		this.controls.tick();
+		this.controls.tick( time, delta );
+
 		super.tick();
 
 	}

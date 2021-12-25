@@ -45,12 +45,11 @@ const RainSettings = {
 	cameraBounds: { x: 3, y: 10, z: 0 },
 	cameraIntro: { x: 0, y: 4, z: 4 },
 
-	intensityLerpSpeed: 0.03,
-	materialOpacity: { min: 0.6, max: 1 },
-	bloomStrength: { min: 0.3, max:  0.8 },
-	speed: { min: 0.003, max: 0.008 },
-	minCount: 40,
-	meshLerpSpeed: 0.015,
+	lerpSpeed: 0.001,
+	opacity: { min: 0.5, max: 1 },
+	bloomStrength: { min: 0.4, max: 0.9 },
+	speed: { min: 0.0001, max: 0.0004 },
+	minCount: 20,
 
 };
 

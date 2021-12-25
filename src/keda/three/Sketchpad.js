@@ -51,6 +51,7 @@ class Sketchpad {
 		this.onTouchStart = event => event.preventDefault();
 		this.canvas.addEventListener( 'touchstart', this.onTouchStart );
 
+		this.tick( 0, 0 );
 		this.ticker.start();
 
 	}
