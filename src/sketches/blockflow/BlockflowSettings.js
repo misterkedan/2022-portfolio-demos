@@ -1,13 +1,13 @@
-const tileSize = 0.4;
-const tileMargin = tileSize * 0.1;
+const tileSize = 0.3;
+const tileMargin = 0.025;
 
 const BlockflowSettings = {
 
 	title: 'Blockflow',
 
 	background: {
-		color1: 0x005a70,
-		color2: 0x008558,
+		color1: 0x005e75,
+		color2: 0x008f5f,
 	},
 
 	tile: {
@@ -15,7 +15,7 @@ const BlockflowSettings = {
 		countZ: 40,
 
 		width: tileSize,
-		height: tileMargin,
+		height: 0.01,
 		depth: tileSize,
 
 		margin: {
@@ -27,7 +27,7 @@ const BlockflowSettings = {
 
 	material: {
 		color: 0x00ff6e,
-		opacity: 0.4,
+		opacity: 0.38,
 		transparent: true,
 	},
 
@@ -36,17 +36,16 @@ const BlockflowSettings = {
 	cameraBounds: { x: 10, y: 20, z: 0 },
 
 	bloom: {
-		strength: 0.3,
+		strength: 0.5,
 		radius: 0.5,
-		threshold: 0.4,
+		threshold: 0.5,
 	},
 
 	speed: {
-		value: 0.0004,
+		value: 0.00025,
 	},
 
-	gui: true,
-
+	//gui: true,
 	debug: true,
 
 };

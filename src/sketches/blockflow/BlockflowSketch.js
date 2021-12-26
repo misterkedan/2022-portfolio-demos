@@ -101,54 +101,86 @@ class BlockflowSketch extends Sketch {
 
 	editShader( shader ) {
 
-		Object.assign( shader.uniforms, this.shader.uniforms );
+		// THREE tokens ( r135 )
 
-		const tokenA = '#include <common>';
-		const insertA = /*glsl*/`
+		const common = '#include <common>';
+		const beginVertex = '#include <begin_vertex>';
+		const diffuseColor = 'vec4 diffuseColor = vec4( diffuse, opacity )';
+
+		// Vertex
+
+		const vertexDeclarations = /*glsl*/`
 			attribute vec3 aOffset;
 			uniform float uTime;
 			uniform vec3 uCursor;
+			varying float vHeight;
 			${simplex3D}
 			float integralSmoothstep( float x, float T ) {
     			if( x>T ) return x - T/2.0;
     			return x*x*x*(1.0-x*0.5/T)/T/T;
 			}
 		`;
-		shader.vertexShader = shader.vertexShader.replace(
-			tokenA,
-			tokenA + insertA
-		);
 
-		const tokenB = '#include <begin_vertex>';
-		const insertB = /*glsl*/`
-
+		const vertexChanges = /*glsl*/`
 			transformed += aOffset;
 
 			float distanceToCursor = length( uCursor - aOffset );
-			float force = - 6180.0 / ( 1.618 + sqrt( distanceToCursor ) );
+			float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
 
-			float yScale = simplex3D(
+			float yScale = abs( simplex3D(
 				aOffset.x * 0.01, 
 				distanceToCursor * 0.1 - uTime,
 				aOffset.z * 0.01
-			) * force * 1.8;
+			) * force ) * 20.0;
 
 			float yNoise = simplex3D(
 				aOffset.x * 0.5,
 				aOffset.z * 0.5,
 				uTime
-			) * 200.0;
+			);
 
-			//transformed.y += yNoise;
-			transformed.y *= position.y * ( yScale + yNoise );
+			transformed.y *= position.y * ( yScale + yNoise ) * 6000.0;
+
+			vHeight = transformed.y;
+		`;
+
+		// Fragment
+
+		const fragmentDeclarations = /*glsl*/`
+
+			varying float vHeight;
 
 		`;
+
+		const fragmentChanges = /*glsl*/`
+
+			vec4 diffuseColor = vec4( 
+				mix( diffuse, vec3( 0.8, 1.0, 0.0), vHeight ), 
+				opacity
+			);
+
+		`;
+
+		// Apply changes
+
 		shader.vertexShader = shader.vertexShader.replace(
-			tokenB,
-			tokenB + insertB
+			common,
+			common + vertexDeclarations
+		);
+		shader.vertexShader = shader.vertexShader.replace(
+			beginVertex,
+			beginVertex + vertexChanges
+		);
+		shader.fragmentShader = shader.fragmentShader.replace(
+			common,
+			common + fragmentDeclarations
+		);
+		shader.fragmentShader = shader.fragmentShader.replace(
+			diffuseColor,
+			fragmentChanges
 		);
 
-		//console.log( shader.fragmentShader );
+		Object.assign( shader.uniforms, this.shader.uniforms );
 
 		this.shader = shader;
 

@@ -22,7 +22,6 @@ class BlockflowControls extends Controls {
 				color: 'red', opacity: 0.25, transparent:true  } )
 		);
 		this.hitbox.rotateX( - Math.PI / 2 );
-		//this.hitbox.position.set( 0, 1, 0 );
 		sketch.add( this.hitbox );
 
 		const cursorSize = 1;
@@ -37,6 +36,8 @@ class BlockflowControls extends Controls {
 		this.cursor.visible = false;
 
 		this.cameraLerper.speed = 0.001;
+		this.tracker.x = 0.1;
+		this.tracker.y = 0.2;
 
 	}
 
