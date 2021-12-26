@@ -15,7 +15,7 @@ const BlockflowSettings = {
 		countZ: 40,
 
 		width: tileSize,
-		height: 0.05,
+		height: tileMargin,
 		depth: tileSize,
 
 		margin: {

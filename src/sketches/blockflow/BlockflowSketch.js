@@ -121,23 +121,27 @@ class BlockflowSketch extends Sketch {
 
 		const tokenB = '#include <begin_vertex>';
 		const insertB = /*glsl*/`
-		
+
 			transformed += aOffset;
 
 			float distanceToCursor = length( uCursor - aOffset );
-			float force = - 6.18 / distanceToCursor;
-			float yScale = position.y * clamp(
-				simplex3D( 
-					aOffset.x * 0.015, 
-					distanceToCursor * 0.1 - uTime,
-					aOffset.z * 0.015
-				) * force * 40.0, 
-				-30.0,  
-				30.0
-			) * 40.0;
+			float force = - 6180.0 / ( 1.618 + sqrt( distanceToCursor ) );
 
-			transformed.y *= yScale;
-			
+			float yScale = simplex3D(
+				aOffset.x * 0.01, 
+				distanceToCursor * 0.1 - uTime,
+				aOffset.z * 0.01
+			) * force * 1.8;
+
+			float yNoise = simplex3D(
+				aOffset.x * 0.5,
+				aOffset.z * 0.5,
+				uTime
+			) * 200.0;
+
+			//transformed.y += yNoise;
+			transformed.y *= position.y * ( yScale + yNoise );
+
 		`;
 		shader.vertexShader = shader.vertexShader.replace(
 			tokenB,
