@@ -34,9 +34,11 @@ const RainSettings = {
 
 	bloom: {
 		strength: 0.62,
-		radius: 0.5,
+		radius: 0.7,
 		threshold: 0.33,
 	},
+
+	random: true,
 
 	// Controls
 

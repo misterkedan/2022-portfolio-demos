@@ -39,7 +39,7 @@ class Sketchpad {
 
 		this.sketch = sketch;
 		this.resize();
-		this.sketch.init( this );
+		this.sketch.init();
 
 		this.onResize = function () {
 
@@ -77,10 +77,10 @@ class Sketchpad {
 
 	}
 
-	tick( time, delta ) {
+	tick( delta, time ) {
 
 		if ( this.needsResize ) this.resize();
-		this.sketch.tick( time, delta );
+		this.sketch.tick( delta, time );
 
 	}
 

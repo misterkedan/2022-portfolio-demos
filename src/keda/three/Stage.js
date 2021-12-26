@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, Vector3 } from 'three';
+import { PerspectiveCamera, Scene } from 'three';
 
 class Stage {
 
@@ -13,6 +13,7 @@ class Stage {
 	} = {} ) {
 
 		this.scene = new Scene();
+
 		if ( background ) this.scene.background = background;
 
 		camera.near = cameraNear;

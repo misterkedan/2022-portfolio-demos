@@ -7,7 +7,6 @@ import {
 	RingGeometry,
 } from 'three';
 import { Sketch } from 'keda/three/Sketch';
-import { LinearGradient } from 'keda/three/misc/LinearGradient';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { RainControls } from './RainControls';
 import { RainSettings } from './RainSettings';
@@ -16,22 +15,19 @@ class RainSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
-		super();
+		super( { defaults: RainSettings, settings } );
 
-		this.settings = { ...RainSettings, ...settings };
-
-		this.stage.camera.position.set(
-			this.settings.cameraStart.x,
-			this.settings.cameraStart.y,
-			this.settings.cameraStart.z,
-		);
-
-		this.background = new LinearGradient( this.settings.background );
-		this.add( this.background );
-
-		this.speed = this.settings.speed.min;
 		this.y = this.settings.offsetY;
+		this.speed = this.settings.speed.min;
 		this.originZ = this.settings.originZ;
+
+	}
+
+	init() {
+
+		super.init( RainControls );
+
+		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
 	}
 
@@ -139,51 +135,30 @@ class RainSketch extends Sketch {
 			? Math.round( this.settings.instances * aspect )
 			: this.settings.instances;
 
-		this.width = this.stage.getVisibleWidth(
-			this.settings.originZ
-		);
+		this.width = this.stage.getVisibleWidth( this.settings.originZ );
 		this.depth = this.width * this.settings.ratio / aspect;
-
-	}
-
-	/*-------------------------------------------------------------------------/
-
-		Sketch overrides
-
-	/-------------------------------------------------------------------------*/
-
-	init( sketchpad ) {
-
-		super.init( sketchpad );
-
-		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
-
-		this.build();
-		this.controls = new RainControls( this );
 
 	}
 
 	resize( width, height, pixelRatio ) {
 
 		super.resize( width, height, pixelRatio );
-
-		this.controls?.resize( width, height );
-
 		this.updateAspect();
 
 	}
 
-	tick( time, delta ) {
+	tick( delta ) {
 
 		const speed = this.speed * delta;
 
-		if ( ! speed ) return super.tick();
+		if ( ! speed ) return super.tick( delta );
 
 		const progressArray = this.mesh.geometry.attributes.aProgress.array;
 
 		for ( let i = 0; i < this.mesh.count; i ++ ) {
 
 			let progress = progressArray[ i ] + speed;
+
 			if ( progress > 1 ) {
 
 				progress = 0;
@@ -207,9 +182,7 @@ class RainSketch extends Sketch {
 		this.mesh.instanceMatrix.needsUpdate = true;
 		this.mesh.geometry.attributes.aProgress.needsUpdate = true;
 
-		this.controls.tick( time, delta );
-
-		super.tick();
+		super.tick( delta );
 
 	}
 

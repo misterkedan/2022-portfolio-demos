@@ -31,7 +31,7 @@ class HoloscanControls extends Controls {
 
 	}
 
-	tick( time, delta ) {
+	tick( delta ) {
 
 		const { lerp } = Controls;
 		const { sketch, tracker } = this;
@@ -40,7 +40,7 @@ class HoloscanControls extends Controls {
 
 		this.cameraLerper
 			.update( tracker.reversePolarizeX, tracker.reverseY )
-			.tick( time, delta );
+			.tick( delta );
 
 		// X
 

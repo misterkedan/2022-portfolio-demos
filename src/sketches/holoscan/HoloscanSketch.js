@@ -7,7 +7,6 @@ import {
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
-import { LinearGradient } from 'keda/three/misc/LinearGradient';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
 
@@ -18,16 +17,15 @@ class HoloscanSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
-		settings = { ...HoloscanSettings, ...settings };
+		super( { defaults: HoloscanSettings, settings } );
 
-		const { cameraStart, cameraLookAt } = settings;
-		super( { cameraStart, cameraLookAt } );
+	}
 
-		this.background = new LinearGradient( settings.background );
-		this.background.quaternion.copy( this.stage.camera.quaternion );
-		this.add( this.background );
+	init() {
 
-		this.settings = settings;
+		super.init( HoloscanControls );
+
+		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
 	}
 
@@ -184,21 +182,13 @@ class HoloscanSketch extends Sketch {
 
 	}
 
-	init( sketchpad ) {
 
-		super.init( sketchpad );
-		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
-		this.build();
-		this.controls = new HoloscanControls( this );
-
-	}
-
-	tick( time, delta ) {
+	tick( delta ) {
 
 		this.shader.uniforms.uDistance.value += this.settings.speed.value * delta;
-		this.controls.tick( time, delta );
-		super.tick();
+
+		super.tick( delta );
 
 	}
 

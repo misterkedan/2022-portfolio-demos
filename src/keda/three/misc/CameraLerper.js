@@ -35,7 +35,7 @@ class CameraLerper {
 
 	}
 
-	tick( time, delta ) {
+	tick( delta ) {
 
 		this.camera.position.lerp( this.target, this.speed * delta );
 		this.camera.lookAt( this.lookAt );

@@ -23,7 +23,7 @@ class Ticker {
 		this._last = 0;
 		this._deltaOffset = 0;
 		this._isPlaying = false;
-		this._onTick = this.tick.bind( this );
+		this._update = this.update.bind( this );
 
 	}
 
@@ -105,7 +105,7 @@ class Ticker {
 
 	/-------------------------------------------------------------------------*/
 
-	tick() {
+	update() {
 
 		if ( this.isPlaying ) this.requestFrame();
 		else return;
@@ -115,29 +115,29 @@ class Ticker {
 		this.elapsed += delta;
 
 		// FPS uncapped or higher than actual framerate
-		if ( delta >= this._frameDuration ) return this.trigger( delta );
+		if ( delta >= this._frameDuration ) return this.tick( delta );
 
 		// FPS cap + offset
 		this._deltaOffset += delta;
 		const diff = this._frameDuration - this._deltaOffset;
 		if ( diff <= 0 ) {
 
-			this.trigger( this._frameDuration );
+			this.tick( this._frameDuration );
 			this._deltaOffset = Math.abs( diff ) % this._frameDuration;
 
 		}
 
 	}
 
-	trigger( delta ) {
+	tick( delta ) {
 
-		this.callbacks.forEach( callback => callback( this.elapsed, delta ) );
+		this.callbacks.forEach( callback => callback( delta, this.elapsed ) );
 
 	}
 
 	requestFrame() {
 
-		requestAnimationFrame( this._onTick );
+		requestAnimationFrame( this._update );
 
 	}
 

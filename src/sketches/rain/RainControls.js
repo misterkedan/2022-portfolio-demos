@@ -42,7 +42,7 @@ class RainControls extends Controls {
 
 	}
 
-	tick( time, delta ) {
+	tick( delta ) {
 
 		const { lerp } = Controls;
 		const { sketch, tracker } = this;
@@ -52,7 +52,7 @@ class RainControls extends Controls {
 
 		this.cameraLerper
 			.update( tracker.reversePolarizeX, tracker.y )
-			.tick( time, delta );
+			.tick( delta );
 
 		// X
 

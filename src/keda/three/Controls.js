@@ -25,8 +25,7 @@ class Controls {
 
 	initTracker() {
 
-		const { width, height } = this.sketch.sketchpad;
-		this.tracker = new CursorTracker( { width, height } );
+		this.tracker = new CursorTracker();
 
 	}
 
@@ -63,7 +62,7 @@ class Controls {
 
 	}
 
-	tick( time, delta ) {
+	tick( delta ) {
 
 		if ( this.tracker && this.cameraLerper ) {
 
@@ -71,7 +70,7 @@ class Controls {
 				this.tracker.reversePolarizeX,
 				this.tracker.y
 			);
-			this.cameraLerper.tick( time, delta );
+			this.cameraLerper.tick( delta );
 
 		}
 

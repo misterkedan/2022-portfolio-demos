@@ -1,14 +1,7 @@
 import { Sketchpad } from 'keda/three/Sketchpad';
 import { RainSketch } from './sketches/rain/RainSketch';
 import { HoloscanSketch } from './sketches/holoscan/HoloscanSketch';
-
-const sketches = {
-	rain: () => new RainSketch(),
-	holoscan: () => new HoloscanSketch(),
-};
-
-//const sketch = sketches.rain();
-const sketch = sketches.holoscan();
+import { BlockflowSketch } from './sketches/blockflow/BlockflowSketch';
 
 const sketchpad = new Sketchpad( {
 	container: 'background',
@@ -16,4 +9,16 @@ const sketchpad = new Sketchpad( {
 	//fps: 5,
 	//fps: 0,
 } );
+
+const options = { sketchpad };
+const sketches = {
+	rain: () => new RainSketch( options ),
+	holoscan: () => new HoloscanSketch( options ),
+	blockflow: () => new BlockflowSketch( options ),
+};
+
+//const sketch = sketches.rain();
+//const sketch = sketches.holoscan();
+const sketch = sketches.blockflow();
+
 sketchpad.init( sketch );
