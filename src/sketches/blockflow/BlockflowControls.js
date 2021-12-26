@@ -19,7 +19,10 @@ class BlockflowControls extends Controls {
 		this.hitbox = new Mesh(
 			new PlaneGeometry( 50, 50 ),
 			new MeshBasicMaterial( {
-				color: 'red', opacity: 0.25, transparent:true  } )
+				color: 'red',
+				opacity: 0.25,
+				transparent:true,
+			} )
 		);
 		this.hitbox.rotateX( - Math.PI / 2 );
 		sketch.add( this.hitbox );
@@ -35,9 +38,9 @@ class BlockflowControls extends Controls {
 		this.hitbox.visible = false;
 		this.cursor.visible = false;
 
-		this.cameraLerper.speed = 0.001;
+		this.cameraLerper.speed = 0.00075;
 		this.tracker.x = 0.1;
-		this.tracker.y = 0.2;
+		this.tracker.y = 0.4;
 
 	}
 

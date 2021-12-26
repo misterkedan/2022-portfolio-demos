@@ -127,11 +127,11 @@ class BlockflowSketch extends Sketch {
 			float distanceToCursor = length( uCursor - aOffset );
 			float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
 
-			float yScale = abs( simplex3D(
+			float yScale = simplex3D(
 				aOffset.x * 0.01, 
 				distanceToCursor * 0.1 - uTime,
 				aOffset.z * 0.01
-			) * force ) * 20.0;
+			) * force * 20.0;
 
 			float yNoise = simplex3D(
 				aOffset.x * 0.5,
@@ -139,7 +139,7 @@ class BlockflowSketch extends Sketch {
 				uTime
 			);
 
-			transformed.y *= position.y * ( yScale + yNoise ) * 6000.0;
+			transformed.y *= position.y * abs( yScale + yNoise ) * 6000.0;
 
 			vHeight = transformed.y;
 		`;

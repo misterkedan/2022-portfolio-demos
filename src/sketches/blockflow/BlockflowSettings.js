@@ -6,8 +6,8 @@ const BlockflowSettings = {
 	title: 'Blockflow',
 
 	background: {
-		color1: 0x005e75,
-		color2: 0x008f5f,
+		color1: 0x00996b,
+		color2: 0x004241,
 	},
 
 	tile: {
@@ -26,14 +26,14 @@ const BlockflowSettings = {
 	},
 
 	material: {
-		color: 0x00ff6e,
-		opacity: 0.38,
+		color: 0x00ccbe,
+		opacity: 0.4,
 		transparent: true,
 	},
 
-	cameraStart: { x: 10, y: 10, z: 10 },
+	cameraStart: { x: 10, y: 5, z: 10 },
 	//cameraLookAt: { x:0, y: 0, z: 0 },
-	cameraBounds: { x: 10, y: 20, z: 0 },
+	cameraBounds: { x: 10, y: 25, z: 0 },
 
 	bloom: {
 		strength: 0.5,
