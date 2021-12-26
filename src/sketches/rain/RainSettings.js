@@ -47,7 +47,7 @@ const RainSettings = {
 
 	lerpSpeed: 0.001,
 	opacity: { min: 0.5, max: 1 },
-	bloomStrength: { min: 0.4, max: 0.9 },
+	bloomStrength: { min: 0.4, max: 0.8 },
 	speed: { min: 0.0001, max: 0.0004 },
 	minCount: 20,
 
