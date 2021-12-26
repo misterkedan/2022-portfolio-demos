@@ -1,15 +1,18 @@
+import {
+	BoxGeometry,
+	EdgesGeometry,
+	LineBasicMaterial,
+	LineSegments,
+	InstancedBufferGeometry,
+	Float32BufferAttribute,
+	InstancedBufferAttribute
+} from 'three';
+
 import { Sketch } from 'keda/three/Sketch';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { FXAAPass } from 'keda/three/postprocessing/FXAAPass';
-import { BoxGeometry } from 'three';
-import { EdgesGeometry } from 'three';
-import { LineBasicMaterial } from 'three';
-import { LineSegments } from 'three';
-import { InstancedBufferGeometry } from 'three';
-import { Float32BufferAttribute } from 'three';
-import { InstancedBufferAttribute } from 'three';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
-import { Vector3 } from 'three';
+
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
 
@@ -37,30 +40,35 @@ class BlockflowSketch extends Sketch {
 		const { settings } = this;
 
 		const { tile } = settings;
-		tile.width = settings.bounds.x / tile.countX;
-		tile.depth = settings.bounds.z / tile.countZ;
 
-		const box = new BoxGeometry( tile.width, tile.height, tile.depth );
 		const instances = tile.countX * tile.countZ;
+
+		const netWidth = tile.width + tile.margin.x;
+		const netDepth = tile.depth + tile.margin.z;
+		const totalWidth = netWidth * tile.countX - tile.margin.x;
+		const totalDepth = netDepth * tile.countZ - tile.margin.z;
+
+		const offsetX = - ( totalWidth - tile.width ) / 2;
+		const offsetY = - tile.height;
+		const offsetZ = - ( totalDepth - tile.depth ) / 2;
+
 		if ( settings.debug ) console.log( { instances } );
 
+		const box = new BoxGeometry( tile.width, tile.height, tile.depth );
 		const edges = new EdgesGeometry( box );
-		const positions = new Float32Array( edges.attributes.position.array );
 
+		const positions = new Float32Array( edges.attributes.position.array );
 		const attributeCount = 3 * instances;
 		const offsets = new Float32Array( attributeCount );
 
 		let tileX = 0;
 		let tileZ = 0;
-		let offsetX = - ( tile.countX * tile.width - tile.width ) / 2;
-		let offsetY = - tile.height;
-		let offsetZ = - ( tile.countZ * tile.depth - tile.depth ) / 2;
 
 		for ( let i = 0; i < attributeCount; i += 3 ) {
 
-			offsets[   i   ] = offsetX + tileX * tile.width;
+			offsets[   i   ] = offsetX + tileX * netWidth;
 			offsets[ i + 1 ] = offsetY;
-			offsets[ i + 2 ] = offsetZ + tileZ * tile.depth;
+			offsets[ i + 2 ] = offsetZ + tileZ * netDepth;
 
 			tileX = ( tileX + 1 ) % tile.countX;
 			if ( tileX === 0 ) tileZ ++;
@@ -72,11 +80,10 @@ class BlockflowSketch extends Sketch {
 		geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
 		geometry.setAttribute( 'aOffset', new InstancedBufferAttribute( offsets, 3 ) );
 
+		// Material
+
 		const material = new LineBasicMaterial( settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
-
-		this.grid = new LineSegments( geometry, material );
-		this.add( this.grid );
 
 		this.shader = {
 			uniforms: {
@@ -84,6 +91,11 @@ class BlockflowSketch extends Sketch {
 				uTime: { value: 0 },
 			},
 		};
+
+		// Done
+
+		this.grid = new LineSegments( geometry, material );
+		this.add( this.grid );
 
 	}
 
@@ -97,13 +109,10 @@ class BlockflowSketch extends Sketch {
 			uniform float uTime;
 			uniform vec3 uCursor;
 			${simplex3D}
-			//mat3 scale( float x, float y, float z ) {
-			//	return mat3(
-			//		vec3(  x , 0.0, 0.0 ),
-			//		vec3( 0.0,  y , 0.0 ),
-			//		vec3( 0.0, 0.0,  z  )
-			//	);
-			//}
+			float integralSmoothstep( float x, float T ) {
+    			if( x>T ) return x - T/2.0;
+    			return x*x*x*(1.0-x*0.5/T)/T/T;
+			}
 		`;
 		shader.vertexShader = shader.vertexShader.replace(
 			tokenA,
@@ -112,6 +121,7 @@ class BlockflowSketch extends Sketch {
 
 		const tokenB = '#include <begin_vertex>';
 		const insertB = /*glsl*/`
+		
 			transformed += aOffset;
 
 			float distanceToCursor = length( uCursor - aOffset );
@@ -133,6 +143,8 @@ class BlockflowSketch extends Sketch {
 			tokenB,
 			tokenB + insertB
 		);
+
+		//console.log( shader.fragmentShader );
 
 		this.shader = shader;
 
