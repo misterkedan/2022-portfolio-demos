@@ -15,6 +15,7 @@ import simplex3D from 'keda/glsl/simplex3D.glsl';
 
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
+import { PlaneGeometry } from 'three';
 
 class BlockflowSketch extends Sketch {
 
@@ -37,10 +38,10 @@ class BlockflowSketch extends Sketch {
 
 	build() {
 
+		// Computations
+
 		const { settings } = this;
-
 		const { tile } = settings;
-
 		const instances = tile.countX * tile.countZ;
 
 		const netWidth = tile.width + tile.margin.x;
@@ -49,10 +50,12 @@ class BlockflowSketch extends Sketch {
 		const totalDepth = netDepth * tile.countZ - tile.margin.z;
 
 		const offsetX = - ( totalWidth - tile.width ) / 2;
-		const offsetY = - tile.height;
+		const offsetY = - tile.height * 0.5;
 		const offsetZ = - ( totalDepth - tile.depth ) / 2;
 
 		if ( settings.debug ) console.log( { instances } );
+
+		// Geometry
 
 		const box = new BoxGeometry( tile.width, tile.height, tile.depth );
 		const edges = new EdgesGeometry( box );
@@ -92,10 +95,25 @@ class BlockflowSketch extends Sketch {
 			},
 		};
 
-		// Done
+		// Grid
 
 		this.grid = new LineSegments( geometry, material );
 		this.add( this.grid );
+
+		// Border
+
+		const plane = new PlaneGeometry(
+			totalWidth + settings.border.margin,
+			totalDepth + settings.border.margin,
+		);
+		plane.rotateX( - Math.PI / 2 );
+		this.border = new LineSegments( new EdgesGeometry( plane ), material );
+		this.add( this.border );
+
+		// Cleanup
+
+		box.dispose();
+		edges.dispose();
 
 	}
 
@@ -127,19 +145,21 @@ class BlockflowSketch extends Sketch {
 			float distanceToCursor = length( uCursor - aOffset );
 			float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
 
-			float yScale = simplex3D(
+			float waves = simplex3D(
 				aOffset.x * 0.01, 
 				distanceToCursor * 0.1 - uTime,
 				aOffset.z * 0.01
-			) * force * 20.0;
+			) * force * 8.0;
 
-			float yNoise = simplex3D(
+			float turbulence = simplex3D(
 				aOffset.x * 0.5,
 				aOffset.z * 0.5,
 				uTime
-			);
+			) * 1.0;
 
-			transformed.y *= position.y * abs( yScale + yNoise ) * 6000.0;
+			float noise = abs ( 1.0 + waves + turbulence );
+
+			transformed.y *= position.y * noise * 200.0;
 
 			vHeight = transformed.y;
 		`;
@@ -155,7 +175,7 @@ class BlockflowSketch extends Sketch {
 		const fragmentChanges = /*glsl*/`
 
 			vec4 diffuseColor = vec4( 
-				mix( diffuse, vec3( 0.8, 1.0, 0.0), vHeight ), 
+				mix( diffuse, vec3( 0.7, 1.0, 0.0), vHeight ), 
 				opacity
 			);
 
