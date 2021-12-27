@@ -47,18 +47,31 @@ class BlockflowControls extends Controls {
 	initGUI() {
 
 		const { sketch } = this;
+		const { settings } = sketch;
+		const { uniforms } = sketch.shader;
+		const { passes } = sketch.effects;
+		const VALUE = 'value';
 
-		const gui = new Controls.GUI( { title: sketch.settings.title } );
+		const gui = new Controls.GUI( { title: settings.title.toUpperCase() } );
+
+		const animation = gui.addFolder( 'Animation' );
+		animation.add( settings.speed, VALUE, settings.speed.min, settings.speed.max )
+			.name( 'speed' ).onFinishChange( () => sketch.setSpeed() );
+		animation.add( uniforms.uAmplitude, VALUE, 1, 300 ).name( 'amplitude' );
+		animation.add( uniforms.uThickness, VALUE, 0, 4 ).name( 'thickness' );
+		animation.add( uniforms.uTurbulence, VALUE, 0, 5 ).name( 'turbulence' );
+		animation.add( uniforms.uScale, VALUE, 0, 1 ).name( 'scale' );
+
 		const colors = gui.addFolder( 'Colors' );
-
 		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
 		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
-		colors.addColor( sketch.grid.material, 'color' );
+		colors.addColor( uniforms.uColor, VALUE ).name( 'grid1' );
+		colors.addColor( sketch.grid.material, 'color' ).name( 'grid2' );
 
 		const bloom = gui.addFolder( 'Bloom' );
-		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
-		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
-		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
+		bloom.add( passes.bloom, 'strength', 0, 1 );
+		bloom.add( passes.bloom, 'radius', 0, 1 );
+		bloom.add( passes.bloom, 'threshold', 0, 1 );
 
 		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
 		this.gui = gui;

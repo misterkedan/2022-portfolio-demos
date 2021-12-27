@@ -5,11 +5,6 @@ const BlockflowSettings = {
 
 	title: 'Blockflow',
 
-	background: {
-		color1: 0x006275,
-		color2: 0x007a52,
-	},
-
 	tile: {
 		countX: 40,
 		countZ: 40,
@@ -25,32 +20,44 @@ const BlockflowSettings = {
 		},
 	},
 
-	border: {
-		margin: 2.5 * ( tileSize + tileMargin ),
+	border: 2.5 * ( tileSize + tileMargin ),
+
+	background: {
+		color1: '#0095b3',
+		color2: '#008f5f',
+	},
+
+	uniforms: {
+		amplitude: 200,
+		scale: 0.5,
+		thickness: 1,
+		turbulence: 1,
+		color: '#e1ff00',
 	},
 
 	material: {
-		color: 0x00ccbe,
-		opacity: 0.4,
+		color: '#00c8d6',
+		opacity: 0.5,
 		transparent: true,
 	},
 
-	cameraStart: { x: 10, y: 5, z: 10 },
-	//cameraLookAt: { x:0, y: 0, z: 0 },
-	cameraBounds: { x: 10, y: 25, z: 0 },
-
 	bloom: {
-		strength: 0.4,
-		radius: 0.6,
+		strength: 0.23,
+		radius: 0.5,
 		threshold: 0.5,
 	},
 
+	cameraStart: { x: 10, y: 5, z: 10 },
+	cameraBounds: { x: 10, y: 25, z: 0 },
+
 	speed: {
-		value: 0.00025,
+		min: 1,
+		max: 10,
+		value: 3,
 	},
 
 	gui: true,
-	debug: true,
+	//debug: true,
 
 };
 

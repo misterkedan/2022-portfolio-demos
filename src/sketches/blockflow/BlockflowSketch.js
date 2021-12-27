@@ -1,27 +1,30 @@
 import {
 	BoxGeometry,
 	EdgesGeometry,
+	Float32BufferAttribute,
+	InstancedBufferAttribute,
+	InstancedBufferGeometry,
 	LineBasicMaterial,
 	LineSegments,
-	InstancedBufferGeometry,
-	Float32BufferAttribute,
-	InstancedBufferAttribute
+	PlaneGeometry
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import { FXAAPass } from 'keda/three/postprocessing/FXAAPass';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
 
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
-import { PlaneGeometry } from 'three';
+import { Color } from 'three';
 
 class BlockflowSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
 		super( { defaults: BlockflowSettings, settings } );
+
+		this.time = 0;
+		this.setSpeed();
 
 	}
 
@@ -85,15 +88,23 @@ class BlockflowSketch extends Sketch {
 
 		// Material
 
-		const material = new LineBasicMaterial( settings.material );
-		material.onBeforeCompile = this.editShader.bind( this );
-
 		this.shader = {
 			uniforms: {
+				// Vertex
 				uCursor: { value: null },
+				uAmplitude:  { value: settings.uniforms.amplitude },
+				uScale: 	 { value: settings.uniforms.scale },
+				uThickness:  { value: settings.uniforms.thickness },
+				uTurbulence: { value: settings.uniforms.turbulence },
 				uTime: { value: 0 },
+
+				// Fragment
+				uColor: { value: new Color( settings.uniforms.color ) },
 			},
 		};
+
+		const material = new LineBasicMaterial( settings.material );
+		material.onBeforeCompile = this.editShader.bind( this );
 
 		// Grid
 
@@ -103,8 +114,8 @@ class BlockflowSketch extends Sketch {
 		// Border
 
 		const plane = new PlaneGeometry(
-			totalWidth + settings.border.margin,
-			totalDepth + settings.border.margin,
+			totalWidth + settings.border,
+			totalDepth + settings.border,
 		);
 		plane.rotateX( - Math.PI / 2 );
 		this.border = new LineSegments( new EdgesGeometry( plane ), material );
@@ -114,6 +125,7 @@ class BlockflowSketch extends Sketch {
 
 		box.dispose();
 		edges.dispose();
+		plane.dispose();
 
 	}
 
@@ -129,7 +141,11 @@ class BlockflowSketch extends Sketch {
 
 		const vertexDeclarations = /*glsl*/`
 			attribute vec3 aOffset;
+			uniform float uAmplitude;
+			uniform float uScale;
 			uniform float uTime;
+			uniform float uThickness;
+			uniform float uTurbulence;
 			uniform vec3 uCursor;
 			varying float vHeight;
 			${simplex3D}
@@ -146,20 +162,20 @@ class BlockflowSketch extends Sketch {
 			float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
 
 			float waves = simplex3D(
-				aOffset.x * 0.01, 
+				uScale * 0.02 * aOffset.x, 
 				distanceToCursor * 0.1 - uTime,
-				aOffset.z * 0.01
+				uScale * 0.02 * aOffset.z
 			) * force * 8.0;
 
 			float turbulence = simplex3D(
-				aOffset.x * 0.5,
-				aOffset.z * 0.5,
+				aOffset.x * uScale,
+				aOffset.z * uScale,
 				uTime
-			) * 1.0;
+			) * uTurbulence;
 
-			float noise = abs ( 1.0 + waves + turbulence );
+			float noise = abs( uThickness + waves + turbulence );
 
-			transformed.y *= position.y * noise * 200.0;
+			transformed.y *= position.y * noise * uAmplitude;
 
 			vHeight = transformed.y;
 		`;
@@ -167,18 +183,12 @@ class BlockflowSketch extends Sketch {
 		// Fragment
 
 		const fragmentDeclarations = /*glsl*/`
-
+			uniform vec3 uColor;
 			varying float vHeight;
-
 		`;
 
 		const fragmentChanges = /*glsl*/`
-
-			vec4 diffuseColor = vec4( 
-				mix( diffuse, vec3( 0.7, 1.0, 0.0), vHeight ), 
-				opacity
-			);
-
+			vec4 diffuseColor = vec4( mix( diffuse, uColor, vHeight ), opacity );
 		`;
 
 		// Apply changes
@@ -206,11 +216,19 @@ class BlockflowSketch extends Sketch {
 
 	}
 
-	tick( delta, time ) {
+	tick( delta ) {
 
-		this.shader.uniforms.uTime.value = time * this.settings.speed.value;
+		this.time += delta * this.speed;
+
+		this.shader.uniforms.uTime.value = this.time;
 
 		super.tick( delta );
+
+	}
+
+	setSpeed( speed = this.settings.speed.value, multiplier = 0.0001 ) {
+
+		this.speed = speed * multiplier;
 
 	}
 
