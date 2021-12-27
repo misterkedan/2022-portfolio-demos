@@ -56,7 +56,7 @@ class BlockflowSketch extends Sketch {
 		const offsetY = - tile.height * 0.5;
 		const offsetZ = - ( totalDepth - tile.depth ) / 2;
 
-		if ( settings.debug ) console.log( { instances } );
+		if ( this.sketchpad.debug ) console.log( { instances } );
 
 		// Geometry
 

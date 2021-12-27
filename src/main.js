@@ -5,6 +5,7 @@ import { BlockflowSketch } from './sketches/blockflow/BlockflowSketch';
 
 const sketchpad = new Sketchpad( {
 	container: 'background',
+	//debug: true,
 	//fps: 240,
 	//fps: 5,
 	//fps: 0,

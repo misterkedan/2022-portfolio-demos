@@ -14,6 +14,7 @@ class Sketchpad {
 			stencil: false,
 			depth: false
 		} ),
+		debug = false,
 	} = {} ) {
 
 		this.renderer = renderer;
@@ -29,7 +30,8 @@ class Sketchpad {
 		this.width = ( width > 0 ) ? width : undefined;
 		this.height = ( height > 0 ) ? height : undefined;
 
-		this.fps = fps;
+		this.debug = debug;
+		this.fps = ( debug ) ? 0 : fps;
 		this.onTick = this.tick.bind( this );
 		this.ticker = new Ticker( this.onTick, fps );
 

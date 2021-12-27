@@ -45,7 +45,7 @@ class HoloscanSketch extends Sketch {
 		const points = pointsX * pointsZ;
 		const vertices = tiles * 8; // 2 points * 4 lines
 
-		if ( this.settings.debug ) console.log( { points, tiles } );
+		if ( this.sketchpad.debug ) console.log( { points, tiles } );
 
 		const positions = new Float32Array( vertices * 3 );
 

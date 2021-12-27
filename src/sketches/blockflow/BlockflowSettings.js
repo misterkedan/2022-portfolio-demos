@@ -47,17 +47,12 @@ const BlockflowSettings = {
 		threshold: 0.5,
 	},
 
+	speed: { min: 1, max: 10, value: 3 },
+
 	cameraStart: { x: 10, y: 5, z: 10 },
 	cameraBounds: { x: 10, y: 25, z: 0 },
 
-	speed: {
-		min: 1,
-		max: 10,
-		value: 3,
-	},
-
 	gui: true,
-	//debug: true,
 
 };
 
