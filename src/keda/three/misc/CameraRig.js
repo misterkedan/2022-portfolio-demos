@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 
-class CameraLerper {
+class CameraRig {
 
 	constructor( camera, {
 		lookAt = { x: 0, y: 0, z: 0 },
@@ -45,4 +45,4 @@ class CameraLerper {
 
 }
 
-export { CameraLerper };
+export { CameraRig };

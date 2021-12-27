@@ -1,18 +1,18 @@
 import { MathUtils } from 'three';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { CursorTracker } from 'keda/misc/CursorTracker';
-import { CameraLerper } from 'keda/three/misc/CameraLerper';
+import { CameraRig } from 'keda/three/misc/CameraRig';
 
 class Controls {
 
 	constructor( sketch, {
-		camera = true,
+		cameraRig = true,
 		tracker = true,
 	} = {} ) {
 
 		this.sketch = sketch;
 		if ( tracker ) this.initTracker();
-		if ( camera ) this.initCamera();
+		if ( cameraRig ) this.initCamera();
 		if ( sketch.settings.gui ) this.initGUI();
 
 	}
@@ -26,6 +26,7 @@ class Controls {
 	initTracker() {
 
 		this.tracker = new CursorTracker();
+		this.trackerEnabled = true;
 
 	}
 
@@ -38,9 +39,11 @@ class Controls {
 		const speed = settings.cameraLerpSpeed;
 		const intro = settings.cameraIntro;
 
-		this.cameraLerper = new CameraLerper(
-			stage.camera, { lookAt, bounds, speed, intro }
+		this.cameraRig = new CameraRig(
+			stage.camera,
+			{ lookAt, bounds, speed, intro }
 		);
+		this.cameraRigEnabled = true;
 
 	}
 
@@ -64,15 +67,9 @@ class Controls {
 
 	tick( delta ) {
 
-		if ( this.tracker && this.cameraLerper ) {
-
-			this.cameraLerper.update(
-				this.tracker.reversePolarizeX,
-				this.tracker.y
-			);
-			this.cameraLerper.tick( delta );
-
-		}
+		if ( this.cameraRigEnabled ) this.cameraRig
+			.update( this.tracker.reversePolarizeX, this.tracker.y )
+			.tick( delta );
 
 	}
 

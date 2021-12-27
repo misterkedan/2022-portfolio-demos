@@ -14,6 +14,7 @@ class HoloscanControls extends Controls {
 	initGUI() {
 
 		const { sketch } = this;
+
 		const gui = new Controls.GUI( { title: sketch.settings.title } );
 
 		const colors = gui.addFolder( 'Colors' );
@@ -36,9 +37,9 @@ class HoloscanControls extends Controls {
 		const { lerp } = Controls;
 		const { sketch, tracker } = this;
 		const { settings } = sketch;
-		const lerpSpeed = this.sketch.settings.lerpSpeed * delta;
+		const lerpSpeed = settings.lerpSpeed * delta;
 
-		this.cameraLerper
+		if ( this.cameraRigEnabled ) this.cameraRig
 			.update( tracker.reversePolarizeX, tracker.reverseY )
 			.tick( delta );
 
@@ -47,7 +48,7 @@ class HoloscanControls extends Controls {
 		const targetAmplitude = tracker.x;
 		this.amplitude = lerp( this.amplitude, targetAmplitude, lerpSpeed );
 
-		const noiseScale = this.sketch.shader.uniforms.uNoiseScale.value;
+		const noiseScale = sketch.shader.uniforms.uNoiseScale.value;
 		noiseScale.x = lerp(
 			settings.noiseScaleX.min,
 			settings.noiseScaleX.max,

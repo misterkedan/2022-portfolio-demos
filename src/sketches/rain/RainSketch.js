@@ -126,9 +126,7 @@ class RainSketch extends Sketch {
 
 	}
 
-	updateAspect() {
-
-		const { aspect } = this.stage.camera;
+	updateAspect( aspect = this.camera.aspect ) {
 
 		this.maxCount = this.settings.instances;
 		this.maxCount = ( aspect < 1 )

@@ -49,14 +49,14 @@ class BlockflowSketch extends Sketch {
 
 		const netWidth = tile.width + tile.margin.x;
 		const netDepth = tile.depth + tile.margin.z;
-		const totalWidth = netWidth * tile.countX - tile.margin.x;
-		const totalDepth = netDepth * tile.countZ - tile.margin.z;
+		this.width = netWidth * tile.countX - tile.margin.x;
+		this.depth = netDepth * tile.countZ - tile.margin.z;
 
-		const offsetX = - ( totalWidth - tile.width ) / 2;
+		const offsetX = - ( this.width - tile.width ) / 2;
 		const offsetY = - tile.height * 0.5;
-		const offsetZ = - ( totalDepth - tile.depth ) / 2;
+		const offsetZ = - ( this.depth - tile.depth ) / 2;
 
-		if ( this.sketchpad.debug ) console.log( { instances } );
+		if ( this.debug ) console.log( { instances } );
 
 		// Geometry
 
@@ -92,14 +92,14 @@ class BlockflowSketch extends Sketch {
 			uniforms: {
 				// Vertex
 				uCursor: { value: null },
-				uAmplitude:  { value: settings.uniforms.amplitude },
-				uScale: 	 { value: settings.uniforms.scale },
-				uThickness:  { value: settings.uniforms.thickness },
-				uTurbulence: { value: settings.uniforms.turbulence },
+				uAmplitude:  { value: settings.amplitude.value },
+				uScale: 	 { value: settings.scale.value },
+				uThickness:  { value: settings.thickness.value },
+				uTurbulence: { value: settings.turbulence.value },
 				uTime: { value: 0 },
 
 				// Fragment
-				uColor: { value: new Color( settings.uniforms.color ) },
+				uHighColor: { value: new Color( settings.highColor ) },
 			},
 		};
 
@@ -114,8 +114,8 @@ class BlockflowSketch extends Sketch {
 		// Border
 
 		const plane = new PlaneGeometry(
-			totalWidth + settings.border,
-			totalDepth + settings.border,
+			this.width + settings.border,
+			this.depth + settings.border,
 		);
 		plane.rotateX( - Math.PI / 2 );
 		this.border = new LineSegments( new EdgesGeometry( plane ), material );
@@ -183,12 +183,12 @@ class BlockflowSketch extends Sketch {
 		// Fragment
 
 		const fragmentDeclarations = /*glsl*/`
-			uniform vec3 uColor;
+			uniform vec3 uHighColor;
 			varying float vHeight;
 		`;
 
 		const fragmentChanges = /*glsl*/`
-			vec4 diffuseColor = vec4( mix( diffuse, uColor, vHeight ), opacity );
+			vec4 diffuseColor = vec4( mix( diffuse, uHighColor, vHeight ), opacity );
 		`;
 
 		// Apply changes
@@ -219,7 +219,6 @@ class BlockflowSketch extends Sketch {
 	tick( delta ) {
 
 		this.time += delta * this.speed;
-
 		this.shader.uniforms.uTime.value = this.time;
 
 		super.tick( delta );

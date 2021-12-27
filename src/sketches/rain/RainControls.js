@@ -37,8 +37,8 @@ class RainControls extends Controls {
 		super.initCamera();
 
 		const { cameraBounds, cameraIntro } = this.sketch.settings;
-		this.cameraLerper.bounds.set( cameraBounds.x, cameraBounds.y, cameraBounds.z );
-		this.cameraLerper.set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
+		this.cameraRig.bounds.set( cameraBounds.x, cameraBounds.y, cameraBounds.z );
+		this.cameraRig.set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
 
 	}
 
@@ -50,7 +50,7 @@ class RainControls extends Controls {
 
 		const lerpSpeed = settings.lerpSpeed * delta;
 
-		this.cameraLerper
+		this.cameraRig
 			.update( tracker.reversePolarizeX, tracker.y )
 			.tick( delta );
 

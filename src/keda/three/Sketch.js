@@ -112,6 +112,24 @@ class Sketch {
 
 	}
 
+	/*-------------------------------------------------------------------------/
+
+		Read-only
+
+	/-------------------------------------------------------------------------*/
+
+	get camera() {
+
+		return this.stage.camera;
+
+	}
+
+	get debug() {
+
+		return this.sketchpad.debug;
+
+	}
+
 }
 
 export { Sketch };
