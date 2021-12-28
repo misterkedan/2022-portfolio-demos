@@ -1,6 +1,6 @@
-const HoloscanSettings = {
+const NavscanSettings = {
 
-	title: 'Holoscan',
+	title: 'Navscan',
 
 	tilesX: 400,
 	tilesZ: 200,
@@ -42,4 +42,4 @@ const HoloscanSettings = {
 
 };
 
-export { HoloscanSettings };
+export { NavscanSettings };

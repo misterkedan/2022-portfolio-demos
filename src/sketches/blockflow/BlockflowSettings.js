@@ -74,8 +74,6 @@ const BlockflowSettings = {
 	turbulence: { min: 0.2, max: 1.5, value: 1 },
 	opacity: { min: 0.4, max: 0.6 },
 
-	gui: true,
-
 };
 
 export { BlockflowSettings };

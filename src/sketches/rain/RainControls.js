@@ -44,11 +44,11 @@ class RainControls extends Controls {
 
 	tick( delta ) {
 
-		const { lerp } = Controls;
+		const { clamp, lerp } = Controls;
 		const { sketch, tracker } = this;
 		const { settings } = sketch;
 
-		const lerpSpeed = settings.lerpSpeed * delta;
+		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
 
 		this.cameraRig
 			.update( tracker.reversePolarizeX, tracker.y )

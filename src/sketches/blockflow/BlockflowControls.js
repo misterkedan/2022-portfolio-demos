@@ -3,10 +3,10 @@ import {
 	Mesh,
 	MeshBasicMaterial,
 	PlaneGeometry,
-	Raycaster
+	Raycaster,
+	Vector3,
 } from 'three';
 import { Controls } from 'keda/three/Controls';
-import { Vector3 } from 'three';
 
 class BlockflowControls extends Controls {
 
@@ -98,22 +98,23 @@ class BlockflowControls extends Controls {
 
 		const { sketch, tracker, cursor, raycaster } = this;
 		const { settings } = sketch;
-		const { lerp } = Controls;
+		const { clamp, lerp } = Controls;
 
 		// Raycaster
 
+		const cursorLerpSpeed = clamp( settings.cursor.lerpSpeed * delta, 0, 1 );
 		cursor.tracker.set( tracker.polarizeX, tracker.reversePolarizeY );
 		raycaster.setFromCamera( cursor.tracker, sketch.camera );
 		const intersection = raycaster.intersectObjects( [ this.hitbox ] )[ 0 ];
-		if ( intersection ) cursor.position.lerp(
-			intersection.point,
-			settings.cursor.lerpSpeed * delta
+		if ( intersection?.point ) cursor.position.lerp(
+			intersection?.point,
+			cursorLerpSpeed
 		);
 
 		// Tracker
 
 		const { uniforms } = sketch.shader;
-		const lerpSpeed = settings.lerpSpeed * delta;
+		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
 
 		this.amplitude = lerp( this.amplitude, tracker.reverseY, lerpSpeed );
 

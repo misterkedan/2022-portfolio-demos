@@ -83,6 +83,7 @@ class Controls {
 
 Controls.GUI = GUI;
 Controls.GUI_MINIFY_BREAKPOINT = 1000;
+Controls.clamp = MathUtils.clamp;
 Controls.lerp = MathUtils.lerp;
 
 export { Controls };

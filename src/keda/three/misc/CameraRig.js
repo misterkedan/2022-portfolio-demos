@@ -1,4 +1,5 @@
 import { Vector3 } from 'three';
+import { clamp } from 'three/src/math/MathUtils';
 
 class CameraRig {
 
@@ -37,7 +38,8 @@ class CameraRig {
 
 	tick( delta ) {
 
-		this.camera.position.lerp( this.target, this.speed * delta );
+		const lerpSpeed = clamp( this.speed * delta, 0, 1 );
+		this.camera.position.lerp( this.target, lerpSpeed );
 		this.camera.lookAt( this.lookAt );
 		return this;
 

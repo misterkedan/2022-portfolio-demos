@@ -1,6 +1,6 @@
 import { Controls } from 'keda/three/Controls';
 
-class HoloscanControls extends Controls {
+class NavscanControls extends Controls {
 
 	initCamera() {
 
@@ -34,10 +34,10 @@ class HoloscanControls extends Controls {
 
 	tick( delta ) {
 
-		const { lerp } = Controls;
+		const { clamp, lerp } = Controls;
 		const { sketch, tracker } = this;
 		const { settings } = sketch;
-		const lerpSpeed = settings.lerpSpeed * delta;
+		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
 
 		if ( this.cameraRigEnabled ) this.cameraRig
 			.update( tracker.reversePolarizeX, tracker.reverseY )
@@ -88,4 +88,4 @@ class HoloscanControls extends Controls {
 
 }
 
-export { HoloscanControls };
+export { NavscanControls };

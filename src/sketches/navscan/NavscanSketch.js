@@ -5,25 +5,23 @@ import {
 	LineSegments,
 	Vector3
 } from 'three';
-
 import { Sketch } from 'keda/three/Sketch';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
+import { NavscanControls } from './NavscanControls';
+import { NavscanSettings } from './NavscanSettings';
 
-import { HoloscanControls } from './HoloscanControls';
-import { HoloscanSettings } from './HoloscanSettings';
-
-class HoloscanSketch extends Sketch {
+class NavscanSketch extends Sketch {
 
 	constructor( settings = {} ) {
 
-		super( { defaults: HoloscanSettings, settings } );
+		super( { defaults: NavscanSettings, settings } );
 
 	}
 
 	init() {
 
-		super.init( HoloscanControls );
+		super.init( NavscanControls );
 
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
@@ -194,4 +192,4 @@ class HoloscanSketch extends Sketch {
 
 }
 
-export { HoloscanSketch };
+export { NavscanSketch };

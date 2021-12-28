@@ -1,5 +1,6 @@
 import {
 	BoxGeometry,
+	Color,
 	EdgesGeometry,
 	Float32BufferAttribute,
 	InstancedBufferAttribute,
@@ -8,14 +9,11 @@ import {
 	LineSegments,
 	PlaneGeometry
 } from 'three';
-
+import simplex3D from 'keda/glsl/simplex3D.glsl';
 import { Sketch } from 'keda/three/Sketch';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import simplex3D from 'keda/glsl/simplex3D.glsl';
-
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
-import { Color } from 'three';
 
 class BlockflowSketch extends Sketch {
 
