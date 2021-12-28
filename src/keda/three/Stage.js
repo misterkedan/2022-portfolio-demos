@@ -8,8 +8,8 @@ class Stage {
 		cameraNear = 0.1,
 		cameraFar = 1000,
 		cameraFov = 50,
-		cameraStart = { x: 10, y:10, z: 10 },
-		cameraLookAt = { x: 0, y:0, z: 0 },
+		cameraStart = { x: 10, y: 10, z: 10 },
+		cameraLookAt = { x: 0, y: 0, z: 0 },
 	} = {} ) {
 
 		this.scene = new Scene();
@@ -19,8 +19,10 @@ class Stage {
 		camera.near = cameraNear;
 		camera.far = cameraFar;
 		camera.fov = cameraFov;
-		camera.position.set( cameraStart.x, cameraStart.y, cameraStart.z );
-		camera.lookAt( cameraLookAt.x, cameraLookAt.y, cameraLookAt.z );
+		if ( cameraStart ) camera.position.set( cameraStart.x, cameraStart.y, cameraStart.z );
+		//console.log( camera.quaternion );
+		if ( cameraLookAt ) camera.lookAt( cameraLookAt.x, cameraLookAt.y, cameraLookAt.z );
+		//console.log( camera.quaternion );
 		this.camera = camera;
 
 	}

@@ -24,6 +24,8 @@ class LinearGradient extends Mesh {
 
 		super( geometry, material );
 
+		this.frustumCulled = false;
+
 	}
 
 	get angle() {
@@ -67,6 +69,7 @@ class LinearGradient extends Mesh {
 LinearGradient.shader =  {
 	depthWrite: false,
 	depthTest: false,
+
 	vertexShader: varyingUV,
 	fragmentShader: /*glsl*/`
 		uniform float uAngle;

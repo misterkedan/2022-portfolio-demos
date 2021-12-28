@@ -1,21 +1,24 @@
 import {
 	BufferGeometry,
+	Float32BufferAttribute,
 	Points,
 	PointsMaterial,
-	Vector3,
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
+import { CameraBounds } from 'keda/three/misc/CameraBounds';
+
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
-import { Float32BufferAttribute } from 'three';
-import { Vector2 } from 'three';
 
 class Ablaze extends Sketch {
 
 	constructor( settings = {} ) {
 
 		super( { defaults: AblazeSettings, settings } );
+
+		this.bounds = new CameraBounds( this.camera, true );
+		this.bounds.update();
 
 		this.time = 0;
 
@@ -33,37 +36,13 @@ class Ablaze extends Sketch {
 
 		const { random } = this;
 
-		const geometry = new BufferGeometry();
-
-		//const particleCount = 50000;
-		const particleCount = Math.ceil(
-			window.innerWidth * window.innerHeight * 0.03
-		);
-
-		console.log( particleCount );
+		const pixels = window.innerWidth * window.innerHeight;
+		const particleCount = Math.round( pixels * 0.04 );
+		if ( this.debug ) console.log( { particleCount } );
 
 		const positionsCount = particleCount * 3;
 		const positions = new Float32Array( positionsCount );
-
-		const unproject = ( x, y, z ) => new Vector3( x, y, z )
-			.unproject( this.camera );
-
-		const scale = 1;
-		const min = - scale;
-		const max = scale;
-
-		const leftBottom = unproject( min, min, max );
-		const left = leftBottom.x;
-		const bottom = leftBottom.y;
-
-		const rightTop = unproject( max, max, max );
-		const right = rightTop.x;
-		const top = rightTop.y;
-
-		const near = unproject( 0, 0, min ).z;
-		const far = unproject( 0, 0, max ).z;
-
-		this.bounds = { top, bottom, left, right, near, far };
+		const { left, right, top, bottom, near, far } = this.bounds;
 
 		for ( let i = 0; i < positionsCount; i += 3 ) {
 
@@ -73,6 +52,8 @@ class Ablaze extends Sketch {
 
 		}
 
+		const geometry = new BufferGeometry();
+
 		geometry.setAttribute(
 			'position',
 			new Float32BufferAttribute( positions, 3 )
@@ -81,17 +62,27 @@ class Ablaze extends Sketch {
 		this.shader = {
 			uniforms: {
 				uTime: { value: 0 },
-				uBoundsX: { value: new Vector2( left, right - left ) },
-				uBoundsY: { value: new Vector2( bottom, top - bottom ) },
-				uBoundsZ: { value: new Vector2( near, far - near ) },
+				uBoundsX: { value: this.bounds.x },
+				uBoundsY: { value: this.bounds.y },
+				uBoundsZ: { value: this.bounds.z },
 			},
 		};
 
-		const material = new PointsMaterial( { size: 0.007, color: '#ffff99' } );
+		const material = new PointsMaterial( {
+			size: 0.007,
+			color: '#ffff99',
+		} );
 		material.onBeforeCompile = this.editShader.bind( this );
 
 		const particles = new Points( geometry, material );
 		this.add( particles );
+
+		if ( ! this.bounds.fixedCamera ) {
+
+			particles.position.copy( this.camera.position );
+			particles.quaternion.copy( this.camera.quaternion );
+
+		}
 
 	}
 
@@ -104,7 +95,9 @@ class Ablaze extends Sketch {
 
 		const vertexDeclarations = /*glsl*/`
 			uniform float uTime;
+			uniform vec2 uBoundsX;
 			uniform vec2 uBoundsY;
+			uniform vec2 uBoundsZ;
 
 			float loopNumber( float number, float minimum, float change ) {
 
@@ -114,10 +107,20 @@ class Ablaze extends Sketch {
 		`;
 
 		const vertexChanges = /*glsl*/`
+			transformed.x = loopNumber( 
+				transformed.x, 
+				uBoundsX.x, 
+				uBoundsX.y
+			);
 			transformed.y = loopNumber( 
 				transformed.y - uTime, 
 				uBoundsY.x, 
 				uBoundsY.y
+			);
+			transformed.z = loopNumber( 
+				transformed.z, 
+				uBoundsZ.x, 
+				uBoundsZ.y
 			);
 		`;
 
@@ -136,10 +139,20 @@ class Ablaze extends Sketch {
 
 	}
 
+	resize( width, height, pixelRatio ) {
+
+		super.resize( width, height, pixelRatio );
+
+		this.bounds.needsUpdate = true;
+
+	}
+
 	tick( delta ) {
 
 		this.time += delta * 0.0005;
 		this.shader.uniforms.uTime.value = this.time;
+
+		if ( this.bounds.needsUpdate ) this.bounds.update();
 
 		super.tick( delta );
 

@@ -6,7 +6,7 @@ import { Ablaze } from './sketches/ablaze/Ablaze';
 
 const sketchpad = new Sketchpad( {
 	container: 'background',
-	//debug: true,
+	debug: true,
 	//fps: 240,
 	//fps: 2,
 	//fps: 0,

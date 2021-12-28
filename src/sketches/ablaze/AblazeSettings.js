@@ -8,8 +8,9 @@ const AblazeSettings = {
 	},
 
 	cameraStart: { x: 0, y: 0, z: 0 },
+
 	cameraNear: 1,
-	cameraFar: 3,
+	cameraFar: 4,
 	cameraRig: false,
 
 	random: true,
