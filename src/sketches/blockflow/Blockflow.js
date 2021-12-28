@@ -147,10 +147,6 @@ class Blockflow extends Sketch {
 			uniform vec3 uCursor;
 			varying float vHeight;
 			${simplex3D}
-			float integralSmoothstep( float x, float T ) {
-    			if( x>T ) return x - T/2.0;
-    			return x*x*x*(1.0-x*0.5/T)/T/T;
-			}
 		`;
 
 		const vertexChanges = /*glsl*/`
