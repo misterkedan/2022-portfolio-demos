@@ -11,7 +11,7 @@ import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { RainControls } from './RainControls';
 import { RainSettings } from './RainSettings';
 
-class RainSketch extends Sketch {
+class Rain extends Sketch {
 
 	constructor( settings = {} ) {
 
@@ -186,4 +186,4 @@ class RainSketch extends Sketch {
 
 }
 
-export { RainSketch };
+export { Rain };

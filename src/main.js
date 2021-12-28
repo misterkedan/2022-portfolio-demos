@@ -1,7 +1,7 @@
 import { Sketchpad } from 'keda/three/Sketchpad';
-import { RainSketch } from './sketches/rain/RainSketch';
-import { NavscanSketch } from './sketches/navscan/NavscanSketch';
-import { BlockflowSketch } from './sketches/blockflow/BlockflowSketch';
+import { Rain } from './sketches/rain/Rain';
+import { Navscan } from './sketches/navscan/Navscan';
+import { Blockflow } from './sketches/blockflow/Blockflow';
 
 const sketchpad = new Sketchpad( {
 	container: 'background',
@@ -13,9 +13,9 @@ const sketchpad = new Sketchpad( {
 
 const options = { sketchpad };
 const sketches = {
-	rain: () => new RainSketch( options ),
-	navscan: () => new NavscanSketch( options ),
-	blockflow: () => new BlockflowSketch( options ),
+	rain: () => new Rain( options ),
+	navscan: () => new Navscan( options ),
+	blockflow: () => new Blockflow( options ),
 };
 
 //const sketch = sketches.rain();

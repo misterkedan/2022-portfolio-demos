@@ -11,7 +11,7 @@ import simplex3D from 'keda/glsl/simplex3D.glsl';
 import { NavscanControls } from './NavscanControls';
 import { NavscanSettings } from './NavscanSettings';
 
-class NavscanSketch extends Sketch {
+class Navscan extends Sketch {
 
 	constructor( settings = {} ) {
 
@@ -192,4 +192,4 @@ class NavscanSketch extends Sketch {
 
 }
 
-export { NavscanSketch };
+export { Navscan };

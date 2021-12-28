@@ -15,7 +15,7 @@ import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
 
-class BlockflowSketch extends Sketch {
+class Blockflow extends Sketch {
 
 	constructor( settings = {} ) {
 
@@ -231,4 +231,4 @@ class BlockflowSketch extends Sketch {
 
 }
 
-export { BlockflowSketch };
+export { Blockflow };
