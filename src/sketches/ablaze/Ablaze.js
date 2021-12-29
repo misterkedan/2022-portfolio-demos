@@ -6,7 +6,6 @@ import {
 	InstancedBufferGeometry,
 	LineBasicMaterial,
 	LineSegments,
-	Vector2
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
@@ -17,6 +16,7 @@ import { AblazeSettings } from './AblazeSettings';
 import GPGPU_x_shader from './shaders/GPGPU_x.frag';
 import GPGPU_y_shader from './shaders/GPGPU_y.frag';
 import GPGPU_z_shader from './shaders/GPGPU_z.frag';
+import { CameraBounds } from '../../keda/three/misc/CameraBounds';
 
 class Ablaze extends Sketch {
 
@@ -24,11 +24,11 @@ class Ablaze extends Sketch {
 
 		super( { defaults: AblazeSettings, settings } );
 
-		this.bounds = {
-			x: new Vector2(),
-			y: new Vector2(),
-			z: new Vector2(),
-		};
+		this.bounds = new CameraBounds(
+			this.camera,
+			this.settings.particle.near,
+			this.settings.particle.far
+		);
 
 		this.time = 0;
 
@@ -69,7 +69,10 @@ class Ablaze extends Sketch {
 		const positionsZ = new Float32Array( particleCount );
 		const targets = new Float32Array( particleCount * 2 );
 
-		this.updateBounds();
+		this.bounds.update();
+
+		if ( this.debug ) console.log( this.bounds );
+
 		const { left, right, bottom, top, near, far } = this.bounds;
 
 		for ( let i = 0, j = 0; i < particleCount; i ++ ) {
@@ -186,39 +189,6 @@ class Ablaze extends Sketch {
 
 	}
 
-	updateBounds() {
-
-		const { settings } = this;
-
-		// Bounds
-
-		const far = settings.particle.size - settings.cameraFar;
-		const near = - settings.cameraNear - settings.particle.size;
-		const depth = Math.abs( far - near );
-
-		const height = this.stage.getVisibleHeight( far );
-		const width = height * this.camera.aspect;
-
-		const left = - width * 0.5;
-		const right = width * 0.5;
-		const top = height * 0.5;
-		const bottom = - height * 0.5;
-
-		Object.assign( this.bounds, {
-			left, right, width,
-			top, bottom, height,
-			near, far, depth,
-		} );
-
-		this.bounds.x.set( left, width );
-		this.bounds.y.set( bottom, height );
-		this.bounds.z.set( far, depth );
-
-		if ( this.debug ) console.log( this.bounds );
-		//this.boundsNeedsUpdate = false;
-
-	}
-
 	//resize( width, height, pixelRatio ) {
 
 	//	super.resize( width, height, pixelRatio );
@@ -233,7 +203,7 @@ class Ablaze extends Sketch {
 		this.shader.uniforms.GPGPU_y.value = this.gpgpu.y;
 		this.shader.uniforms.GPGPU_z.value = this.gpgpu.z;
 
-		//if ( this.boundsNeedsUpdate ) this.updateBounds();
+		//if ( this.boundsNeedsUpdate ) this.bounds.update();
 
 		super.tick( delta );
 
