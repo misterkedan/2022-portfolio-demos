@@ -7,7 +7,12 @@ const AblazeSettings = {
 		color2: '#eecc00',
 	},
 
-	cameraStart: { x: 0, y: 0, z: 0 },
+	particle: {
+		size: 0.008,
+	},
+
+	cameraStart: false,
+	cameraLookAt: false,
 
 	cameraNear: 1,
 	cameraFar: 4,

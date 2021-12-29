@@ -50,10 +50,11 @@ class GPGPU {
 
 	}
 
-	tick() {
+	tick( delta ) {
 
 		Object.entries( this.variables ).forEach( ( [ key, variable ] ) => {
 
+			if ( variable.uniforms.uDelta ) variable.uniforms.uDelta.value = delta;
 			variable.update();
 			this[ key ] = variable.output;
 
@@ -66,6 +67,7 @@ class GPGPU {
 		return this.variables[ variable ].uniforms[ uniform ].value;
 
 	}
+
 	setUniform( variable, uniform, value ) {
 
 		this.variables[ variable ].uniforms[ uniform ].value = value;

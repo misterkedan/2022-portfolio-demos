@@ -20,9 +20,7 @@ class Stage {
 		camera.far = cameraFar;
 		camera.fov = cameraFov;
 		if ( cameraStart ) camera.position.set( cameraStart.x, cameraStart.y, cameraStart.z );
-		//console.log( camera.quaternion );
 		if ( cameraLookAt ) camera.lookAt( cameraLookAt.x, cameraLookAt.y, cameraLookAt.z );
-		//console.log( camera.quaternion );
 		this.camera = camera;
 
 	}
