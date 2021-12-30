@@ -6,6 +6,7 @@ import {
 	InstancedBufferGeometry,
 	LineBasicMaterial,
 	LineSegments,
+	Uniform,
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
@@ -17,6 +18,7 @@ import GPGPU_x_shader from './shaders/GPGPU_x.frag';
 import GPGPU_y_shader from './shaders/GPGPU_y.frag';
 import GPGPU_z_shader from './shaders/GPGPU_z.frag';
 import { CameraBounds } from '../../keda/three/misc/CameraBounds';
+import { Vector2 } from 'three';
 
 class Ablaze extends Sketch {
 
@@ -114,28 +116,50 @@ class Ablaze extends Sketch {
 
 		// GPGPU
 
+		const curlEpsilon = 0.001;
+		this.curlEpsilon = new Vector2( curlEpsilon, curlEpsilon * 2 );
+
+		const curlSpeed = 0.05;
+		this.curlSpeed = new Uniform( curlSpeed );
+
+		const curlScale = 0.4;
+		this.curlScale = new Uniform( curlScale );
+
+		const uniformsXYZ = {
+			uCurlScale: this.curlScale,
+			uCurlSpeed: this.curlSpeed,
+			uDelta: { value: 0 },
+			uEpsilon: { value: this.curlEpsilon },
+		};
+
 		gpgpu.addVariable( 'x', {
 			data: positionsX,
 			shader: GPGPU_x_shader,
 			uniforms: {
-				uDelta: { value: 0 },
+				GPGPU_y: { value: null },
+				GPGPU_z: { value: null },
 				uBounds: { value: this.bounds.x },
+				...uniformsXYZ,
 			},
 		} );
 		gpgpu.addVariable( 'y', {
 			data: positionsY,
 			shader: GPGPU_y_shader,
 			uniforms: {
-				uDelta: { value: 0 },
+				GPGPU_x: { value: null },
+				GPGPU_z: { value: null },
 				uBounds: { value: this.bounds.y },
+				...uniformsXYZ,
 			},
 		} );
 		gpgpu.addVariable( 'z', {
 			data: positionsZ,
 			shader: GPGPU_z_shader,
 			uniforms: {
-				uDelta: { value: 0 },
+				GPGPU_x: { value: null },
+				GPGPU_y: { value: null },
 				uBounds: { value: this.bounds.z },
+				...uniformsXYZ,
 			},
 		} );
 
@@ -198,10 +222,18 @@ class Ablaze extends Sketch {
 
 	tick( delta ) {
 
-		this.gpgpu.tick( delta * 0.0001 );
+		this.gpgpu.tick( delta * 0.001 );
+
 		this.shader.uniforms.GPGPU_x.value = this.gpgpu.x;
 		this.shader.uniforms.GPGPU_y.value = this.gpgpu.y;
 		this.shader.uniforms.GPGPU_z.value = this.gpgpu.z;
+
+		this.gpgpu.setUniform( 'y', 'GPGPU_x', this.gpgpu.x );
+		this.gpgpu.setUniform( 'z', 'GPGPU_x', this.gpgpu.x );
+		this.gpgpu.setUniform( 'x', 'GPGPU_y', this.gpgpu.y );
+		this.gpgpu.setUniform( 'z', 'GPGPU_y', this.gpgpu.y );
+		this.gpgpu.setUniform( 'x', 'GPGPU_z', this.gpgpu.z );
+		this.gpgpu.setUniform( 'y', 'GPGPU_z', this.gpgpu.z );
 
 		//if ( this.boundsNeedsUpdate ) this.bounds.update();
 

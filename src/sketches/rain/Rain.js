@@ -10,6 +10,7 @@ import { Sketch } from 'keda/three/Sketch';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { RainControls } from './RainControls';
 import { RainSettings } from './RainSettings';
+import { CameraBounds } from '../../keda/three/misc/CameraBounds';
 
 class Rain extends Sketch {
 
@@ -133,7 +134,10 @@ class Rain extends Sketch {
 			? Math.round( this.settings.instances * aspect )
 			: this.settings.instances;
 
-		this.width = this.stage.getVisibleWidth( this.settings.originZ );
+		this.width = CameraBounds.getVisibleWidth(
+			this.camera,
+			this.settings.originZ
+		);
 		this.depth = this.width * this.settings.ratio / aspect;
 
 	}

@@ -1,17 +1,19 @@
-import { Vector2 } from 'three';
+import { Vector3 } from 'three';
 
 class CameraBounds {
 
 	constructor( camera, near, far ) {
+
+		if ( ! far ) far = near;
 
 		this.camera = camera;
 		this.near = near;
 		this.far = far;
 		this.depth = Math.abs( far - near );
 
-		this.x = new Vector2();
-		this.y = new Vector2();
-		this.z = new Vector2();
+		this.x = new Vector3();
+		this.y = new Vector3();
+		this.z = new Vector3();
 
 	}
 
@@ -27,33 +29,48 @@ class CameraBounds {
 		this.top = height * 0.5;
 		this.bottom = - height * 0.5;
 
-		this.x.set( this.left, width );
-		this.y.set( this.bottom, height );
-		this.z.set( this.far, this.depth );
+		this.x.set( this.left, this.right, this.width );
+		this.y.set( this.bottom, this.top, this.height );
+		this.z.set( this.far, this.near, this.depth );
 
 		this.needsUpdate = false;
 
 	}
 
-	// https://discourse.threejs.org/t/functions-to-calculate-the-visible-width-height-at-a-given-z-depth-from-a-perspective-camera/269
+	getVisibleHeight( z ) {
 
-	getVisibleHeight( depth = 0 ) {
-
-		const cameraDepth = this.camera.position.z;
-		const offset = ( depth < cameraDepth ) ? - cameraDepth : cameraDepth;
-		depth += offset;
-
-		const verticalFOV = this.camera.fov * Math.PI / 180;
-		return 2 * Math.tan( verticalFOV / 2 ) * Math.abs( depth );
+		return CameraBounds.getVisibleHeight( this.camera, z );
 
 	}
 
-	getVisibleWidth( depth = 0 ) {
+	getVisibleWidth( z ) {
 
-		return this.getVisibleHeight( depth ) * this.camera.aspect;
+		return CameraBounds.getVisibleWidth( this.camera, z );
 
 	}
 
 }
+
+// https://discourse.threejs.org/t/functions-to-calculate-the-visible-width-height-at-a-given-z-depth-from-a-perspective-camera/269
+
+CameraBounds.getVisibleHeight = ( camera, z ) => {
+
+	const cameraZ = camera.position.z;
+	if ( z === undefined ) z = cameraZ;
+
+	const offset = ( z < cameraZ ) ? - cameraZ : cameraZ;
+	z += offset;
+
+	const verticalFOV = camera.fov * Math.PI / 180;
+	return 2 * Math.tan( verticalFOV / 2 ) * Math.abs( z );
+
+};
+
+CameraBounds.getVisibleWidth = ( camera, z ) => {
+
+	return CameraBounds.getVisibleHeight( camera, z ) * camera.aspect;
+
+};
+
 
 export { CameraBounds };
