@@ -6,6 +6,8 @@ class AblazeControls extends Controls {
 
 		super( sketch, { cameraRig: false } );
 
+		this.tracker.x = 1;
+
 	}
 
 	tick() {

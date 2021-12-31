@@ -51,7 +51,7 @@ void main() {
 	
 	// Write
 
-	float noise = mix( curl, wind, 0.3 ) + uWind.x;
+	float noise = mix( curl, wind, 0.38 ) + uWind.x;
 	x = mix( x, x + noise, uDelta );
 	x = loopValue( x, uBounds.x, uBounds.z );
 

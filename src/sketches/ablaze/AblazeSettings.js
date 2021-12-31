@@ -3,13 +3,13 @@ const AblazeSettings = {
 	name: 'Ablaze',
 
 	background: {
-		color1: '#702000',
-		color2: '#dd6000',
+		color1: '#aa0022',
+		color2: '#dd5500',
 	},
 
 	colorTop:  '#ffff99',
 	material: {
-		color: '#ff6600',
+		color: '#ffaa00',
 		opacity: 0.9,
 		transparent: true,
 	},
@@ -36,8 +36,8 @@ const AblazeSettings = {
 
 	bloom: {
 		strength: 0.4,
-		radius: 0.3,
-		threshold: 0.1,
+		radius: 0.4,
+		threshold: 0.45,
 	},
 
 	random: true,

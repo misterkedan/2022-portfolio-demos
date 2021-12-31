@@ -59,9 +59,9 @@ class Ablaze extends Sketch {
 
 		// Base geometry
 
-		const triangle = new CircleGeometry( settings.particle.size, 0 );
-		triangle.rotateZ( Math.PI / 2 );
-		const edges = new EdgesGeometry( triangle );
+		const shape = new CircleGeometry( settings.particle.size, 3 );
+		shape.rotateZ( Math.PI / 2 );
+		const edges = new EdgesGeometry( shape );
 
 		// Instanced Geometry
 
@@ -72,6 +72,7 @@ class Ablaze extends Sketch {
 		const positionsY = new Float32Array( particleCount );
 		const positionsZ = new Float32Array( particleCount );
 		const targets = new Float32Array( particleCount * 2 );
+		const noises = new Float32Array( particleCount );
 
 		this.bounds.update();
 		const { left, right, bottom, top, near, far } = this.bounds;
@@ -85,6 +86,8 @@ class Ablaze extends Sketch {
 			targets[ j ++ ] = ( i % textureSize ) / textureSize;
 			targets[ j ++ ] = ~ ~ ( i / textureSize ) / textureSize;
 
+			noises[ i ] = random.noise();
+
 		}
 
 		const geometry = new InstancedBufferGeometry();
@@ -97,19 +100,24 @@ class Ablaze extends Sketch {
 			'GPGPU_target',
 			new InstancedBufferAttribute( targets, 2 )
 		);
+		geometry.setAttribute(
+			'aNoise',
+			new InstancedBufferAttribute( noises, 1 )
+		);
 
 		// Material
 
 		const material = new LineBasicMaterial( settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
 
-		// Particles
+		// Complete
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
 		this.add( particles );
 
-		// GPGPU
+		shape.dispose();
+		edges.dispose();
 
 		this.initGPGPU( particleCount, positionsX, positionsY, positionsZ );
 
@@ -175,6 +183,7 @@ class Ablaze extends Sketch {
 
 		this.shader = {
 			uniforms: {
+				uTime: this.time,
 				GPGPU_x: { value: gpgpu.x },
 				GPGPU_y: { value: gpgpu.y },
 				GPGPU_z: { value: gpgpu.z },
@@ -195,10 +204,24 @@ class Ablaze extends Sketch {
 			uniform sampler2D GPGPU_x;
 			uniform sampler2D GPGPU_y;
 			uniform sampler2D GPGPU_z;
+
+			attribute float aNoise;
+			uniform float uTime;
+
 			${ GPGPU.FloatPack.glsl }
+
+			mat3 rotateZ( float angle ) {
+				return mat3(
+					vec3(   cos(angle),   -sin(angle),     0.0   ),
+					vec3(   sin(angle),    cos(angle),     0.0   ),
+					vec3(   0.0,           0.0,            1.0   )
+				);
+			}
 		`;
 
 		const vertexChanges = /*glsl*/`
+			transformed *= rotateZ( uTime * 80.0 * aNoise );
+
 			transformed.x += unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
 			transformed.y += unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
 			transformed.z += unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
