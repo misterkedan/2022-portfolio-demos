@@ -7,6 +7,7 @@ import {
 	LineBasicMaterial,
 	LineSegments,
 	Uniform,
+	Vector3,
 } from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
@@ -33,6 +34,7 @@ class Ablaze extends Sketch {
 		);
 
 		this.time = 0;
+		this.wind = new Vector3();
 
 	}
 
@@ -122,7 +124,7 @@ class Ablaze extends Sketch {
 		const curlSpeed = 0.05;
 		this.curlSpeed = new Uniform( curlSpeed );
 
-		const curlScale = 0.4;
+		const curlScale = 0.3;
 		this.curlScale = new Uniform( curlScale );
 
 		const uniformsXYZ = {
@@ -130,6 +132,7 @@ class Ablaze extends Sketch {
 			uCurlSpeed: this.curlSpeed,
 			uDelta: { value: 0 },
 			uEpsilon: { value: this.curlEpsilon },
+			uWind: { value: this.wind },
 		};
 
 		gpgpu.addVariable( 'x', {
@@ -222,7 +225,7 @@ class Ablaze extends Sketch {
 
 	tick( delta ) {
 
-		this.gpgpu.tick( delta * 0.001 );
+		this.gpgpu.tick( delta * 0.0005 );
 
 		this.shader.uniforms.GPGPU_x.value = this.gpgpu.x;
 		this.shader.uniforms.GPGPU_y.value = this.gpgpu.y;

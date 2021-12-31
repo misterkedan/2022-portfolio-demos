@@ -11,8 +11,9 @@ uniform sampler2D GPGPU_z;
 uniform float uCurlScale;
 uniform float uCurlSpeed;
 uniform float uDelta;
-uniform vec3 uBounds;
 uniform vec2 uEpsilon;
+uniform vec3 uBounds;
+uniform vec3 uWind;
 ${ FloatPack.glsl }
 ${ loopValue }
 ${ simplex3D }
@@ -46,7 +47,7 @@ void main() {
 
 	// Write
 
-	y = mix( y, y + curlY * uCurlSpeed, uDelta ) + 0.004;
+	y = mix( y, y + curlY * uCurlSpeed + uWind.y, uDelta );
 	y = loopValue( y, uBounds.x, uBounds.z );
 
 	gl_FragColor = packFloat( y );

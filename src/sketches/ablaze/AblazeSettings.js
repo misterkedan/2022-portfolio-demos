@@ -10,8 +10,8 @@ const AblazeSettings = {
 	particle: {
 		size: 0.008,
 
-		near: - 2,
-		far: - 5,
+		near: - 1,
+		far: - 3,
 	},
 
 	cameraStart: false,
