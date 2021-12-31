@@ -3,21 +3,22 @@ const AblazeSettings = {
 	name: 'Ablaze',
 
 	background: {
-		color1: '#dd2200',
-		color2: '#eecc00',
+		color1: '#702000',
+		color2: '#dd6000',
 	},
 
+	colorTop:  '#ffff99',
 	material: {
-		color: '#ffff99',
+		color: '#ff6600',
 		opacity: 0.9,
 		transparent: true,
 	},
 
 	particle: {
 		count: 10000,
-		size: 0.012,
+		size: 0.02,
 		near: - 2,
-		far: - 4,
+		far: - 5,
 	},
 
 	curl: {
@@ -32,6 +33,12 @@ const AblazeSettings = {
 	cameraStart: false,
 	cameraLookAt: false,
 	cameraRig: false,
+
+	bloom: {
+		strength: 0.4,
+		radius: 0.3,
+		threshold: 0.1,
+	},
 
 	random: true,
 

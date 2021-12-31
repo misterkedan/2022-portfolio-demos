@@ -13,6 +13,7 @@ import {
 import { Sketch } from 'keda/three/Sketch';
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 import { CameraBounds } from 'keda/three/misc/CameraBounds';
+import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
@@ -40,6 +41,8 @@ class Ablaze extends Sketch {
 	init() {
 
 		super.init();
+
+		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
 		this.controls = new AblazeControls( this );
 
