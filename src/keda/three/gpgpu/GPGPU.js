@@ -50,11 +50,10 @@ class GPGPU {
 
 	}
 
-	tick( delta ) {
+	tick() {
 
 		Object.entries( this.variables ).forEach( ( [ key, variable ] ) => {
 
-			if ( variable.uniforms.uDelta ) variable.uniforms.uDelta.value = delta;
 			variable.update();
 			this[ key ] = variable.output;
 

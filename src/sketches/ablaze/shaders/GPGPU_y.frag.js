@@ -3,15 +3,13 @@ import loopValue from 'keda/glsl/loopValue.glsl';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
 
 export default /*glsl*/`
-precision highp float;
-
 uniform sampler2D GPGPU_x;
 uniform sampler2D GPGPU_y;
 uniform sampler2D GPGPU_z;
 uniform float uCurlScale;
 uniform float uCurlSpeed;
 uniform float uDelta;
-uniform vec2 uEpsilon;
+uniform float uEpsilon;
 uniform vec3 uBounds;
 uniform vec3 uWind;
 ${ FloatPack.glsl }
@@ -29,25 +27,24 @@ void main() {
 
 	// Curl
 
-	float epsilon = uEpsilon.x;
-	float epsilon2 = uEpsilon.y;
 	float scaledX = x * uCurlScale;
 	float scaledY = y * uCurlScale;
 	float scaledZ = z * uCurlScale;
 
-	float noiseZ1 = simplex3D( scaledX, scaledY, scaledZ + epsilon );
-	float noiseZ2 = simplex3D( scaledX, scaledY, scaledZ - epsilon );
-	float averageZ = ( noiseZ1 - noiseZ2 ) / epsilon2;
+	float noiseZ1 = simplex3D( scaledX, scaledY, scaledZ + uEpsilon );
+	float noiseZ2 = simplex3D( scaledX, scaledY, scaledZ - uEpsilon );
+	float noiseZ = noiseZ1 - noiseZ2;
 
-	float noiseX1 = simplex3D( scaledX + epsilon, scaledY, scaledZ );
-	float noiseX2 = simplex3D( scaledX - epsilon, scaledY, scaledZ );
-	float averageX = ( noiseX1 - noiseX2 ) / epsilon2;
+	float noiseX1 = simplex3D( scaledX + uEpsilon, scaledY, scaledZ );
+	float noiseX2 = simplex3D( scaledX - uEpsilon, scaledY, scaledZ );
+	float noiseX = noiseX1 - noiseX2;
 
-	float curlY = averageZ - averageX;
+	float curl = ( noiseZ - noiseX ) * uCurlSpeed;
 
-	// Write
+	// Wind
 
-	y = mix( y, y + curlY * uCurlSpeed + uWind.y, uDelta );
+	float noise = mix( curl, uWind.y, 0.8 ) + uWind.y;
+	y = mix( y, y + noise, uDelta );
 	y = loopValue( y, uBounds.x, uBounds.z );
 
 	gl_FragColor = packFloat( y );

@@ -12,14 +12,13 @@ import {
 
 import { Sketch } from 'keda/three/Sketch';
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
+import { CameraBounds } from 'keda/three/misc/CameraBounds';
 
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
 import GPGPU_x_shader from './shaders/GPGPU_x.frag';
 import GPGPU_y_shader from './shaders/GPGPU_y.frag';
 import GPGPU_z_shader from './shaders/GPGPU_z.frag';
-import { CameraBounds } from '../../keda/three/misc/CameraBounds';
-import { Vector2 } from 'three';
 
 class Ablaze extends Sketch {
 
@@ -50,22 +49,20 @@ class Ablaze extends Sketch {
 
 		const { random, settings } = this;
 
-		const pixels = window.innerWidth * window.innerHeight;
-		const particleCount = Math.round( pixels * 0.01 );
-		//const particleCount = 1000;
+		const particleCount = Math.round(
+			settings.particle.count * this.camera.aspect
+		);
 		if ( this.debug ) console.log( { particleCount } );
 
 		// Base geometry
 
-		const disc = new CircleGeometry( settings.particle.size, 0 );
-		disc.rotateZ( Math.PI / 2 );
-		const edges = new EdgesGeometry( disc );
+		const triangle = new CircleGeometry( settings.particle.size, 0 );
+		triangle.rotateZ( Math.PI / 2 );
+		const edges = new EdgesGeometry( triangle );
 
 		// Instanced Geometry
 
-		GPGPU.init( this.sketchpad.renderer );
-		const gpgpu = new GPGPU( particleCount );
-		const { textureSize } = gpgpu;
+		const textureSize = GPGPU.getTextureSize( particleCount );
 
 		const positions = new Float32Array( edges.attributes.position.array );
 		const positionsX = new Float32Array( particleCount );
@@ -74,9 +71,6 @@ class Ablaze extends Sketch {
 		const targets = new Float32Array( particleCount * 2 );
 
 		this.bounds.update();
-
-		if ( this.debug ) console.log( this.bounds );
-
 		const { left, right, bottom, top, near, far } = this.bounds;
 
 		for ( let i = 0, j = 0; i < particleCount; i ++ ) {
@@ -103,35 +97,43 @@ class Ablaze extends Sketch {
 
 		// Material
 
-		const material = new LineBasicMaterial( {
-			color: '#ffff99',
-		} );
+		const material = new LineBasicMaterial( settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
 
 		// Particles
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
-		//particles.position.copy( this.camera.position );
-		//particles.quaternion.copy( this.camera.quaternion );
 		this.add( particles );
 
 		// GPGPU
 
-		const curlEpsilon = 0.001;
-		this.curlEpsilon = new Vector2( curlEpsilon, curlEpsilon * 2 );
+		this.initGPGPU( particleCount, positionsX, positionsY, positionsZ );
 
-		const curlSpeed = 0.05;
-		this.curlSpeed = new Uniform( curlSpeed );
+	}
 
-		const curlScale = 0.3;
-		this.curlScale = new Uniform( curlScale );
+	initGPGPU( particleCount, positionsX, positionsY, positionsZ ) {
+
+		GPGPU.init( this.sketchpad.renderer );
+
+		const gpgpu = new GPGPU( particleCount );
+		this.gpgpu = gpgpu;
+
+		// GPGPU
+
+		const { epsilon, speed, scale } = this.settings.curl;
+		this.curlEpsilon = new Uniform( epsilon );
+		this.curlScale = new Uniform( scale );
+		this.curlSpeed = new Uniform( speed / ( epsilon * 2 ) );
+		this.delta = new Uniform( 0 );
+		this.time = new Uniform( 0 );
 
 		const uniformsXYZ = {
+			uEpsilon: this.curlEpsilon,
 			uCurlScale: this.curlScale,
 			uCurlSpeed: this.curlSpeed,
-			uDelta: { value: 0 },
-			uEpsilon: { value: this.curlEpsilon },
+			uDelta: this.delta,
+			uTime: this.time,
 			uWind: { value: this.wind },
 		};
 
@@ -145,6 +147,7 @@ class Ablaze extends Sketch {
 				...uniformsXYZ,
 			},
 		} );
+
 		gpgpu.addVariable( 'y', {
 			data: positionsY,
 			shader: GPGPU_y_shader,
@@ -155,6 +158,7 @@ class Ablaze extends Sketch {
 				...uniformsXYZ,
 			},
 		} );
+
 		gpgpu.addVariable( 'z', {
 			data: positionsZ,
 			shader: GPGPU_z_shader,
@@ -165,8 +169,6 @@ class Ablaze extends Sketch {
 				...uniformsXYZ,
 			},
 		} );
-
-		this.gpgpu = gpgpu;
 
 		this.shader = {
 			uniforms: {
@@ -216,29 +218,25 @@ class Ablaze extends Sketch {
 
 	}
 
-	//resize( width, height, pixelRatio ) {
+	tick( delta, time ) {
 
-	//	super.resize( width, height, pixelRatio );
-	//	this.boundsNeedsUpdate = true;
+		const { settings, gpgpu, shader } = this;
 
-	//}
+		this.delta.value = delta * settings.speed;
+		this.time.value = time * settings.speed * settings.timeFactor;
 
-	tick( delta ) {
+		gpgpu.tick();
 
-		this.gpgpu.tick( delta * 0.0005 );
+		shader.uniforms.GPGPU_x.value = gpgpu.x;
+		shader.uniforms.GPGPU_y.value = gpgpu.y;
+		shader.uniforms.GPGPU_z.value = gpgpu.z;
 
-		this.shader.uniforms.GPGPU_x.value = this.gpgpu.x;
-		this.shader.uniforms.GPGPU_y.value = this.gpgpu.y;
-		this.shader.uniforms.GPGPU_z.value = this.gpgpu.z;
-
-		this.gpgpu.setUniform( 'y', 'GPGPU_x', this.gpgpu.x );
-		this.gpgpu.setUniform( 'z', 'GPGPU_x', this.gpgpu.x );
-		this.gpgpu.setUniform( 'x', 'GPGPU_y', this.gpgpu.y );
-		this.gpgpu.setUniform( 'z', 'GPGPU_y', this.gpgpu.y );
-		this.gpgpu.setUniform( 'x', 'GPGPU_z', this.gpgpu.z );
-		this.gpgpu.setUniform( 'y', 'GPGPU_z', this.gpgpu.z );
-
-		//if ( this.boundsNeedsUpdate ) this.bounds.update();
+		gpgpu.setUniform( 'y', 'GPGPU_x', gpgpu.x );
+		gpgpu.setUniform( 'z', 'GPGPU_x', gpgpu.x );
+		gpgpu.setUniform( 'x', 'GPGPU_y', gpgpu.y );
+		gpgpu.setUniform( 'z', 'GPGPU_y', gpgpu.y );
+		gpgpu.setUniform( 'x', 'GPGPU_z', gpgpu.z );
+		gpgpu.setUniform( 'y', 'GPGPU_z', gpgpu.z );
 
 		super.tick( delta );
 
