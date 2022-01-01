@@ -6,6 +6,7 @@ import {
 	InstancedBufferGeometry,
 	LineBasicMaterial,
 	LineSegments,
+	MathUtils,
 	Uniform,
 	Vector3,
 } from 'three';
@@ -52,10 +53,8 @@ class Ablaze extends Sketch {
 
 		const { random, settings } = this;
 
-		const particleCount = Math.round(
-			settings.particle.count * this.camera.aspect
-		);
-		if ( this.debug ) console.log( { particleCount } );
+		const textureSize = 128;
+		const particleCount = textureSize * textureSize;
 
 		// Base geometry
 
@@ -64,8 +63,6 @@ class Ablaze extends Sketch {
 		const edges = new EdgesGeometry( shape );
 
 		// Instanced Geometry
-
-		const textureSize = GPGPU.getTextureSize( particleCount );
 
 		const positions = new Float32Array( edges.attributes.position.array );
 		const positionsX = new Float32Array( particleCount );
@@ -91,7 +88,7 @@ class Ablaze extends Sketch {
 		}
 
 		const geometry = new InstancedBufferGeometry();
-		geometry.instanceCount = particleCount;
+
 		geometry.setAttribute(
 			'position',
 			new Float32BufferAttribute( positions, 3 )
@@ -114,20 +111,25 @@ class Ablaze extends Sketch {
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
+		this.particles = particles;
 		this.add( particles );
+
+		this.particleCountMax = particleCount;
+		this.particleCountMin = Math.round( particleCount * 0.1 );
+		this.updateInstanceCount();
 
 		shape.dispose();
 		edges.dispose();
 
-		this.initGPGPU( particleCount, positionsX, positionsY, positionsZ );
+		this.initGPGPU( positionsX, positionsY, positionsZ );
 
 	}
 
-	initGPGPU( particleCount, positionsX, positionsY, positionsZ ) {
+	initGPGPU( positionsX, positionsY, positionsZ ) {
 
 		GPGPU.init( this.sketchpad.renderer );
 
-		const gpgpu = new GPGPU( particleCount );
+		const gpgpu = new GPGPU( this.particleCountMax );
 		this.gpgpu = gpgpu;
 
 		// GPGPU
@@ -241,6 +243,27 @@ class Ablaze extends Sketch {
 		Object.assign( shader.uniforms, this.shader.uniforms );
 
 		this.shader = shader;
+
+	}
+
+	updateInstanceCount() {
+
+		const instanceCount = Math.floor( MathUtils.clamp(
+			this.settings.particle.count * this.camera.aspect,
+			this.particleCountMin,
+			this.particleCountMax
+		) );
+		this.particles.geometry.instanceCount = instanceCount;
+
+	}
+
+	resize( width, height, pixelRatio ) {
+
+		super.resize( width, height, pixelRatio );
+
+		if ( ! this.particles ) return;
+		this.bounds.update();
+		this.updateInstanceCount();
 
 	}
 
