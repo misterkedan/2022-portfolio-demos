@@ -1,5 +1,6 @@
 import {
 	CircleGeometry,
+	Color,
 	EdgesGeometry,
 	Float32BufferAttribute,
 	InstancedBufferAttribute,
@@ -7,22 +8,23 @@ import {
 	LineBasicMaterial,
 	LineSegments,
 	MathUtils,
+	Mesh,
+	MeshBasicMaterial,
 	Uniform,
 	Vector3,
 } from 'three';
 
-import { Sketch } from 'keda/three/Sketch';
-import { GPGPU } from 'keda/three/gpgpu/GPGPU';
-import { CameraBounds } from 'keda/three/misc/CameraBounds';
+import rotateZ from 'keda/glsl/transform/rotateZ.glsl';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
+import { CameraBounds } from 'keda/three/misc/CameraBounds';
+import { GPGPU } from 'keda/three/gpgpu/GPGPU';
+import { Sketch } from 'keda/three/Sketch';
 
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
 import GPGPU_x_shader from './shaders/GPGPU_x.frag';
 import GPGPU_y_shader from './shaders/GPGPU_y.frag';
 import GPGPU_z_shader from './shaders/GPGPU_z.frag';
-import { MeshBasicMaterial } from 'three';
-import { Mesh } from 'three';
 
 class Ablaze extends Sketch {
 
@@ -60,7 +62,7 @@ class Ablaze extends Sketch {
 		const discGeometry = new CircleGeometry( 0.5, 64 );
 		const discMaterial = new MeshBasicMaterial( {
 			color: 0,
-			opacity: 0.04,
+			opacity: 0.05,
 			transparent: true,
 		} );
 		const disc = new Mesh( discGeometry, discMaterial );
@@ -208,6 +210,8 @@ class Ablaze extends Sketch {
 		this.shader = {
 			uniforms: {
 				uTime: this.time,
+				uBounds: { value: this.bounds.y },
+				uColorTop: { value: new Color( this.settings.colorTop ) },
 				GPGPU_x: { value: gpgpu.x },
 				GPGPU_y: { value: gpgpu.y },
 				GPGPU_z: { value: gpgpu.z },
@@ -218,8 +222,11 @@ class Ablaze extends Sketch {
 
 	editShader( shader ) {
 
+		// THREE tokens ( r135 )
+
 		const common = '#include <common>';
 		const beginVertex = '#include <begin_vertex>';
+		const diffuseColor = 'vec4 diffuseColor = vec4( diffuse, opacity )';
 
 		// Vertex
 
@@ -230,24 +237,37 @@ class Ablaze extends Sketch {
 			uniform sampler2D GPGPU_z;
 
 			attribute float aNoise;
+			uniform vec3 uBounds;
 			uniform float uTime;
+			varying float vAltitude;
 
 			${ GPGPU.FloatPack.glsl }
 
-			mat3 rotateZ( float angle ) {
-				return mat3(
-					vec3(   cos(angle),   -sin(angle),     0.0   ),
-					vec3(   sin(angle),    cos(angle),     0.0   ),
-					vec3(   0.0,           0.0,            1.0   )
-				);
-			}
+			${ rotateZ }
+		`;
+		const vertexChanges = /*glsl*/`
+			float translateX = unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
+			float translateY = unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
+			float translateZ = unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
+
+			vAltitude = mix( 1.0, 0.0, ( translateY - uBounds.x ) / uBounds.z );
+			
+			float scale = mix( 0.3, 1.0, vAltitude * mix( 0.1, 1.0, aNoise) );
+			mat3 rotation = rotateZ( uTime * 90.0 * aNoise );
+			
+			transformed *= scale * rotation;
+			transformed += vec3( translateX, translateY, translateZ );
 		`;
 
-		const vertexChanges = /*glsl*/`
-			transformed *= rotateZ( uTime * 90.0 * aNoise );
-			transformed.x += unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
-			transformed.y += unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
-			transformed.z += unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
+		const fragmentDeclarations = /*glsl*/`
+			uniform vec3 uColorTop;
+			varying float vAltitude;
+		`;
+		const fragmentChanges = /*glsl*/`
+			vec4 diffuseColor = vec4( 
+				mix( uColorTop, diffuse, vAltitude ), 
+				opacity
+			);
 		`;
 
 		// Apply
@@ -259,6 +279,14 @@ class Ablaze extends Sketch {
 		shader.vertexShader = shader.vertexShader.replace(
 			beginVertex,
 			beginVertex + vertexChanges
+		);
+		shader.fragmentShader = shader.fragmentShader.replace(
+			common,
+			common + fragmentDeclarations
+		);
+		shader.fragmentShader = shader.fragmentShader.replace(
+			diffuseColor,
+			fragmentChanges
 		);
 
 		Object.assign( shader.uniforms, this.shader.uniforms );

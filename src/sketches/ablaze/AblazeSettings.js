@@ -7,7 +7,7 @@ const AblazeSettings = {
 		color2: '#dd5500',
 	},
 
-	colorTop:  '#ffff99',
+	colorTop:  '#cc6600',
 	material: {
 		color: '#ffaa00',
 		opacity: 0.9,
@@ -16,7 +16,7 @@ const AblazeSettings = {
 
 	particle: {
 		count: 10000,
-		size: 0.02,
+		size: 0.04,
 		near: - 2,
 		far: - 5,
 	},
