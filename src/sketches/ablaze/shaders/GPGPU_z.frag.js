@@ -45,14 +45,7 @@ void main() {
 
 	float noise = curl * uWind.z;
 	z = mix( z, z + noise, uDelta );
-	z = ( z < uBounds.x ) 
-		? uBounds.x + abs( uBounds.x - z )
-		: z;
-	z = ( z > uBounds.y ) 
-		? uBounds.y - abs( z - uBounds.y )
-		: z;
-
-	
+	z = clamp( z, uBounds.x, uBounds.y );
 
 	gl_FragColor = packFloat( z );
 

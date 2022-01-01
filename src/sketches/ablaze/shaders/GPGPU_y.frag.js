@@ -43,7 +43,7 @@ void main() {
 
 	// Wind
 
-	float noise = mix( curl, uWind.y, 0.8 ) + uWind.y;
+	float noise = mix( curl, uWind.y, 0.77 ) + uWind.y;
 	y = mix( y, y + noise, uDelta );
 	y = loopValue( y, uBounds.x, uBounds.z );
 

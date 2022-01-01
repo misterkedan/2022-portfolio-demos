@@ -7,16 +7,30 @@ class AblazeControls extends Controls {
 		super( sketch, { cameraRig: false } );
 
 		this.tracker.x = 1;
+		this.orientation = 1;
+		this.intensity = 0.5;
 
 	}
 
-	tick() {
+	tick( delta ) {
 
 		if ( ! this.trackerEnabled ) return;
 
-		this.sketch.wind.x = this.tracker.polarizeX * 0.7;
-		this.sketch.wind.y = 0.2 + this.tracker.reverseY * 0.3;
-		this.sketch.wind.z = this.tracker.polarizeY;
+		const { clamp, lerp } = Controls;
+		const { sketch, tracker } = this;
+		const { settings } = sketch;
+
+		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
+
+		this.orientation = lerp( this.orientation, tracker.polarizeX, lerpSpeed );
+		this.intensity = lerp( this.intensity, tracker.reverseY, lerpSpeed );
+
+		this.sketch.wind.x = this.orientation * 0.7;
+		this.sketch.wind.y = lerp( 0.2, 0.5, this.intensity );
+		this.sketch.wind.z = lerp( - 4, 4, this.intensity );
+
+		this.sketch.curlSpeed.value = lerp( 60, 10, this.intensity );
+
 
 	}
 

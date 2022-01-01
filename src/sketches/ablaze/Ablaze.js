@@ -59,20 +59,19 @@ class Ablaze extends Sketch {
 
 		// Disc
 
-		const discGeometry = new CircleGeometry( 0.5, 64 );
-		const discMaterial = new MeshBasicMaterial( {
-			color: 0,
-			opacity: 0.05,
-			transparent: true,
-		} );
+		const discGeometry = new CircleGeometry(
+			settings.disc.size,
+			settings.disc.segments
+		);
+		const discMaterial = new MeshBasicMaterial( settings.disc.fill );
 		const disc = new Mesh( discGeometry, discMaterial );
-		disc.position.z = settings.particle.near - 1;
+		disc.position.z = settings.particle.near + settings.disc.offset;
 		this.add( disc );
 
 		const circleGeometry = new EdgesGeometry( discGeometry );
 		const circleMaterial = new LineBasicMaterial( {
-			...settings.material,
-			opacity: 0.1,
+			...settings.particle.material,
+			...settings.disc.stroke,
 		} );
 		const circle = new LineSegments(
 			circleGeometry,
@@ -83,8 +82,8 @@ class Ablaze extends Sketch {
 
 		// Particle Geometry
 
-		const textureSize = 128;
-		const particleCount = textureSize * textureSize;
+		const { GPGPUTextureSize } = settings;
+		const particleCount = GPGPUTextureSize * GPGPUTextureSize;
 
 		const shape = new CircleGeometry( settings.particle.size, 3 );
 		shape.rotateZ( Math.PI / 2 );
@@ -106,8 +105,8 @@ class Ablaze extends Sketch {
 			positionsY[ i ] = random.number( bottom, top );
 			positionsZ[ i ] = random.number( near, far );
 
-			targets[ j ++ ] = ( i % textureSize ) / textureSize;
-			targets[ j ++ ] = ~ ~ ( i / textureSize ) / textureSize;
+			targets[ j ++ ] = ( i % GPGPUTextureSize ) / GPGPUTextureSize;
+			targets[ j ++ ] = ~ ~ ( i / GPGPUTextureSize ) / GPGPUTextureSize;
 
 			noises[ i ] = random.noise();
 
@@ -130,7 +129,7 @@ class Ablaze extends Sketch {
 
 		// Particle
 
-		const material = new LineBasicMaterial( settings.material );
+		const material = new LineBasicMaterial( settings.particle.material );
 		material.onBeforeCompile = this.editShader.bind( this );
 
 		const particles = new LineSegments( geometry, material );
@@ -211,7 +210,7 @@ class Ablaze extends Sketch {
 			uniforms: {
 				uTime: this.time,
 				uBounds: { value: this.bounds.y },
-				uColorTop: { value: new Color( this.settings.colorTop ) },
+				uColorTop: { value: new Color( this.settings.particle.colorTop ) },
 				GPGPU_x: { value: gpgpu.x },
 				GPGPU_y: { value: gpgpu.y },
 				GPGPU_z: { value: gpgpu.z },
@@ -252,7 +251,7 @@ class Ablaze extends Sketch {
 
 			vAltitude = mix( 1.0, 0.0, ( translateY - uBounds.x ) / uBounds.z );
 			
-			float scale = mix( 0.3, 1.0, vAltitude * mix( 0.1, 1.0, aNoise) );
+			float scale = mix( 0.0, 1.0, vAltitude * mix( 0.5, 1.0, aNoise ) );
 			mat3 rotation = rotateZ( uTime * 90.0 * aNoise );
 			
 			transformed *= scale * rotation;
