@@ -21,6 +21,8 @@ import { AblazeSettings } from './AblazeSettings';
 import GPGPU_x_shader from './shaders/GPGPU_x.frag';
 import GPGPU_y_shader from './shaders/GPGPU_y.frag';
 import GPGPU_z_shader from './shaders/GPGPU_z.frag';
+import { MeshBasicMaterial } from 'three';
+import { Mesh } from 'three';
 
 class Ablaze extends Sketch {
 
@@ -53,16 +55,38 @@ class Ablaze extends Sketch {
 
 		const { random, settings } = this;
 
+		// Disc
+
+		const discGeometry = new CircleGeometry( 0.5, 64 );
+		const discMaterial = new MeshBasicMaterial( {
+			color: 0,
+			opacity: 0.04,
+			transparent: true,
+		} );
+		const disc = new Mesh( discGeometry, discMaterial );
+		disc.position.z = settings.particle.near - 1;
+		this.add( disc );
+
+		const circleGeometry = new EdgesGeometry( discGeometry );
+		const circleMaterial = new LineBasicMaterial( {
+			...settings.material,
+			opacity: 0.1,
+		} );
+		const circle = new LineSegments(
+			circleGeometry,
+			circleMaterial
+		);
+		circle.position.copy( disc.position );
+		this.add( circle );
+
+		// Particle Geometry
+
 		const textureSize = 128;
 		const particleCount = textureSize * textureSize;
-
-		// Base geometry
 
 		const shape = new CircleGeometry( settings.particle.size, 3 );
 		shape.rotateZ( Math.PI / 2 );
 		const edges = new EdgesGeometry( shape );
-
-		// Instanced Geometry
 
 		const positions = new Float32Array( edges.attributes.position.array );
 		const positionsX = new Float32Array( particleCount );
@@ -102,17 +126,17 @@ class Ablaze extends Sketch {
 			new InstancedBufferAttribute( noises, 1 )
 		);
 
-		// Material
+		// Particle
 
 		const material = new LineBasicMaterial( settings.material );
 		material.onBeforeCompile = this.editShader.bind( this );
-
-		// Complete
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
 		this.particles = particles;
 		this.add( particles );
+
+		// Complete
 
 		this.particleCountMax = particleCount;
 		this.particleCountMin = Math.round( particleCount * 0.1 );
@@ -131,8 +155,6 @@ class Ablaze extends Sketch {
 
 		const gpgpu = new GPGPU( this.particleCountMax );
 		this.gpgpu = gpgpu;
-
-		// GPGPU
 
 		const { epsilon, speed, scale } = this.settings.curl;
 		this.curlEpsilon = new Uniform( epsilon );
@@ -222,8 +244,7 @@ class Ablaze extends Sketch {
 		`;
 
 		const vertexChanges = /*glsl*/`
-			transformed *= rotateZ( uTime * 80.0 * aNoise );
-
+			transformed *= rotateZ( uTime * 90.0 * aNoise );
 			transformed.x += unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
 			transformed.y += unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
 			transformed.z += unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );

@@ -6,14 +6,11 @@ export default /*glsl*/`
 uniform sampler2D GPGPU_x;
 uniform sampler2D GPGPU_y;
 uniform sampler2D GPGPU_z;
-
 uniform float uEpsilon;
 uniform float uCurlScale;
 uniform float uCurlSpeed;
-
 uniform float uDelta;
 uniform float uTime;
-
 uniform vec3 uBounds;
 uniform vec3 uWind;
 ${ FloatPack.glsl }
@@ -51,7 +48,7 @@ void main() {
 	
 	// Write
 
-	float noise = mix( curl, wind, 0.38 ) + uWind.x;
+	float noise = mix( curl, wind, 0.5 ) + uWind.x;
 	x = mix( x, x + noise, uDelta );
 	x = loopValue( x, uBounds.x, uBounds.z );
 
