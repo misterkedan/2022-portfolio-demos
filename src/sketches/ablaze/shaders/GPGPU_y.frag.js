@@ -41,7 +41,7 @@ void main() {
 
 	float curl = ( noiseZ - noiseX ) * uCurlSpeed;
 
-	// Wind
+	// Write
 
 	float noise = mix( curl, uWind.y, 0.77 ) + uWind.y;
 	y = mix( y, y + noise, uDelta );

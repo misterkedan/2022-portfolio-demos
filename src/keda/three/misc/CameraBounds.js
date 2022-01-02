@@ -72,5 +72,4 @@ CameraBounds.getVisibleWidth = ( camera, z ) => {
 
 };
 
-
 export { CameraBounds };

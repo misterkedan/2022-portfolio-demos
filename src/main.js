@@ -12,7 +12,10 @@ const sketchpad = new Sketchpad( {
 	//fps: 0,
 } );
 
-const options = { sketchpad };
+const options = {
+	sketchpad,
+	//gui: true,
+};
 const sketches = {
 	rain: () => new Rain( options ),
 	navscan: () => new Navscan( options ),

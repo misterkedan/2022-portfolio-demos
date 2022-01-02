@@ -40,14 +40,12 @@ void main() {
 	float noiseZ2 = simplex3D( scaledX, scaledY, scaledZ - uEpsilon );
 	float noiseZ = noiseZ1 - noiseZ2;
 
+	// epsilon * 2 division applied in uCurlSpeed to save calculations
 	float curl = ( noiseY - noiseZ ) * uCurlSpeed;
 
-	// Wind
-
-	float wind =  uWind.x + simplex3D( uTime, uv.x * 0.1, uv.y * 0.1 );
-	
 	// Write
 
+	float wind =  uWind.x + simplex3D( uTime, uv.x * 0.1, uv.y * 0.1 );
 	float noise = mix( curl, wind, 0.5 ) + uWind.x;
 	x = mix( x, x + noise, uDelta );
 	x = loopValue( x, uBounds.x, uBounds.z );

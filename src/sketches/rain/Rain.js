@@ -26,9 +26,9 @@ class Rain extends Sketch {
 
 	init() {
 
-		super.init( RainControls );
-
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
+
+		super.init( RainControls );
 
 	}
 

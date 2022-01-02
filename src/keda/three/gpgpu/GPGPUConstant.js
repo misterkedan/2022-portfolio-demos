@@ -1,3 +1,4 @@
+import { Uniform } from 'three';
 import { GPGPU } from './GPGPU';
 
 class GPGPUConstant {
@@ -13,7 +14,7 @@ class GPGPUConstant {
 		if ( ! textureSize ) textureSize = GPGPU.getTextureSize( data.length );
 		const dataTexture = GPGPU.createDataTexture( textureSize );
 		GPGPU.FloatPack.pack( data, dataTexture.image.data );
-		return dataTexture;
+		return new Uniform( dataTexture );
 
 	}
 

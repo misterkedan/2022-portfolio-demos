@@ -38,9 +38,6 @@ class Ablaze extends Sketch {
 			this.settings.particle.far
 		);
 
-		this.time = 0;
-		this.wind = new Vector3();
-
 	}
 
 	init() {
@@ -162,6 +159,7 @@ class Ablaze extends Sketch {
 		this.curlSpeed = new Uniform( speed / ( epsilon * 2 ) );
 		this.delta = new Uniform( 0 );
 		this.time = new Uniform( 0 );
+		this.wind = new Uniform( new Vector3() );
 
 		const uniformsXYZ = {
 			uEpsilon: this.curlEpsilon,
@@ -169,15 +167,13 @@ class Ablaze extends Sketch {
 			uCurlSpeed: this.curlSpeed,
 			uDelta: this.delta,
 			uTime: this.time,
-			uWind: { value: this.wind },
+			uWind: this.wind,
 		};
 
 		gpgpu.addVariable( 'x', {
 			data: positionsX,
 			shader: GPGPU_x_shader,
 			uniforms: {
-				GPGPU_y: { value: null },
-				GPGPU_z: { value: null },
 				uBounds: { value: this.bounds.x },
 				...uniformsXYZ,
 			},
@@ -187,8 +183,6 @@ class Ablaze extends Sketch {
 			data: positionsY,
 			shader: GPGPU_y_shader,
 			uniforms: {
-				GPGPU_x: { value: null },
-				GPGPU_z: { value: null },
 				uBounds: { value: this.bounds.y },
 				...uniformsXYZ,
 			},
@@ -198,21 +192,26 @@ class Ablaze extends Sketch {
 			data: positionsZ,
 			shader: GPGPU_z_shader,
 			uniforms: {
-				GPGPU_x: { value: null },
-				GPGPU_y: { value: null },
 				uBounds: { value: this.bounds.z },
 				...uniformsXYZ,
 			},
 		} );
+
+		gpgpu.assign( 'x', 'y' );
+		gpgpu.assign( 'x', 'z' );
+		gpgpu.assign( 'y', 'x' );
+		gpgpu.assign( 'y', 'z' );
+		gpgpu.assign( 'z', 'x' );
+		gpgpu.assign( 'z', 'y' );
 
 		this.shader = {
 			uniforms: {
 				uTime: this.time,
 				uBounds: { value: this.bounds.y },
 				uColorTop: { value: new Color( this.settings.particle.colorTop ) },
-				GPGPU_x: { value: gpgpu.x },
-				GPGPU_y: { value: gpgpu.y },
-				GPGPU_z: { value: gpgpu.z },
+				GPGPU_x: gpgpu.x,
+				GPGPU_y: gpgpu.y,
+				GPGPU_z: gpgpu.z,
 			},
 		};
 
@@ -220,7 +219,7 @@ class Ablaze extends Sketch {
 
 	editShader( shader ) {
 
-		// THREE tokens ( r135 )
+		// THREE tokens ( r136 )
 
 		const common = '#include <common>';
 		const beginVertex = '#include <begin_vertex>';
@@ -314,25 +313,13 @@ class Ablaze extends Sketch {
 
 	}
 
-	tick( delta, time ) {
+	tick( delta ) {
 
-		const { settings, gpgpu, shader } = this;
+		const scaledDelta = delta * this.settings.speed;
+		this.delta.value = scaledDelta;
+		this.time.value += scaledDelta * this.settings.timeFactor;
 
-		this.delta.value = delta * settings.speed;
-		this.time.value = time * settings.speed * settings.timeFactor;
-
-		gpgpu.tick();
-
-		shader.uniforms.GPGPU_x.value = gpgpu.x;
-		shader.uniforms.GPGPU_y.value = gpgpu.y;
-		shader.uniforms.GPGPU_z.value = gpgpu.z;
-
-		gpgpu.setUniform( 'y', 'GPGPU_x', gpgpu.x );
-		gpgpu.setUniform( 'z', 'GPGPU_x', gpgpu.x );
-		gpgpu.setUniform( 'x', 'GPGPU_y', gpgpu.y );
-		gpgpu.setUniform( 'z', 'GPGPU_y', gpgpu.y );
-		gpgpu.setUniform( 'x', 'GPGPU_z', gpgpu.z );
-		gpgpu.setUniform( 'y', 'GPGPU_z', gpgpu.z );
+		this.gpgpu.tick();
 
 		super.tick( delta );
 

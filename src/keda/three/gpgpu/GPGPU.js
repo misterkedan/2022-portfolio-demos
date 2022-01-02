@@ -1,26 +1,28 @@
 /**
  * @author Pierre Keda
  *
- * three.js GPGPU
+ * Float-packed three.js GPGPU
  *
- * Based on https://threejs.org/examples/?q=gpgpu#webgl_gpgpu_birds
- * And https://github.com/mrdoob/three.js/blob/dev/examples/jsm/misc/GPUComputationRenderer.js
+ * Based on:
+ * https://threejs.org/examples/?q=gpgpu#webgl_gpgpu_birds
+ * https://github.com/mrdoob/three.js/blob/dev/examples/jsm/misc/GPUComputationRenderer.js
  *
  * Basic usage :
  * GPGPU.init( renderer );
- * const variable = new GPGPUVariable();
- * variable.update();
- * uniforms.variable = { value: variable.output };
+ * const gpgpu = new GPGPU( 1337 );
+ * gpgpu.addVariable( name, options ); // See GPGPUVariable for options
+ * gpgpu.addConstant( name, data );
+ *
  */
 
 import {
-	Camera,
 	ClampToEdgeWrapping,
 	DataTexture,
 	Mesh,
 	NearestFilter,
 	PlaneGeometry,
 	RGBAFormat,
+	OrthographicCamera,
 	Scene,
 	UnsignedByteType,
 	WebGLRenderTarget
@@ -57,26 +59,17 @@ class GPGPU {
 
 	}
 
+	assign( targetName, sourceName ) {
+
+		const target = this.variables[ targetName ];
+		const source = this.variables[ sourceName ];
+		target.uniforms[ source.name ] = source.output;
+
+	}
+
 	tick() {
 
-		Object.entries( this.variables ).forEach( ( [ key, variable ] ) => {
-
-			variable.update();
-			this[ key ] = variable.output;
-
-		} );
-
-	}
-
-	getUniform( variable, uniform ) {
-
-		return this.variables[ variable ].uniforms[ uniform ].value;
-
-	}
-
-	setUniform( variable, uniform, value ) {
-
-		this.variables[ variable ].uniforms[ uniform ].value = value;
+		Object.values( this.variables ).forEach( variable => variable.update() );
 
 	}
 
@@ -93,6 +86,12 @@ class GPGPU {
 	}
 
 }
+
+/*-----------------------------------------------------------------------------/
+
+	Static
+
+/-----------------------------------------------------------------------------*/
 
 /**
  * Initiates the GPGPU class with a three.js renderer. This needs to be done
@@ -126,7 +125,7 @@ GPGPU.init = ( renderer ) => {
 
 	GPGPU.renderer = renderer;
 	GPGPU.scene = new Scene();
-	GPGPU.camera = new Camera();
+	GPGPU.camera = new OrthographicCamera();
 	GPGPU.mesh = new Mesh( new PlaneGeometry( 2, 2 ) );
 	GPGPU.scene.add( GPGPU.mesh );
 

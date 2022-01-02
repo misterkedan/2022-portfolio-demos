@@ -25,12 +25,12 @@ class AblazeControls extends Controls {
 		this.orientation = lerp( this.orientation, tracker.polarizeX, lerpSpeed );
 		this.intensity = lerp( this.intensity, tracker.reverseY, lerpSpeed );
 
-		this.sketch.wind.x = this.orientation * 0.7;
-		this.sketch.wind.y = lerp( 0.2, 0.5, this.intensity );
-		this.sketch.wind.z = lerp( - 4, 4, this.intensity );
+		this.sketch.wind.value.x = this.orientation * 0.7;
+		this.sketch.wind.value.y = lerp( 0.2, 0.5, this.intensity );
+		this.sketch.wind.value.z = lerp( - 3.5, 3.5, this.intensity );
 
-		this.sketch.curlSpeed.value = lerp( 60, 10, this.intensity );
-
+		this.sketch.curlSpeed.value = lerp( 70, 20, this.intensity );
+		this.sketch.settings.speed = lerp( 0.0006, 0.0016, this.intensity );
 
 	}
 

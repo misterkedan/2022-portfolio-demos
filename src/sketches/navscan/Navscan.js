@@ -21,9 +21,9 @@ class Navscan extends Sketch {
 
 	init() {
 
-		super.init( NavscanControls );
-
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
+
+		super.init( NavscanControls );
 
 	}
 
