@@ -31,12 +31,12 @@ class GPGPUVariable {
 	 * of the variable, for the data texture current value.
 	 */
 	constructor( {
-		length = 1000,
 		data,
+		defaultValue,
 		textureSize,
+		length = 1000,
 		name = 'data',
 		prefix = 'GPGPU_',
-		defaultValue = 0,
 		shader = GPGPUVariable.fragmentShader,
 		uniforms = {}
 	} = {} ) {
@@ -56,6 +56,7 @@ class GPGPUVariable {
 		// DataTexture
 
 		this.dataTexture = GPGPU.createDataTexture( textureSize );
+
 		if ( data ) {
 
 			this.write( data );

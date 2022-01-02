@@ -24,8 +24,11 @@ let config = {
 	},
 	resolve: {
 		alias: {
-			keda: path.resolve( __dirname, 'src/keda/' ),
+			keda: path.resolve( __dirname, './src/keda/' ),
 		},
+	},
+	optimization: {
+		minimize: false,
 	},
 };
 
@@ -41,9 +44,6 @@ module.exports = ( env, argv ) => {
 			},
 			host: '192.168.1.10',
 			port: 8080,
-		},
-		optimization: {
-			minimize: false,
 		},
 	};
 

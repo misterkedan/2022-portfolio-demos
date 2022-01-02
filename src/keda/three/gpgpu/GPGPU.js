@@ -14,15 +14,21 @@
  */
 
 import {
-	BufferAttribute, BufferGeometry, Camera, ClampToEdgeWrapping, DataTexture,
-	Mesh, NearestFilter, PlaneGeometry, RGBAFormat, Scene, Uint32BufferAttribute,
-	UnsignedByteType, WebGLRenderTarget
+	Camera,
+	ClampToEdgeWrapping,
+	DataTexture,
+	Mesh,
+	NearestFilter,
+	PlaneGeometry,
+	RGBAFormat,
+	Scene,
+	UnsignedByteType,
+	WebGLRenderTarget
 } from 'three';
+
 import { GPGPUConstant } from './GPGPUConstant';
 import { GPGPUVariable } from './GPGPUVariable';
 import { FloatPack } from './FloatPack';
-
-
 
 class GPGPU {
 
@@ -35,12 +41,13 @@ class GPGPU {
 
 	addVariable( name, options ) {
 
-		this.variables[ name ] = new GPGPUVariable( {
+		const variable = new GPGPUVariable( {
 			...options,
 			name,
 			textureSize: this._textureSize,
 		} );
-		this[ name ] = this.variables[ name ].output;
+		this.variables[ name ] = variable;
+		this[ name ] = variable.output;
 
 	}
 
@@ -193,130 +200,6 @@ GPGPU.render = ( material, renderTarget ) => {
 	GPGPU.renderer.setRenderTarget( renderTarget );
 	GPGPU.renderer.render( GPGPU.scene, GPGPU.camera );
 	GPGPU.renderer.setRenderTarget( null );
-
-};
-
-/*-----------------------------------------------------------------------------/
-
-	Utility for preparing mesh-particles
-
-/-----------------------------------------------------------------------------*/
-
-/**
- * Clones a geometry x times, adding a 'GPGPU_target' vec2 attribute, in
- * order to associate vertices with a texel of the GPGPUVariable output textures.
- * One texel will contain the data for one clone.
- * @param {BufferGeometry} 	stem 	The geometry to clone.
- * @param {Number}			count	The number of times to clone the geometry.
- * @returns {BufferGeometry}		A merged geometry containing all the clones.
- */
-GPGPU.cloneGeometry = ( stem, count, textureSize ) => {
-
-	if ( ! textureSize ) textureSize = GPGPU.getTextureSize( count );
-
-	const verticesPerClone = stem.attributes.position.count;
-	const positionsPerClone = verticesPerClone * 3;
-	const uvsPerClone = verticesPerClone * 2;
-
-	const verticesCount = verticesPerClone * count;
-	const doubleCount = verticesCount * 2;
-	const tripleCount = verticesCount * 3;
-
-	const positions = new Float32Array( tripleCount );
-	const normals = new Float32Array( tripleCount );
-	const uvs = new Float32Array( doubleCount );
-	const GPGPUtargets = new Float32Array( doubleCount );
-
-	const stemPositions = stem.attributes.position.array;
-	const stemNormals = stem.attributes.normal?.array || [];
-	const stemUVs = stem.attributes.uv?.array || [];
-
-	const geometry = new BufferGeometry();
-
-	let x = 0;
-	let y = 0;
-	let target = 0;
-	let clone = 0;
-
-	let position = 0;
-	let uv = 0;
-
-	for ( let i = 0; i < tripleCount; i ++ ) {
-
-		// Instance
-
-		if ( position === positionsPerClone ) {
-
-			position = 0;
-			clone ++;
-
-			x = ( clone % textureSize ) / textureSize;
-			y = ~ ~ ( clone / textureSize ) / textureSize;
-			// note : ~ ~ is an obscure, bitwise equivalent of Math.floor()
-			// not recommended in general, because it is less legible
-			// used for performance because we're dealing with large arrays
-
-		}
-
-		if ( uv === uvsPerClone ) uv = 0;
-
-		// Vertex
-
-		if ( ! ( i % 3 ) ) {
-
-			GPGPUtargets[ target ++ ] = x;
-			GPGPUtargets[ target ++ ] = y;
-
-		}
-
-		// Position + normals
-
-		positions[ i ] = stemPositions[ position ];
-		normals[ i ] = stemNormals[ position ];
-		position ++;
-
-		// UV
-
-		uvs[ i ] = stemUVs[ uv ];
-		uv ++;
-
-	}
-
-	geometry.setAttribute(
-		'GPGPU_target', new BufferAttribute( GPGPUtargets, 2 )
-	);
-
-	geometry.setAttribute(
-		'position',  new BufferAttribute( positions, 3 )
-	);
-
-	if ( stem.attributes.normals ) geometry.setAttribute(
-		'normal', new BufferAttribute( normals, 3 )
-	);
-
-	if ( stem.attributes.uv ) geometry.setAttribute(
-		'uv', new BufferAttribute( uvs, 2 )
-	);
-
-	if ( stem.index ) {
-
-		let stemIndices = stem.index.array;
-		let indicesPerClone = stemIndices.length;
-		let indicesTotal = indicesPerClone * count;
-		let indices = new Uint32Array( indicesTotal );
-
-		for ( let i = 0, offset; i < indicesTotal; i ++ ) {
-
-			offset = ~ ~ ( i / indicesPerClone ) * verticesPerClone;
-			indices[ i ] = stemIndices[ i % indicesPerClone ] + offset;
-
-		}
-
-		geometry.setIndex( new Uint32BufferAttribute( indices, 1 ) );
-
-	}
-
-	return geometry;
 
 };
 

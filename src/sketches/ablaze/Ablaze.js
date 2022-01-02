@@ -15,10 +15,10 @@ import {
 } from 'three';
 
 import rotateZ from 'keda/glsl/transform/rotateZ.glsl';
-import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import { CameraBounds } from 'keda/three/misc/CameraBounds';
-import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 import { Sketch } from 'keda/three/Sketch';
+import { GPGPU } from 'keda/three/gpgpu/GPGPU';
+import { CameraBounds } from 'keda/three/misc/CameraBounds';
+import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
@@ -89,7 +89,6 @@ class Ablaze extends Sketch {
 		shape.rotateZ( Math.PI / 2 );
 		const edges = new EdgesGeometry( shape );
 
-		const positions = new Float32Array( edges.attributes.position.array );
 		const positionsX = new Float32Array( particleCount );
 		const positionsY = new Float32Array( particleCount );
 		const positionsZ = new Float32Array( particleCount );
@@ -113,10 +112,10 @@ class Ablaze extends Sketch {
 		}
 
 		const geometry = new InstancedBufferGeometry();
-
+		geometry.instanceCount = particleCount;
 		geometry.setAttribute(
 			'position',
-			new Float32BufferAttribute( positions, 3 )
+			new Float32BufferAttribute().copy( edges.attributes.position )
 		);
 		geometry.setAttribute(
 			'GPGPU_target',
