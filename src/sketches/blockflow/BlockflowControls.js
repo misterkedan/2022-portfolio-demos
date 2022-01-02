@@ -57,7 +57,7 @@ class BlockflowControls extends Controls {
 		const { settings } = sketch;
 		const { uniforms } = sketch.shader;
 		const { passes } = sketch.effects;
-		const VALUE = 'value';
+		const { VALUE } = Controls;
 
 		const gui = new Controls.GUI( { title: settings.title.toUpperCase() } );
 

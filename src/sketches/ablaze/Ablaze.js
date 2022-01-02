@@ -148,15 +148,22 @@ class Ablaze extends Sketch {
 
 	initGPGPU( positionsX, positionsY, positionsZ ) {
 
+		const { settings } = this;
+
 		GPGPU.init( this.sketchpad.renderer );
 
 		const gpgpu = new GPGPU( this.particleCountMax );
 		this.gpgpu = gpgpu;
 
-		const { epsilon, speed, scale } = this.settings.curl;
+		const { epsilon, speed, scale, strength } = settings.curl;
 		this.curlEpsilon = new Uniform( epsilon );
 		this.curlScale = new Uniform( scale );
 		this.curlSpeed = new Uniform( speed / ( epsilon * 2 ) );
+		this.curlStrength = new Uniform( new Vector3(
+			strength.x,
+			strength.y,
+			strength.z
+		) );
 		this.delta = new Uniform( 0 );
 		this.time = new Uniform( 0 );
 		this.wind = new Uniform( new Vector3() );
@@ -165,6 +172,7 @@ class Ablaze extends Sketch {
 			uEpsilon: this.curlEpsilon,
 			uCurlScale: this.curlScale,
 			uCurlSpeed: this.curlSpeed,
+			uCurlStrength: this.curlStrength,
 			uDelta: this.delta,
 			uTime: this.time,
 			uWind: this.wind,
@@ -207,8 +215,14 @@ class Ablaze extends Sketch {
 		this.shader = {
 			uniforms: {
 				uTime: this.time,
+				uColorTop: { value: new Color( settings.particle.colorTop ) },
+				uRotation: { value: settings.rotation },
 				uBounds: { value: this.bounds.y },
-				uColorTop: { value: new Color( this.settings.particle.colorTop ) },
+				uScale: { value: new Vector3(
+					settings.scale.top,
+					settings.scale.bottom,
+					settings.scale.gradient,
+				) },
 				GPGPU_x: gpgpu.x,
 				GPGPU_y: gpgpu.y,
 				GPGPU_z: gpgpu.z,
@@ -234,9 +248,11 @@ class Ablaze extends Sketch {
 			uniform sampler2D GPGPU_z;
 
 			attribute float aNoise;
-			uniform vec3 uBounds;
+			uniform float uRotation;
 			uniform float uTime;
 			varying float vAltitude;
+			uniform vec3 uBounds;
+			uniform vec3 uScale;
 
 			${ GPGPU.FloatPack.glsl }
 
@@ -249,8 +265,12 @@ class Ablaze extends Sketch {
 
 			vAltitude = mix( 1.0, 0.0, ( translateY - uBounds.x ) / uBounds.z );
 			
-			float scale = mix( 0.0, 1.0, vAltitude * mix( 0.5, 1.0, aNoise ) );
-			mat3 rotation = rotateZ( uTime * 90.0 * aNoise );
+			float scale = mix( 
+				uScale.x,
+				uScale.y,
+				vAltitude * mix( uScale.z, 1.0, aNoise )
+			);
+			mat3 rotation = rotateZ( uTime * uRotation * aNoise );
 			
 			transformed *= scale * rotation;
 			transformed += vec3( translateX, translateY, translateZ );

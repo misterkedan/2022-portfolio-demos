@@ -12,6 +12,7 @@ uniform float uCurlSpeed;
 uniform float uDelta;
 uniform float uTime;
 uniform vec3 uBounds;
+uniform vec3 uCurlStrength;
 uniform vec3 uWind;
 ${ FloatPack.glsl }
 ${ loopValue }
@@ -46,7 +47,7 @@ void main() {
 	// Write
 
 	float wind =  uWind.x + simplex3D( uTime, uv.x * 0.1, uv.y * 0.1 );
-	float noise = mix( curl, wind, 0.5 ) + uWind.x;
+	float noise = mix( wind, curl, uCurlStrength.x ) + uWind.x;
 	x = mix( x, x + noise, uDelta );
 	x = loopValue( x, uBounds.x, uBounds.z );
 

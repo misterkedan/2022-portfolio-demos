@@ -3,7 +3,7 @@ const AblazeSettings = {
 	name: 'Ablaze',
 
 	background: {
-		color1: '#aa0022',
+		color1: '#a8002a',
 		color2: '#dd5500',
 	},
 
@@ -38,6 +38,18 @@ const AblazeSettings = {
 		epsilon: 0.001,
 		speed: 0.07,
 		scale: 0.3,
+		strength: {
+			x: 0.5,
+			y: 0.33,
+			z: 0.5,
+		},
+	},
+
+	rotation: 90,
+	scale: {
+		top: 0,
+		bottom: 1,
+		gradient: 0.5,
 	},
 
 	GPGPUTextureSize: 128,
@@ -50,7 +62,7 @@ const AblazeSettings = {
 	cameraRig: false,
 
 	bloom: {
-		strength: 0.4,
+		strength: 0.55,
 		radius: 0.4,
 		threshold: 0.45,
 	},

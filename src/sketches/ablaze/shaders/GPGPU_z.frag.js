@@ -11,6 +11,7 @@ uniform float uCurlSpeed;
 uniform float uDelta;
 uniform float uEpsilon;
 uniform vec3 uBounds;
+uniform vec3 uCurlStrength;
 uniform vec3 uWind;
 ${ FloatPack.glsl }
 ${ loopValue }
@@ -43,7 +44,7 @@ void main() {
 
 	// Write
 
-	float noise = curl * uWind.z;
+	float noise = curl * uCurlStrength.z * uWind.z;
 	z = mix( z, z + noise, uDelta );
 	z = clamp( z, uBounds.x, uBounds.y );
 
