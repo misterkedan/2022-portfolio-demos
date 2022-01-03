@@ -81,11 +81,11 @@ class AblazeControls extends Controls {
 		this.intensity = lerp( this.intensity, tracker.reverseY, lerpSpeed );
 
 		sketch.wind.value.x = this.orientation * 0.7;
-		sketch.wind.value.y = lerp( 0.2, 0.6, this.intensity );
+		sketch.wind.value.y = lerp( 0.2, 0.5, this.intensity );
 		sketch.wind.value.z = lerp( - 3.5, 3.5, this.intensity );
 
-		this.sketch.settings.speed = lerp( 0.0006, 0.0016, this.intensity );
-		sketch.settings.curl.speed = lerp( 0.14, 0.04, this.intensity );
+		this.sketch.settings.speed = lerp( 0.0006, 0.0018, this.intensity );
+		sketch.settings.curl.speed = lerp( 0.12, 0.04, this.intensity );
 		this.applyCurlSpeed();
 
 		if ( this.gui ) this.gui.controllersRecursive().forEach(
