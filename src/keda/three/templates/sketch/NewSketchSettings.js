@@ -1,7 +1,7 @@
-const NewSketch = {
+const NewSketchSettings = {
 
 	name: 'NewSketch',
 
 };
 
-export { NewSketch };
+export { NewSketchSettings };

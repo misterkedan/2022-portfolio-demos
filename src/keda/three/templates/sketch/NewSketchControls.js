@@ -1,6 +1,6 @@
 import { Controls } from 'keda/three/Controls';
 
-class NewSketch extends Controls {
+class NewSketchControls extends Controls {
 
 	constructor( sketch ) {
 
@@ -10,4 +10,4 @@ class NewSketch extends Controls {
 
 }
 
-export { NewSketch };
+export { NewSketchControls };

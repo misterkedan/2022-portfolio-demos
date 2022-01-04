@@ -1,6 +1,6 @@
 {
   "name": "portfolio-covers",
-  "version": "0.7.16",
+  "version": "0.8.0",
   "description": "Pierre Keda's portfolio cover animations.",
   "author": "Pierre Keda",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "terser-webpack-plugin": "^5.3.0",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.6.0"
+    "webpack-dev-server": "^4.7.2"
   },
   "scripts": {
     "build": "webpack --mode production",
