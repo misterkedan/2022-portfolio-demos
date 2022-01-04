@@ -56,7 +56,7 @@ class BackgridControls extends Controls {
 		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( background, 'color1' ).name( 'background1' );
 		colors.addColor( background, 'color2' ).name( 'background2' );
-		colors.addColor( sketch.dots.material, 'color' );
+		colors.addColor( sketch, 'color' );
 
 		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
 		this.gui = gui;

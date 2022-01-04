@@ -8,7 +8,7 @@ const BackgridSettings = {
 	},
 
 	material: {
-		color: '#333333'
+		color: '#333333',
 	},
 
 	cameraStart: { x: 0, y: 0, z: 8 },
