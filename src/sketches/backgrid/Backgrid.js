@@ -20,7 +20,7 @@ import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 
 import { BackgridControls } from './BackgridControls';
 import { BackgridSettings } from './BackgridSettings';
-import GPGPU_intensity from './shaders/GPGPU_intensity';
+import { BackgridGLSL } from './BackgridGLSL';
 
 class Backgrid extends Sketch {
 
@@ -162,7 +162,7 @@ class Backgrid extends Sketch {
 
 	initGPGPU( offsetsX, offsetsY ) {
 
-		const { settings } = this;
+		//const { settings } = this;
 
 		GPGPU.init( this.sketchpad.renderer );
 
@@ -174,7 +174,7 @@ class Backgrid extends Sketch {
 		console.log( gpgpu.offsetX );
 
 		gpgpu.addVariable( 'intensity', {
-			shader: GPGPU_intensity,
+			shader: BackgridGLSL.GPGPU_intensity,
 			uniforms: {
 				GPGPU_offsetX: gpgpu.offsetX,
 				GPGPU_offsetY: gpgpu.offsetY,
@@ -185,7 +185,8 @@ class Backgrid extends Sketch {
 		this.gpgpu = gpgpu;
 
 		this.uniforms = {
-			GPGPU_intensity: gpgpu.intensity
+			GPGPU_intensity: gpgpu.intensity,
+			uActiveColor: new Uniform( new Color( '#424444' ) ),
 		};
 
 	}
@@ -194,17 +195,10 @@ class Backgrid extends Sketch {
 
 		editBasicMaterialShader(
 			shader,
-			/*glsl*/`
-				attribute vec3 aOffset;
-				attribute vec2 GPGPU_target;
-				uniform sampler2D GPGPU_intensity;
-				${GPGPU.FloatPack.glsl}
-			`,
-			/*glsl*/`
-				float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
-				transformed *= 0.5 + intensity * 0.7;
-				transformed += aOffset;
-			`
+			BackgridGLSL.core.vertexHead,
+			BackgridGLSL.core.vertexBody,
+			BackgridGLSL.core.fragmentHead,
+			BackgridGLSL.core.fragmentBody
 		);
 
 		Object.assign( shader.uniforms, this.uniforms );
@@ -216,17 +210,10 @@ class Backgrid extends Sketch {
 
 		editBasicMaterialShader(
 			shader,
-			/*glsl*/`
-				attribute vec3 aOffset;
-				attribute vec2 GPGPU_target;
-				uniform sampler2D GPGPU_intensity;
-				${GPGPU.FloatPack.glsl}
-			`,
-			/*glsl*/`
-				float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
-				transformed *= ( 1.0 + intensity * 3.0 ) ;
-				transformed += aOffset;
-			`
+			BackgridGLSL.shell.vertexHead,
+			BackgridGLSL.shell.vertexBody,
+			BackgridGLSL.shell.fragmentHead,
+			BackgridGLSL.shell.fragmentBody
 		);
 
 		Object.assign( shader.uniforms, this.uniforms );
