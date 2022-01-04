@@ -1,13 +1,26 @@
-import { BoxGeometry, EdgesGeometry, Float32BufferAttribute, InstancedBufferAttribute, InstancedBufferGeometry, InstancedMesh, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, Uint16BufferAttribute } from 'three';
+import {
+	Color,
+	EdgesGeometry,
+	Float32BufferAttribute,
+	InstancedBufferAttribute,
+	InstancedBufferGeometry,
+	LineBasicMaterial,
+	LineSegments,
+	Mesh,
+	MeshBasicMaterial,
+	PlaneGeometry,
+	Uint16BufferAttribute,
+	Uniform,
+} from 'three';
 
 import { Sketch } from 'keda/three/Sketch';
 import { CameraBounds } from 'keda/three/misc/CameraBounds';
 import { editBasicMaterialShader } from 'keda/three/misc/Utils';
+import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 
 import { BackgridControls } from './BackgridControls';
 import { BackgridSettings } from './BackgridSettings';
-import { Color } from 'three';
-import { Uniform } from 'three';
+import GPGPU_intensity from './shaders/GPGPU_intensity';
 
 class Backgrid extends Sketch {
 
@@ -42,20 +55,36 @@ class Backgrid extends Sketch {
 		const size = 64;
 		const dotCount = size * size;
 		const offsets = new Float32Array( dotCount * 3 );
+		const offsetsX = new Float32Array( dotCount );
+		const offsetsY = new Float32Array( dotCount );
+		const targets = new Float32Array( dotCount * 2 );
 
 		const totalSize = boxSpacing * size;
 		const startX = ( boxSpacing - totalSize ) / 2;
 		const startY = - ( boxSpacing - totalSize ) / 2;
 
+		let i = 0;
+		let t = 0;
 		let o = 0;
 
 		for ( let row = 0; row < size; row ++ ) {
 
 			for ( let column = 0; column < size; column ++ ) {
 
-				offsets[ o ++ ] = startX + column * boxSpacing;
-				offsets[ o ++ ] = startY - row * boxSpacing;
+				const x = startX + column * boxSpacing;
+				const y = startY - row * boxSpacing;
+
+				offsetsX[ i ] = x;
+				offsetsY[ i ] = y;
+
+				offsets[ o ++ ] = x;
+				offsets[ o ++ ] = y;
 				offsets[ o ++ ] = 0;
+
+				targets[ t ++ ] = ( i % size ) / size;
+				targets[ t ++ ] = ~ ~ ( i / size ) / size;
+
+				i ++;
 
 			}
 
@@ -76,6 +105,10 @@ class Backgrid extends Sketch {
 			'aOffset',
 			new InstancedBufferAttribute( offsets, 3 )
 		);
+		coreGeometry.setAttribute(
+			'GPGPU_target',
+			new InstancedBufferAttribute( targets, 2 )
+		);
 
 		const coreMaterial = new MeshBasicMaterial( settings.material );
 		coreMaterial.color = this.color;
@@ -90,8 +123,8 @@ class Backgrid extends Sketch {
 
 		const edges = new EdgesGeometry( box );
 
-		const shellScale = 1.2;
-		edges.scale( shellScale, shellScale, shellScale );
+		//const shellScale = 1.2;
+		//edges.scale( shellScale, shellScale, shellScale );
 
 		const shellGeometry = new InstancedBufferGeometry();
 		shellGeometry.instanceCount = dotCount;
@@ -102,6 +135,10 @@ class Backgrid extends Sketch {
 		shellGeometry.setAttribute(
 			'aOffset',
 			new InstancedBufferAttribute( offsets, 3 )
+		);
+		shellGeometry.setAttribute(
+			'GPGPU_target',
+			new InstancedBufferAttribute( targets, 2 )
 		);
 
 		const shellMaterial = new LineBasicMaterial( settings.material );
@@ -119,16 +156,36 @@ class Backgrid extends Sketch {
 
 		this.size = totalSize;
 
-		this.coreShader = {
-			uniforms: {
-				uCursor: this.cursor
-			},
-		};
+		this.initGPGPU( offsetsX, offsetsY );
 
-		this.shellShader = {
+	}
+
+	initGPGPU( offsetsX, offsetsY ) {
+
+		const { settings } = this;
+
+		GPGPU.init( this.sketchpad.renderer );
+
+		const gpgpu = new GPGPU( 64 * 64 );
+
+		gpgpu.addConstant( 'offsetX', offsetsX );
+		gpgpu.addConstant( 'offsetY', offsetsY );
+
+		console.log( gpgpu.offsetX );
+
+		gpgpu.addVariable( 'intensity', {
+			shader: GPGPU_intensity,
 			uniforms: {
-				uCursor: this.cursor
-			},
+				GPGPU_offsetX: gpgpu.offsetX,
+				GPGPU_offsetY: gpgpu.offsetY,
+				uCursor: this.cursor,
+			}
+		} );
+
+		this.gpgpu = gpgpu;
+
+		this.uniforms = {
+			GPGPU_intensity: gpgpu.intensity
 		};
 
 	}
@@ -139,19 +196,18 @@ class Backgrid extends Sketch {
 			shader,
 			/*glsl*/`
 				attribute vec3 aOffset;
-				uniform vec3 uCursor;
+				attribute vec2 GPGPU_target;
+				uniform sampler2D GPGPU_intensity;
+				${GPGPU.FloatPack.glsl}
 			`,
 			/*glsl*/`
-				transformed *= clamp( 
-					pow( length( uCursor - aOffset ), 2.0 ),
-					0.5,
-					1.0
-				);
+				float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
+				transformed *= 0.5 + intensity * 0.7;
 				transformed += aOffset;
 			`
 		);
 
-		Object.assign( shader.uniforms, this.coreShader.uniforms );
+		Object.assign( shader.uniforms, this.uniforms );
 		this.coreShader = shader;
 
 	}
@@ -162,20 +218,27 @@ class Backgrid extends Sketch {
 			shader,
 			/*glsl*/`
 				attribute vec3 aOffset;
-				uniform vec3 uCursor;
+				attribute vec2 GPGPU_target;
+				uniform sampler2D GPGPU_intensity;
+				${GPGPU.FloatPack.glsl}
 			`,
 			/*glsl*/`
-				transformed *= clamp( 
-					pow( 1.0 / length( uCursor - aOffset ) + 1.0 , 2.0 ),
-					1.0,
-					6.0
-				);
+				float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
+				transformed *= ( 1.0 + intensity * 3.0 ) ;
 				transformed += aOffset;
 			`
 		);
 
-		Object.assign( shader.uniforms, this.shellShader.uniforms );
+		Object.assign( shader.uniforms, this.uniforms );
 		this.shellShader = shader;
+
+	}
+
+	tick( delta ) {
+
+		this.gpgpu.tick();
+
+		super.tick( delta );
 
 	}
 

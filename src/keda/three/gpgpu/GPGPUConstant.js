@@ -13,6 +13,7 @@ class GPGPUConstant {
 
 		if ( ! textureSize ) textureSize = GPGPU.getTextureSize( data.length );
 		const dataTexture = GPGPU.createDataTexture( textureSize );
+		dataTexture.needsUpdate = true;
 		GPGPU.FloatPack.pack( data, dataTexture.image.data );
 		return new Uniform( dataTexture );
 
