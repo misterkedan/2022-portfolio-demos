@@ -31,8 +31,8 @@ class Backgrid extends Sketch {
 		this.bounds = new CameraBounds(
 			this.camera, - 1, - 3,
 		);
-		this.color = new Color( this.settings.material.color );
-		this.cursor = new Uniform();
+
+
 
 	}
 
@@ -91,6 +91,7 @@ class Backgrid extends Sketch {
 		}
 
 		const box = new PlaneGeometry( boxSize, boxSize );
+		const edges = new EdgesGeometry( box );
 
 		const coreGeometry = new InstancedBufferGeometry();
 		coreGeometry.instanceCount = dotCount;
@@ -111,20 +112,16 @@ class Backgrid extends Sketch {
 		);
 
 		const coreMaterial = new MeshBasicMaterial( settings.material );
-		coreMaterial.color = this.color;
 		coreMaterial.onBeforeCompile = this.editCoreShader.bind( this );
 
 		const cores = new Mesh( coreGeometry, coreMaterial );
-
 		this.add( cores );
 		this.cores = cores;
 
 		// Shells
 
-		const edges = new EdgesGeometry( box );
-
-		//const shellScale = 1.2;
-		//edges.scale( shellScale, shellScale, shellScale );
+		const shellScale = 2;
+		edges.scale( shellScale, shellScale, shellScale );
 
 		const shellGeometry = new InstancedBufferGeometry();
 		shellGeometry.instanceCount = dotCount;
@@ -142,7 +139,6 @@ class Backgrid extends Sketch {
 		);
 
 		const shellMaterial = new LineBasicMaterial( settings.material );
-		shellMaterial.color = this.color;
 		shellMaterial.onBeforeCompile = this.editShellShader.bind( this );
 
 		const shells = new LineSegments( shellGeometry, shellMaterial );
@@ -164,6 +160,16 @@ class Backgrid extends Sketch {
 
 		//const { settings } = this;
 
+		this.activeColor = new Color( this.settings.activeColor );
+		this.color = new Color( this.settings.material.color );
+		this.cores.material.color = this.color;
+		this.shells.material.color = this.color;
+
+		this.cursor = new Uniform();
+		this.time = new Uniform( 0 );
+		this.delta = new Uniform( 0 );
+		this.scale = new Uniform( 0.2 );
+
 		GPGPU.init( this.sketchpad.renderer );
 
 		const gpgpu = new GPGPU( 64 * 64 );
@@ -171,14 +177,15 @@ class Backgrid extends Sketch {
 		gpgpu.addConstant( 'offsetX', offsetsX );
 		gpgpu.addConstant( 'offsetY', offsetsY );
 
-		console.log( gpgpu.offsetX );
-
 		gpgpu.addVariable( 'intensity', {
 			shader: BackgridGLSL.GPGPU_intensity,
 			uniforms: {
 				GPGPU_offsetX: gpgpu.offsetX,
 				GPGPU_offsetY: gpgpu.offsetY,
 				uCursor: this.cursor,
+				uDelta: this.delta,
+				uScale: this.scale,
+				uTime: this.time,
 			}
 		} );
 
@@ -186,7 +193,7 @@ class Backgrid extends Sketch {
 
 		this.uniforms = {
 			GPGPU_intensity: gpgpu.intensity,
-			uActiveColor: new Uniform( new Color( '#424444' ) ),
+			uActiveColor: new Uniform( this.activeColor ),
 		};
 
 	}
@@ -223,7 +230,28 @@ class Backgrid extends Sketch {
 
 	tick( delta ) {
 
+		this.delta.value = delta * 0.003;
+		this.time.value += delta * 0.0003;
+
 		this.gpgpu.tick();
+
+		// Test scroll
+		//this.cores.position.y = ( this.cores.position.y + 0.01 ) % 0.34;
+		//this.shells.position.copy( this.cores.position );
+
+		// Test ranges
+		//this.max = 0;
+		//this.min = 0;
+		//const data = this.gpgpu.variables.intensity.read();
+		//this.max = data.reduce( ( acc, value ) => {
+		//	if ( value > acc ) acc = value;
+		//	return acc;
+		//}, this.max );
+		//this.min = data.reduce( ( acc, value ) => {
+		//	if ( value < acc ) acc = value;
+		//	return acc;
+		//}, this.min );
+		//console.log( { min: this.min, max: this.max } );
 
 		super.tick( delta );
 

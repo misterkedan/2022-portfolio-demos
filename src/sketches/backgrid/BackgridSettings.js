@@ -7,8 +7,11 @@ const BackgridSettings = {
 		color2: '#1c1c21',
 	},
 
+	activeColor: '#435056',
 	material: {
-		color: '#333333',
+		color: '#22222a',
+		//opacity: 0.5,
+		//transparent: true,
 	},
 
 	cameraStart: { x: 0, y: 0, z: 8 },
