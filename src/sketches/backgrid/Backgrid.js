@@ -18,7 +18,7 @@ class Backgrid extends Sketch {
 		this.bounds = new CameraBounds(
 			this.camera, - 1, - 3,
 		);
-		this.color = new Color( settings.material.color );
+		this.color = new Color( this.settings.material.color );
 		this.cursor = new Uniform();
 
 	}
