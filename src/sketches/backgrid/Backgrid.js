@@ -22,14 +22,16 @@ class Backgrid extends Sketch {
 
 		super.init( BackgridControls );
 
+		this.shader.uniforms.uCursor.value = this.controls.cursor.position;
+
 	}
 
 	build() {
 
 		const { settings } = this;
 
-		const boxSize = 0.022;
-		const boxMargin = 0.14;
+		const boxSize = 0.016;
+		const boxMargin = 0.3;
 		const boxSpacing = boxSize + boxMargin;
 
 
@@ -38,13 +40,16 @@ class Backgrid extends Sketch {
 
 		//const dotCount = 1024; // 32 * 32;
 
-		const size = 128;
+		const size = 64;
 		const dotCount = size * size;
 		const offsets = new Float32Array( dotCount * 3 );
+
 
 		const totalSize = boxSpacing * size;
 		const startX = ( boxSpacing - totalSize ) / 2;
 		const startY = - ( boxSpacing - totalSize ) / 2;
+
+		this.size = totalSize;
 
 		let o = 0;
 
@@ -60,24 +65,50 @@ class Backgrid extends Sketch {
 
 		}
 
-		const geometry = new InstancedBufferGeometry();
-		geometry.instanceCount = dotCount;
-		geometry.setAttribute(
+		const coreGeometry = new InstancedBufferGeometry();
+		coreGeometry.instanceCount = dotCount;
+		coreGeometry.setAttribute(
 			'position',
 			new Float32BufferAttribute().copy( edges.attributes.position )
 		);
-		geometry.setAttribute(
+		coreGeometry.setAttribute(
 			'aOffset',
 			new InstancedBufferAttribute( offsets, 3 )
 		);
 
-		const material = new LineBasicMaterial( settings.material );
-		material.onBeforeCompile = this.editShader.bind( this );
+		const coreMaterial = new LineBasicMaterial( settings.material );
+		coreMaterial.onBeforeCompile = this.editShader.bind( this );
 
-		const dots = new LineSegments( geometry, material );
-		dots.position.z = - 5;
-		this.add( dots );
-		this.dots = dots;
+		const cores = new LineSegments( coreGeometry, coreMaterial );
+		this.add( cores );
+		this.dots = cores;
+
+		// Shells
+
+		const shellScale = 2.9;
+		edges.scale( shellScale, shellScale, shellScale );
+
+		const shellGeometry = new InstancedBufferGeometry();
+		shellGeometry.instanceCount = dotCount;
+		shellGeometry.setAttribute(
+			'position',
+			new Float32BufferAttribute().copy( edges.attributes.position )
+		);
+		shellGeometry.setAttribute(
+			'aOffset',
+			new InstancedBufferAttribute( offsets, 3 )
+		);
+
+		const shells = new LineSegments( shellGeometry, coreMaterial );
+		shells.position.copy( cores.position );
+		this.add( shells );
+		this.shells = shells;
+
+		this.shader = {
+			uniforms: {
+				uCursor: { value: null }
+			},
+		};
 
 	}
 
@@ -93,8 +124,14 @@ class Backgrid extends Sketch {
 
 		const vertexDeclarations = /*glsl*/`
 			attribute vec3 aOffset;
+			uniform vec3 uCursor;
 		`;
 		const vertexChanges = /*glsl*/`
+			transformed *= clamp( 
+				pow( 1.0 / length( uCursor - aOffset ) + 1.0 , 2.0 ),
+				0.0,
+				6.0
+			);
 			transformed += aOffset;
 		`;
 
@@ -124,12 +161,11 @@ class Backgrid extends Sketch {
 		//	fragmentChanges
 		//);
 
-		//Object.assign( shader.uniforms, this.shader.uniforms );
+		Object.assign( shader.uniforms, this.shader.uniforms );
 
 		this.shader = shader;
 
 	}
-
 
 }
 

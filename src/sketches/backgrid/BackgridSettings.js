@@ -11,8 +11,25 @@ const BackgridSettings = {
 		color: '#333333'
 	},
 
-	cameraStart: false,
-	cameraLookAt: false,
+	cameraStart: { x: 0, y: 0, z: 8 },
+	//cameraLookAt: false,
+
+	hitbox: {
+		material: {
+			color: '#ff0000',
+			opacity: 0.25,
+			transparent:true,
+		},
+	},
+
+	cursor: {
+		size: 0.1,
+		material: {
+			color: '#ff0000',
+			wireframe: true
+		},
+		lerpSpeed: 0.01,
+	},
 
 };
 
