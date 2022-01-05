@@ -55,7 +55,9 @@ module.exports = ( env, argv ) => {
 		...config,
 		mode: 'production',
 		externals: {
-			animejs: 'anime',
+			'animejs': 'anime',
+			'stats.js': 'Stats',
+			'lil-gui': 'GUI',
 			three: 'THREE',
 		},
 		optimization: {

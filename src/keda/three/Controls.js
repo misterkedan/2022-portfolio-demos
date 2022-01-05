@@ -1,5 +1,5 @@
 import { MathUtils } from 'three';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { GUI } from 'lil-gui';
 import { CursorTracker } from 'keda/misc/CursorTracker';
 import { CameraRig } from 'keda/three/misc/CameraRig';
 
