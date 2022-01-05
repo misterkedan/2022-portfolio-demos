@@ -1,14 +1,6 @@
-/**
- * Dither edit by Pierre Keda
- *
- * Original UnrealBloomPass class from:
- * https://github.com/mrdoob/three.js/blob/dev/examples/jsm/postprocessing/UnrealBloomPass.js
- */
-
 import { ShaderMaterial, Vector2 } from 'three';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-
-import bayerMatrixDither from '../../glsl/bayerMatrixDither.glsl';
+import bayerMatrixDither from 'keda/glsl/bayerMatrixDither.glsl';
 
 /**
  * UnrealBloomPass is inspired by the bloom pass of Unreal Engine. It creates a
@@ -18,6 +10,13 @@ import bayerMatrixDither from '../../glsl/bayerMatrixDither.glsl';
  *
  * Reference:
  * - https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/Bloom/
+ */
+
+/**
+ * Dither edit by Pierre Keda
+ *
+ * Original UnrealBloomPass class from:
+ * https://github.com/mrdoob/three.js/blob/dev/examples/jsm/postprocessing/UnrealBloomPass.js
  */
 class BloomPass extends UnrealBloomPass {
 
@@ -31,33 +30,31 @@ class BloomPass extends UnrealBloomPass {
 	getCompositeMaterial( nMips ) {
 
 		return new ShaderMaterial( {
-
 			defines: {
 				'NUM_MIPS': nMips
 			},
-
 			uniforms: {
-				'blurTexture1': { value: null },
-				'blurTexture2': { value: null },
-				'blurTexture3': { value: null },
-				'blurTexture4': { value: null },
-				'blurTexture5': { value: null },
-				'dirtTexture': { value: null },
-				'bloomStrength': { value: 1.0 },
-				'bloomFactors': { value: null },
-				'bloomTintColors': { value: null },
-				'bloomRadius': { value: 0.0 }
+				blurTexture1:	{ value: null },
+				blurTexture2:	{ value: null },
+				blurTexture3:	{ value: null },
+				blurTexture4:	{ value: null },
+				blurTexture5:	{ value: null },
+				dirtTexture:	{ value: null },
+				bloomStrength:	{ value: 1.0 },
+				bloomFactors:	{ value: null },
+				bloomTintColors:{ value: null },
+				bloomRadius:	{ value: 0.0 }
 			},
+			vertexShader: /*glsl*/`
+				varying vec2 vUv;
 
-			vertexShader:
-				`varying vec2 vUv;
 				void main() {
 					vUv = uv;
 					gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-				}`,
-
-			fragmentShader:
-				`varying vec2 vUv;
+				}
+			`,
+			fragmentShader: /*glsl*/`
+				varying vec2 vUv;
 				uniform sampler2D blurTexture1;
 				uniform sampler2D blurTexture2;
 				uniform sampler2D blurTexture3;
@@ -88,7 +85,8 @@ class BloomPass extends UnrealBloomPass {
 					color.rgb = bayerMatrixDither( color.rgb );
 
 					gl_FragColor = color;
-				}`
+				}
+			`
 		} );
 
 	}

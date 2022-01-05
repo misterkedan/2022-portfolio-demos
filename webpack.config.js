@@ -11,13 +11,17 @@ let config = {
 	module: {
 		rules: [
 			{
-				test: /\.js$/,
-				exclude: [ /node_modules/ ],
-				loader: 'babel-loader',
-				options: { presets: [ '@babel/preset-env' ] },
+				test: /\.m?js$/,
+				exclude: /node_modules/,
+				use: {
+					loader: 'babel-loader',
+					options: {
+						presets: [ '@babel/preset-env' ]
+					}
+				},
 			}, {
 				test: /\.(glsl)$/,
-				exclude: [ /node_modules/ ],
+				exclude: /node_modules/,
 				loader: 'raw-loader',
 			},
 		],
@@ -26,6 +30,9 @@ let config = {
 		alias: {
 			keda: path.resolve( __dirname, './src/keda/' ),
 		},
+	},
+	optimization: {
+		minimize: false,
 	},
 };
 
@@ -41,9 +48,6 @@ module.exports = ( env, argv ) => {
 			},
 			host: '192.168.1.10',
 			port: 8080,
-		},
-		optimization: {
-			minimize: false,
 		},
 	};
 

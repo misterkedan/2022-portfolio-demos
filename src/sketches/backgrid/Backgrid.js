@@ -32,8 +32,6 @@ class Backgrid extends Sketch {
 			this.camera, - 1, - 3,
 		);
 
-
-
 	}
 
 	init() {
@@ -169,6 +167,7 @@ class Backgrid extends Sketch {
 		this.time = new Uniform( 0 );
 		this.delta = new Uniform( 0 );
 		this.scale = new Uniform( 0.2 );
+		this.depth = new Uniform( 0.3 );
 
 		GPGPU.init( this.sketchpad.renderer );
 
@@ -209,6 +208,8 @@ class Backgrid extends Sketch {
 		);
 
 		Object.assign( shader.uniforms, this.uniforms );
+		shader.uniforms.uDepth = this.depth;
+
 		this.coreShader = shader;
 
 	}
@@ -235,23 +236,8 @@ class Backgrid extends Sketch {
 
 		this.gpgpu.tick();
 
-		// Test scroll
-		//this.cores.position.y = ( this.cores.position.y + 0.01 ) % 0.34;
+		//this.cores.position.y = ( this.cores.position.y - 0.02 ) % 0.34;
 		//this.shells.position.copy( this.cores.position );
-
-		// Test ranges
-		//this.max = 0;
-		//this.min = 0;
-		//const data = this.gpgpu.variables.intensity.read();
-		//this.max = data.reduce( ( acc, value ) => {
-		//	if ( value > acc ) acc = value;
-		//	return acc;
-		//}, this.max );
-		//this.min = data.reduce( ( acc, value ) => {
-		//	if ( value < acc ) acc = value;
-		//	return acc;
-		//}, this.min );
-		//console.log( { min: this.min, max: this.max } );
 
 		super.tick( delta );
 

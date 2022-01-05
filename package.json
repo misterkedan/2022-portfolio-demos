@@ -1,6 +1,6 @@
 {
   "name": "portfolio-covers",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Pierre Keda's portfolio cover animations.",
   "author": "Pierre Keda",
   "license": "MIT",
@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",
-    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-env": "^7.16.7",
     "babel-loader": "^8.2.3",
     "eslint": "^8.5.0",
     "eslint-config-mdcs": "^5.0.0",

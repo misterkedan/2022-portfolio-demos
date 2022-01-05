@@ -15,6 +15,8 @@ class BackgridControls extends Controls {
 
 		super( sketch, { cameraRig: false } );
 
+		//this.origin = new Vector3( 0, 0, 0 );
+		this.intensity = 0.5;
 		this.initRaycaster();
 
 	}
@@ -81,6 +83,18 @@ class BackgridControls extends Controls {
 			intersection?.point,
 			cursorLerpSpeed
 		);
+
+		// Tracker
+
+		const lerpSpeed = 0.05;
+		const targetIntensity = ( sketch.camera.aspect > 1 )
+			? tracker.reverseCenterX
+			: tracker.reverseCenterY
+		;
+		this.intensity = lerp( this.intensity, targetIntensity, lerpSpeed );
+
+		sketch.depth.value = lerp( 0.5, 0.1, this.intensity );
+		sketch.scale.value = lerp( 0.1, 1, this.intensity );
 
 	}
 

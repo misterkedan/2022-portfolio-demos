@@ -1,12 +1,13 @@
 import { FloatPack } from 'keda/three/gpgpu/FloatPack';
 import simplex3D from 'keda/glsl/simplex3D.glsl';
-//import rotateX from 'keda/glsl/transform/rotateX.glsl';
-//import rotateY from 'keda/glsl/transform/rotateY.glsl';
-//import rotateZ from 'keda/glsl/transform/rotateZ.glsl';
 
 const BackgridGLSL = {};
 
-// GPGPU
+/*-----------------------------------------------------------------------------/
+
+	GPGPU
+
+/-----------------------------------------------------------------------------*/
 
 BackgridGLSL.GPGPU_intensity = /*glsl*/`
 
@@ -55,7 +56,11 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 }
 `;
 
-// Cores
+/*-----------------------------------------------------------------------------/
+
+	Cores
+
+/-----------------------------------------------------------------------------*/
 
 BackgridGLSL.core = {};
 
@@ -63,16 +68,16 @@ BackgridGLSL.core.vertexHead = /*glsl*/`
 attribute vec3 aOffset;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
+uniform float uDepth;
 varying float vIntensity;
 ${ FloatPack.glsl }
 `;
 BackgridGLSL.core.vertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
-	//transformed *= 0.8 + ( 1.0 - intensity ) * 0.2;
 	transformed *= 0.2 + vIntensity;
 	transformed += aOffset;
-	transformed.z -= vIntensity * 0.3;
+	transformed.z -= vIntensity * uDepth;
 `;
 
 BackgridGLSL.core.fragmentHead = /*glsl*/`
@@ -83,7 +88,11 @@ BackgridGLSL.core.fragmentBody = /*glsl*/`
 	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
 `;
 
-// Shells
+/*-----------------------------------------------------------------------------/
+
+	Shells
+
+/-----------------------------------------------------------------------------*/
 
 BackgridGLSL.shell = {};
 
@@ -100,7 +109,6 @@ BackgridGLSL.shell.vertexBody = /*glsl*/`
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
 	transformed *= intensity * 0.2;
 	transformed += aOffset;
-	//transformed.z -= vIntensity * 0.2;
 `;
 
 BackgridGLSL.shell.fragmentHead = /*glsl*/`
@@ -110,6 +118,5 @@ BackgridGLSL.shell.fragmentHead = /*glsl*/`
 BackgridGLSL.shell.fragmentBody = /*glsl*/`
 	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
 `;
-
 
 export { BackgridGLSL };
