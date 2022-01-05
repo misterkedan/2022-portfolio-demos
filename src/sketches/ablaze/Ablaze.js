@@ -14,17 +14,14 @@ import {
 	Vector3,
 } from 'three';
 
-import rotateZ from 'keda/glsl/transform/rotateZ.glsl';
-import { Sketch } from 'keda/three/Sketch';
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 import { CameraBounds } from 'keda/three/misc/CameraBounds';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
+import { Sketch } from 'keda/three/Sketch';
 
 import { AblazeControls } from './AblazeControls';
 import { AblazeSettings } from './AblazeSettings';
-import GPGPU_x_shader from './shaders/GPGPU_x.frag';
-import GPGPU_y_shader from './shaders/GPGPU_y.frag';
-import GPGPU_z_shader from './shaders/GPGPU_z.frag';
+import { AblazeShaders } from './AblazeShaders';
 
 class Ablaze extends Sketch {
 
@@ -50,7 +47,7 @@ class Ablaze extends Sketch {
 
 	}
 
-	build() {
+	initScene() {
 
 		const { random, settings } = this;
 
@@ -126,7 +123,7 @@ class Ablaze extends Sketch {
 		// Particle
 
 		const material = new LineBasicMaterial( settings.particle.material );
-		material.onBeforeCompile = this.editShader.bind( this );
+		material.onBeforeCompile = this.initShader.bind( this );
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
@@ -180,7 +177,7 @@ class Ablaze extends Sketch {
 
 		gpgpu.addVariable( 'x', {
 			data: positionsX,
-			shader: GPGPU_x_shader,
+			shader: AblazeShaders.GPGPU_x,
 			uniforms: {
 				uBounds: { value: this.bounds.x },
 				...uniformsXYZ,
@@ -189,7 +186,7 @@ class Ablaze extends Sketch {
 
 		gpgpu.addVariable( 'y', {
 			data: positionsY,
-			shader: GPGPU_y_shader,
+			shader: AblazeShaders.GPGPU_y,
 			uniforms: {
 				uBounds: { value: this.bounds.y },
 				...uniformsXYZ,
@@ -198,7 +195,7 @@ class Ablaze extends Sketch {
 
 		gpgpu.addVariable( 'z', {
 			data: positionsZ,
-			shader: GPGPU_z_shader,
+			shader: AblazeShaders.GPGPU_z,
 			uniforms: {
 				uBounds: { value: this.bounds.z },
 				...uniformsXYZ,
@@ -231,83 +228,10 @@ class Ablaze extends Sketch {
 
 	}
 
-	editShader( shader ) {
+	initShader( shader ) {
 
-		// THREE tokens ( r136 )
-
-		const common = '#include <common>';
-		const beginVertex = '#include <begin_vertex>';
-		const diffuseColor = 'vec4 diffuseColor = vec4( diffuse, opacity )';
-
-		// Vertex
-
-		const vertexDeclarations = /*glsl*/`
-			attribute vec2 GPGPU_target;
-			uniform sampler2D GPGPU_x;
-			uniform sampler2D GPGPU_y;
-			uniform sampler2D GPGPU_z;
-
-			attribute float aNoise;
-			uniform float uRotation;
-			uniform float uTime;
-			varying float vAltitude;
-			uniform vec3 uBounds;
-			uniform vec3 uScale;
-
-			${ GPGPU.FloatPack.glsl }
-
-			${ rotateZ }
-		`;
-		const vertexChanges = /*glsl*/`
-			float translateX = unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
-			float translateY = unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
-			float translateZ = unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
-
-			vAltitude = mix( 1.0, 0.0, ( translateY - uBounds.x ) / uBounds.z );
-			
-			float scale = mix( 
-				uScale.x,
-				uScale.y,
-				vAltitude * mix( uScale.z, 1.0, aNoise )
-			);
-			mat3 rotation = rotateZ( uTime * uRotation * aNoise );
-			
-			transformed *= scale * rotation;
-			transformed += vec3( translateX, translateY, translateZ );
-		`;
-
-		const fragmentDeclarations = /*glsl*/`
-			uniform vec3 uColorTop;
-			varying float vAltitude;
-		`;
-		const fragmentChanges = /*glsl*/`
-			vec4 diffuseColor = vec4( 
-				mix( uColorTop, diffuse, vAltitude ), 
-				opacity
-			);
-		`;
-
-		// Apply
-
-		shader.vertexShader = shader.vertexShader.replace(
-			common,
-			common + vertexDeclarations
-		);
-		shader.vertexShader = shader.vertexShader.replace(
-			beginVertex,
-			beginVertex + vertexChanges
-		);
-		shader.fragmentShader = shader.fragmentShader.replace(
-			common,
-			common + fragmentDeclarations
-		);
-		shader.fragmentShader = shader.fragmentShader.replace(
-			diffuseColor,
-			fragmentChanges
-		);
-
+		AblazeShaders.edit( shader );
 		Object.assign( shader.uniforms, this.shader.uniforms );
-
 		this.shader = shader;
 
 	}

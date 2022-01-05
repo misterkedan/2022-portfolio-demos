@@ -6,11 +6,14 @@ import {
 	Object3D,
 	RingGeometry,
 } from 'three';
-import { Sketch } from 'keda/three/Sketch';
+
+import { CameraBounds } from 'keda/three/misc/CameraBounds';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
+import { Sketch } from 'keda/three/Sketch';
+
 import { RainControls } from './RainControls';
 import { RainSettings } from './RainSettings';
-import { CameraBounds } from '../../keda/three/misc/CameraBounds';
+import { RainShaders } from './RainShaders';
 
 class Rain extends Sketch {
 
@@ -32,7 +35,7 @@ class Rain extends Sketch {
 
 	}
 
-	build() {
+	initScene() {
 
 		// Create InstancedMesh
 
@@ -41,7 +44,7 @@ class Rain extends Sketch {
 		geometry.rotateX( - Math.PI / 2 );
 
 		const material = new MeshBasicMaterial( this.settings.material );
-		material.onBeforeCompile = this.editShader.bind( this );
+		material.onBeforeCompile = RainShaders.edit;
 
 		const { instances } = this.settings;
 		this.mesh = new InstancedMesh( geometry, material, instances );
@@ -74,40 +77,6 @@ class Rain extends Sketch {
 
 		this.mesh.instanceMatrix.setUsage( DynamicDrawUsage );
 		this.mesh.count = this.maxCount;
-
-	}
-
-	editShader( shader ) {
-
-		/*eslint-disable*/
-		const common = /*glsl*/`#include <common>`;
-		const vertDefs = /*glsl*/`
-			attribute float aProgress;
-			varying float vProgress;
-		`;
-		const fragDefs = /*glsl*/`
-			varying float vProgress;
-		`;
-
-		const vertToken = /*glsl*/`#include <begin_vertex>`;
-		const vertInsert = /*glsl*/`
-			vProgress = aProgress;
-		`;
-
-		const fragToken = /*glsl*/`vec4 diffuseColor = vec4( diffuse, opacity );`
-		const fragEdit = /*glsl*/`
-			float progressOpacity =  opacity * mod( 1.0 - vProgress, 1.0 );
-			vec4 diffuseColor = vec4( diffuse, progressOpacity );
-		`;
-		/*eslint-enable*/
-
-		shader.vertexShader = shader.vertexShader
-			.replace( common, common + vertDefs )
-			.replace( vertToken, vertToken + vertInsert );
-
-		shader.fragmentShader = shader.fragmentShader
-			.replace( common, common + fragDefs )
-			.replace( fragToken, fragEdit );
 
 	}
 

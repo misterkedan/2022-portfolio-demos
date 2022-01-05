@@ -29,12 +29,12 @@ class Sketch {
 
 		this.random = random || ( settings.random ) ? new Random() : null;
 
-		if ( ! background && settings.background ) this.buildBackground();
+		if ( ! background && settings.background ) this.initBackground();
 
 
 	}
 
-	buildBackground() {
+	initBackground() {
 
 		const { background } = this.settings;
 
@@ -60,13 +60,13 @@ class Sketch {
 
 	init( ControlClass = Controls ) {
 
-		this.build();
+		this.initScene();
 
 		if ( ControlClass ) this.controls = new ControlClass( this );
 
 	}
 
-	build() {
+	initScene() {
 
 		// Build sketch in subclasses
 

@@ -9,11 +9,13 @@ import {
 	LineSegments,
 	PlaneGeometry
 } from 'three';
-import simplex3D from 'keda/glsl/simplex3D.glsl';
-import { Sketch } from 'keda/three/Sketch';
+
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
+import { Sketch } from 'keda/three/Sketch';
+
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
+import { BlockflowShaders } from './BlockflowShaders';
 
 class Blockflow extends Sketch {
 
@@ -28,7 +30,7 @@ class Blockflow extends Sketch {
 
 	init() {
 
-		this.build();
+		this.initScene();
 
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
@@ -37,7 +39,7 @@ class Blockflow extends Sketch {
 
 	}
 
-	build() {
+	initScene() {
 
 		// Computations
 
@@ -102,7 +104,7 @@ class Blockflow extends Sketch {
 		};
 
 		const material = new LineBasicMaterial( settings.material );
-		material.onBeforeCompile = this.editShader.bind( this );
+		material.onBeforeCompile = this.initShader.bind( this );
 
 		// Grid
 
@@ -127,85 +129,10 @@ class Blockflow extends Sketch {
 
 	}
 
-	editShader( shader ) {
+	initShader( shader ) {
 
-		// THREE tokens ( r136 )
-
-		const common = '#include <common>';
-		const beginVertex = '#include <begin_vertex>';
-		const diffuseColor = 'vec4 diffuseColor = vec4( diffuse, opacity )';
-
-		// Vertex
-
-		const vertexDeclarations = /*glsl*/`
-			attribute vec3 aOffset;
-			uniform float uAmplitude;
-			uniform float uScale;
-			uniform float uTime;
-			uniform float uThickness;
-			uniform float uTurbulence;
-			uniform vec3 uCursor;
-			varying float vHeight;
-			${simplex3D}
-		`;
-
-		const vertexChanges = /*glsl*/`
-			transformed += aOffset;
-
-			float distanceToCursor = length( uCursor - aOffset );
-			float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
-
-			float waves = simplex3D(
-				uScale * 0.02 * aOffset.x, 
-				distanceToCursor * 0.1 - uTime,
-				uScale * 0.02 * aOffset.z
-			) * force * 8.0;
-
-			float turbulence = simplex3D(
-				aOffset.x * uScale,
-				aOffset.z * uScale,
-				uTime
-			) * uTurbulence;
-
-			float noise = abs( uThickness + waves + turbulence );
-
-			transformed.y *= position.y * noise * uAmplitude;
-
-			vHeight = transformed.y;
-		`;
-
-		// Fragment
-
-		const fragmentDeclarations = /*glsl*/`
-			uniform vec3 uHighColor;
-			varying float vHeight;
-		`;
-
-		const fragmentChanges = /*glsl*/`
-			vec4 diffuseColor = vec4( mix( diffuse, uHighColor, vHeight ), opacity );
-		`;
-
-		// Apply changes
-
-		shader.vertexShader = shader.vertexShader.replace(
-			common,
-			common + vertexDeclarations
-		);
-		shader.vertexShader = shader.vertexShader.replace(
-			beginVertex,
-			beginVertex + vertexChanges
-		);
-		shader.fragmentShader = shader.fragmentShader.replace(
-			common,
-			common + fragmentDeclarations
-		);
-		shader.fragmentShader = shader.fragmentShader.replace(
-			diffuseColor,
-			fragmentChanges
-		);
-
+		BlockflowShaders.edit( shader );
 		Object.assign( shader.uniforms, this.shader.uniforms );
-
 		this.shader = shader;
 
 	}

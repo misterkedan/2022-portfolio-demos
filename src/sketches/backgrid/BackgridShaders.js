@@ -1,7 +1,6 @@
-import { FloatPack } from 'keda/three/gpgpu/FloatPack';
-import simplex3D from 'keda/glsl/simplex3D.glsl';
+import { Shaders } from 'keda/three/Shaders';
 
-const BackgridGLSL = {};
+class BackgridShaders extends Shaders {}
 
 /*-----------------------------------------------------------------------------/
 
@@ -9,7 +8,7 @@ const BackgridGLSL = {};
 
 /-----------------------------------------------------------------------------*/
 
-BackgridGLSL.GPGPU_intensity = /*glsl*/`
+BackgridShaders.GPGPU_intensity = /*glsl*/`
 
 	uniform sampler2D GPGPU_intensity;
 	uniform sampler2D GPGPU_offsetX;
@@ -19,8 +18,8 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 	uniform float uNoiseScale;
 	uniform float uTime;
 
-	${ FloatPack.glsl }
-	${ simplex3D }
+	${ Shaders.floatPack }
+	${ Shaders.simplex3D }
 
 	void main() {
 	
@@ -66,31 +65,39 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 
 /-----------------------------------------------------------------------------*/
 
-BackgridGLSL.core = {};
-
-BackgridGLSL.core.vertexHead = /*glsl*/`
+const coreVertexHead = /*glsl*/`
 attribute float aOffsetX;
 attribute float aOffsetY;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
 uniform float uDepth;
 varying float vIntensity;
-${ FloatPack.glsl }
+${ Shaders.floatPack }
 `;
-BackgridGLSL.core.vertexBody = /*glsl*/`
+
+const coreVertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
 	transformed *= ( vIntensity + 0.2 );
 	transformed += vec3( aOffsetX, aOffsetY, - vIntensity * uDepth );
 `;
 
-BackgridGLSL.core.fragmentHead = /*glsl*/`
+const coreFragmentHead = /*glsl*/`
 uniform vec3 uActiveColor;
 varying float vIntensity;
 `;
-BackgridGLSL.core.fragmentBody = /*glsl*/`
+
+const coreFragmentBody = /*glsl*/`
 	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
 `;
+
+BackgridShaders.editCore = ( shader ) => Shaders.editBasic(
+	shader,
+	coreVertexHead,
+	coreVertexBody,
+	coreFragmentHead,
+	coreFragmentBody
+);
 
 /*-----------------------------------------------------------------------------/
 
@@ -98,30 +105,37 @@ BackgridGLSL.core.fragmentBody = /*glsl*/`
 
 /-----------------------------------------------------------------------------*/
 
-BackgridGLSL.shell = {};
-
-BackgridGLSL.shell.vertexHead = /*glsl*/`
-	attribute float aOffsetX;
+const shellVertexHead = /*glsl*/`
+attribute float aOffsetX;
 attribute float aOffsetY;
-	attribute vec2 GPGPU_target;
-	uniform sampler2D GPGPU_intensity;
-	varying float vIntensity;
-	${ FloatPack.glsl }
-
+attribute vec2 GPGPU_target;
+uniform sampler2D GPGPU_intensity;
+varying float vIntensity;
+${ Shaders.floatPack }
 `;
-BackgridGLSL.shell.vertexBody = /*glsl*/`
+
+const shellVertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
 	transformed *= intensity * 0.38;
 	transformed += vec3( aOffsetX, aOffsetY, 0.0 );
 `;
 
-BackgridGLSL.shell.fragmentHead = /*glsl*/`
-	uniform vec3 uActiveColor;
-	varying float vIntensity;
+const shellFragmentHead = /*glsl*/`
+uniform vec3 uActiveColor;
+varying float vIntensity;
 `;
-BackgridGLSL.shell.fragmentBody = /*glsl*/`
+
+const shellFragmentBody = /*glsl*/`
 	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
 `;
 
-export { BackgridGLSL };
+BackgridShaders.editShell = ( shader ) => Shaders.editBasic(
+	shader,
+	shellVertexHead,
+	shellVertexBody,
+	shellFragmentHead,
+	shellFragmentBody
+);
+
+export { BackgridShaders };

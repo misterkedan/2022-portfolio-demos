@@ -5,11 +5,13 @@ import {
 	LineSegments,
 	Vector3
 } from 'three';
-import { Sketch } from 'keda/three/Sketch';
+
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
-import simplex3D from 'keda/glsl/simplex3D.glsl';
+import { Sketch } from 'keda/three/Sketch';
+
 import { NavscanControls } from './NavscanControls';
 import { NavscanSettings } from './NavscanSettings';
+import { NavscanShaders } from './NavscanShaders';
 
 class Navscan extends Sketch {
 
@@ -27,7 +29,7 @@ class Navscan extends Sketch {
 
 	}
 
-	build() {
+	initScene() {
 
 		const { tilesX, tilesZ, tileWidth, tileDepth } = this.settings;
 
@@ -115,7 +117,7 @@ class Navscan extends Sketch {
 		// Lines
 
 		const material = new LineBasicMaterial( this.settings.material );
-		material.onBeforeCompile = this.editShader.bind( this );
+		material.onBeforeCompile = this.initShader.bind( this );
 
 		const grid = new LineSegments( geometry, material );
 		grid.position.set( 0, 0, this.settings.offsetZ );
@@ -134,48 +136,10 @@ class Navscan extends Sketch {
 
 	}
 
-	editShader( shader ) {
+	initShader( shader ) {
 
+		NavscanShaders.edit( shader );
 		Object.assign( shader.uniforms, this.shader.uniforms );
-
-		const insertA = /*glsl*/`
-		uniform float uAmp;
-		uniform float uDistance;
-		uniform vec3 uNoiseScale;
-		${ simplex3D }
-		`;
-
-		const tokenA = '#include <common>';
-		shader.vertexShader = shader.vertexShader.replace(
-			tokenA,
-			tokenA + insertA,
-		);
-
-		const insertB = /*glsl*/`
-			// Z
-			transformed.z += mod( uDistance, 0.4 );
-
-			// Y
-			float x = position.x;
-			float z = uDistance - transformed.z;
-			float noise = simplex3D( 
-				x * uNoiseScale.x,
-				mod( x, 2.0 ) *uNoiseScale.y,
-				z * uNoiseScale.z
-			);
-
-			float largeNoise = uAmp * (
-				simplex3D( x * 0.03, z * 0.03, uNoiseScale.x ) * 0.7 - 1.0
-			);
-
-			transformed.y = uAmp * ( clamp( noise * uAmp, -0.3, 0.3 ) + largeNoise );
-		`;
-		const tokenB = '#include <begin_vertex>';
-		shader.vertexShader = shader.vertexShader.replace(
-			tokenB,
-			tokenB + insertB
-		);
-
 		this.shader = shader;
 
 	}

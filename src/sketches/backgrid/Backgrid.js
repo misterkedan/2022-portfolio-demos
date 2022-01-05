@@ -16,11 +16,10 @@ import {
 
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
 import { Sketch } from 'keda/three/Sketch';
-import { editBasicMaterialShader } from 'keda/three/misc/Utils';
 
 import { BackgridControls } from './BackgridControls';
 import { BackgridSettings } from './BackgridSettings';
-import { BackgridGLSL } from './BackgridGLSL';
+import { BackgridShaders } from './BackgridShaders';
 
 class Backgrid extends Sketch {
 
@@ -38,7 +37,7 @@ class Backgrid extends Sketch {
 
 	}
 
-	build() {
+	initScene() {
 
 		const { settings } = this;
 
@@ -109,7 +108,7 @@ class Backgrid extends Sketch {
 		setInstancedAttributes( coreGeometry );
 
 		const coreMaterial = new MeshBasicMaterial( settings.material );
-		coreMaterial.onBeforeCompile = this.editCoreShader.bind( this );
+		coreMaterial.onBeforeCompile = this.initCoreShader.bind( this );
 
 		const cores = new Mesh( coreGeometry, coreMaterial );
 		container.add( cores );
@@ -127,7 +126,7 @@ class Backgrid extends Sketch {
 		setInstancedAttributes( shellGeometry );
 
 		const shellMaterial = new LineBasicMaterial( settings.material );
-		shellMaterial.onBeforeCompile = this.editShellShader.bind( this );
+		shellMaterial.onBeforeCompile = this.initShellShader.bind( this );
 
 		const shells = new LineSegments( shellGeometry, shellMaterial );
 		container.add( shells );
@@ -171,7 +170,7 @@ class Backgrid extends Sketch {
 		gpgpu.addConstant( 'offsetY', offsetsY );
 
 		gpgpu.addVariable( 'intensity', {
-			shader: BackgridGLSL.GPGPU_intensity,
+			shader: BackgridShaders.GPGPU_intensity,
 			uniforms: {
 				GPGPU_offsetX: gpgpu.offsetX,
 				GPGPU_offsetY: gpgpu.offsetY,
@@ -191,31 +190,17 @@ class Backgrid extends Sketch {
 
 	}
 
-	editCoreShader( shader ) {
+	initCoreShader( shader ) {
 
-		editBasicMaterialShader(
-			shader,
-			BackgridGLSL.core.vertexHead,
-			BackgridGLSL.core.vertexBody,
-			BackgridGLSL.core.fragmentHead,
-			BackgridGLSL.core.fragmentBody
-		);
-
+		BackgridShaders.editCore( shader );
 		Object.assign( shader.uniforms, this.uniforms );
 		shader.uniforms.uDepth = this.depth;
 
 	}
 
-	editShellShader( shader ) {
+	initShellShader( shader ) {
 
-		editBasicMaterialShader(
-			shader,
-			BackgridGLSL.shell.vertexHead,
-			BackgridGLSL.shell.vertexBody,
-			BackgridGLSL.shell.fragmentHead,
-			BackgridGLSL.shell.fragmentBody
-		);
-
+		BackgridShaders.editShell( shader );
 		Object.assign( shader.uniforms, this.uniforms );
 
 	}
