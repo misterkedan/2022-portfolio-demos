@@ -13,7 +13,13 @@ class Controls {
 		this.sketch = sketch;
 		if ( tracker ) this.initTracker();
 		if ( cameraRig ) this.initCamera();
-		if ( sketch.settings.gui ) this.initGUI();
+		if ( sketch.settings.gui ) {
+
+			this.initGUI();
+			this.gui.title( sketch.name.toUpperCase() );
+			this.autoCloseGUI();
+
+		}
 
 	}
 
@@ -59,9 +65,27 @@ class Controls {
 
 	/-------------------------------------------------------------------------*/
 
+	autoCloseGUI() {
+
+		if ( ! this.gui ) return;
+		if ( ! this.sketch.sketchpad.wide ) this.gui.close();
+
+	}
+
+	refreshGUI() {
+
+		if ( ! this.gui || this.gui._closed ) return;
+
+		this.gui.controllersRecursive().forEach(
+			controller => controller.updateDisplay()
+		);
+
+	}
+
 	resize( width, height ) {
 
 		this.tracker?.resize( width, height );
+		this.autoCloseGUI();
 
 	}
 
@@ -82,7 +106,6 @@ class Controls {
 /-----------------------------------------------------------------------------*/
 
 Controls.GUI = GUI;
-Controls.GUI_MINIFY_BREAKPOINT = 1000;
 Controls.VALUE = 'value';
 Controls.clamp = MathUtils.clamp;
 Controls.lerp = MathUtils.lerp;

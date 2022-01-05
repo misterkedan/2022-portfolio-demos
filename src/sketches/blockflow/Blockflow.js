@@ -30,11 +30,10 @@ class Blockflow extends Sketch {
 
 	init() {
 
-		this.initScene();
-
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
-		this.controls = new BlockflowControls( this );
+		super.init( BlockflowControls );
+
 		this.shader.uniforms.uCursor.value = this.controls.cursor.position;
 
 	}

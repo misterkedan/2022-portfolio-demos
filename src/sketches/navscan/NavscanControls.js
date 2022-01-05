@@ -15,7 +15,7 @@ class NavscanControls extends Controls {
 
 		const { sketch } = this;
 
-		const gui = new Controls.GUI( { title: sketch.settings.title } );
+		const gui = new Controls.GUI();
 
 		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
@@ -27,7 +27,6 @@ class NavscanControls extends Controls {
 		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
 
-		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
 		this.gui = gui;
 
 	}

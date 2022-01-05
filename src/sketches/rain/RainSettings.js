@@ -3,7 +3,7 @@ const innerRadius = 0.6;
 
 const RainSettings = {
 
-	title: 'Rain II',
+	name: 'Rain II',
 
 	// Scene
 
@@ -41,8 +41,6 @@ const RainSettings = {
 	random: true,
 
 	// Controls
-
-	gui: false,
 
 	cameraBounds: { x: 3, y: 10, z: 0 },
 	cameraIntro: { x: 0, y: 4, z: 4 },

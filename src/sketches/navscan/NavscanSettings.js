@@ -1,6 +1,6 @@
 const NavscanSettings = {
 
-	title: 'Navscan',
+	name: 'Navscan',
 
 	tilesX: 400,
 	tilesZ: 200,

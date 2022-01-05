@@ -3,7 +3,7 @@ const tileMargin = 0.05;
 
 const BlockflowSettings = {
 
-	title: 'Blockflow',
+	name: 'Blockflow',
 
 	// Scene
 

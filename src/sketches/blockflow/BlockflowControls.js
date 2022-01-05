@@ -59,7 +59,7 @@ class BlockflowControls extends Controls {
 		const { passes } = sketch.effects;
 		const { VALUE } = Controls;
 
-		const gui = new Controls.GUI( { title: settings.title.toUpperCase() } );
+		const gui = new Controls.GUI();
 
 		const animation = gui.addFolder( 'Animation' );
 		animation.add( settings.speed, VALUE, 1, 10 ).name( 'speed' )
@@ -85,7 +85,6 @@ class BlockflowControls extends Controls {
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );
 
-		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
 		this.gui = gui;
 
 	}
@@ -153,9 +152,7 @@ class BlockflowControls extends Controls {
 			this.intensity
 		);
 
-		if ( this.gui ) this.gui.controllersRecursive().forEach(
-			controller => controller.updateDisplay()
-		);
+		this.refreshGUI();
 
 	}
 

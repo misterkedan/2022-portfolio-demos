@@ -27,7 +27,7 @@ class AblazeControls extends Controls {
 		const { uniforms } = sketch.shader;
 		const { VALUE } = Controls;
 
-		const gui = new Controls.GUI( { title: settings.name.toUpperCase() } );
+		const gui = new Controls.GUI();
 		gui.add( this, 'trackerEnabled' ).name( 'cursorTracker' );
 
 		const curl = gui.addFolder( 'Curl Noise' );
@@ -62,7 +62,6 @@ class AblazeControls extends Controls {
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );
 
-		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
 		this.gui = gui;
 
 	}
@@ -88,9 +87,7 @@ class AblazeControls extends Controls {
 		sketch.settings.curl.speed = lerp( 0.12, 0.04, this.intensity );
 		this.applyCurlSpeed();
 
-		if ( this.gui ) this.gui.controllersRecursive().forEach(
-			controller => controller.updateDisplay()
-		);
+		this.refreshGUI();
 
 	}
 

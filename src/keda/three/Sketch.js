@@ -130,6 +130,12 @@ class Sketch {
 
 	}
 
+	get name() {
+
+		return this.settings.name || 'Sketch';
+
+	}
+
 }
 
 export { Sketch };

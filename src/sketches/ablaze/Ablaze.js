@@ -39,11 +39,9 @@ class Ablaze extends Sketch {
 
 	init() {
 
-		super.init();
-
 		this.effects.add( 'bloom', new BloomPass( this.settings.bloom ) );
 
-		this.controls = new AblazeControls( this );
+		super.init( AblazeControls );
 
 	}
 

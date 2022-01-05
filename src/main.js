@@ -22,13 +22,13 @@ const sketches = {
 	navscan: () => new Navscan( options ),
 	blockflow: () => new Blockflow( options ),
 	ablaze: () => new Ablaze( options ),
-	dotgrid: () => new Backgrid( options ),
+	backgrid: () => new Backgrid( options ),
 };
 
 //const sketch = sketches.rain();
 //const sketch = sketches.navscan();
 //const sketch = sketches.blockflow();
 //const sketch = sketches.ablaze();
-const sketch = sketches.dotgrid();
+const sketch = sketches.backgrid();
 
 sketchpad.init( sketch );

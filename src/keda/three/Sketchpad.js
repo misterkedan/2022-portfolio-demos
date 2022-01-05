@@ -75,6 +75,8 @@ class Sketchpad {
 		this.renderer.setSize( width, height );
 		this.sketch.resize( width, height, this.pixelRatio );
 
+		this.wide = width > 1000;
+
 		this.needsResize = false;
 
 	}
