@@ -15,8 +15,7 @@ class BackgridControls extends Controls {
 
 		super( sketch, { cameraRig: false } );
 
-		//this.origin = new Vector3( 0, 0, 0 );
-		this.intensity = 0.5;
+		this.intensity = 0;
 		this.initRaycaster();
 
 	}
@@ -27,11 +26,9 @@ class BackgridControls extends Controls {
 
 		this.raycaster = new Raycaster();
 		this.hitbox = new Mesh(
-			new PlaneGeometry( this.sketch.size, this.sketch.size, 100, 100 ),
+			new PlaneGeometry( this.sketch.totalSize, this.sketch.totalSize ),
 			new MeshBasicMaterial( settings.hitbox.material )
 		);
-		//this.hitbox.position.z = - 5;
-		//this.hitbox.rotateX( - Math.PI / 2 );
 		this.sketch.add( this.hitbox );
 
 		const { size } = settings.cursor;
@@ -58,7 +55,7 @@ class BackgridControls extends Controls {
 		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( background, 'color1' ).name( 'background1' );
 		colors.addColor( background, 'color2' ).name( 'background2' );
-		colors.addColor( sketch, 'color' );
+		colors.addColor( sketch, 'inactiveColor' );
 		colors.addColor( sketch, 'activeColor' );
 
 		if ( window.innerWidth < Controls.GUI_MINIFY_BREAKPOINT ) gui.close();
@@ -86,15 +83,27 @@ class BackgridControls extends Controls {
 
 		// Tracker
 
-		const lerpSpeed = 0.05;
 		const targetIntensity = ( sketch.camera.aspect > 1 )
 			? tracker.reverseCenterX
 			: tracker.reverseCenterY
 		;
-		this.intensity = lerp( this.intensity, targetIntensity, lerpSpeed );
+		this.intensity = lerp(
+			this.intensity,
+			targetIntensity,
+			settings.lerpSpeed
+		);
 
-		sketch.depth.value = lerp( 0.5, 0.1, this.intensity );
-		sketch.scale.value = lerp( 0.1, 1, this.intensity );
+		sketch.depth.value = lerp(
+			settings.depth.max,
+			settings.depth.min,
+			this.intensity
+		);
+
+		sketch.noiseScale.value = lerp(
+			settings.noiseScale.min,
+			settings.noiseScale.max,
+			this.intensity
+		);
 
 	}
 

@@ -2,6 +2,7 @@ import {
 	Color,
 	EdgesGeometry,
 	Float32BufferAttribute,
+	Group,
 	InstancedBufferAttribute,
 	InstancedBufferGeometry,
 	LineBasicMaterial,
@@ -13,10 +14,9 @@ import {
 	Uniform,
 } from 'three';
 
-import { Sketch } from 'keda/three/Sketch';
-import { CameraBounds } from 'keda/three/misc/CameraBounds';
-import { editBasicMaterialShader } from 'keda/three/misc/Utils';
 import { GPGPU } from 'keda/three/gpgpu/GPGPU';
+import { Sketch } from 'keda/three/Sketch';
+import { editBasicMaterialShader } from 'keda/three/misc/Utils';
 
 import { BackgridControls } from './BackgridControls';
 import { BackgridSettings } from './BackgridSettings';
@@ -27,10 +27,6 @@ class Backgrid extends Sketch {
 	constructor( settings = {} ) {
 
 		super( { defaults: BackgridSettings, settings } );
-
-		this.bounds = new CameraBounds(
-			this.camera, - 1, - 3,
-		);
 
 	}
 
@@ -46,41 +42,38 @@ class Backgrid extends Sketch {
 
 		const { settings } = this;
 
-		const boxSize = 0.04;
-		const boxMargin = 0.3;
-		const boxSpacing = boxSize + boxMargin;
+		const container = new Group();
+		this.add( container );
 
-		const size = 64;
-		const dotCount = size * size;
-		const offsets = new Float32Array( dotCount * 3 );
+		// Computations
+
+		const rowCount = settings.dot.rows;
+		const dotCount = rowCount * rowCount;
+
+		const dotSize = settings.dot.size;
+		const tileSize = dotSize + settings.dot.margin;
+		const totalSize = tileSize * rowCount;
+		const startX = ( tileSize - totalSize ) / 2;
+		const startY = - ( tileSize - totalSize ) / 2;
+
 		const offsetsX = new Float32Array( dotCount );
 		const offsetsY = new Float32Array( dotCount );
 		const targets = new Float32Array( dotCount * 2 );
-
-		const totalSize = boxSpacing * size;
-		const startX = ( boxSpacing - totalSize ) / 2;
-		const startY = - ( boxSpacing - totalSize ) / 2;
-
 		let i = 0;
 		let t = 0;
-		let o = 0;
 
-		for ( let row = 0; row < size; row ++ ) {
+		for ( let row = 0; row < rowCount; row ++ ) {
 
-			for ( let column = 0; column < size; column ++ ) {
+			for ( let column = 0; column < rowCount; column ++ ) {
 
-				const x = startX + column * boxSpacing;
-				const y = startY - row * boxSpacing;
+				const x = startX + column * tileSize;
+				const y = startY - row * tileSize;
 
 				offsetsX[ i ] = x;
 				offsetsY[ i ] = y;
 
-				offsets[ o ++ ] = x;
-				offsets[ o ++ ] = y;
-				offsets[ o ++ ] = 0;
-
-				targets[ t ++ ] = ( i % size ) / size;
-				targets[ t ++ ] = ~ ~ ( i / size ) / size;
+				targets[ t ++ ] = ( i % rowCount ) / rowCount;
+				targets[ t ++ ] = ~ ~ ( i / rowCount ) / rowCount;
 
 				i ++;
 
@@ -88,67 +81,68 @@ class Backgrid extends Sketch {
 
 		}
 
-		const box = new PlaneGeometry( boxSize, boxSize );
-		const edges = new EdgesGeometry( box );
+		const aOffsetX = new InstancedBufferAttribute( offsetsX, 1 );
+		const aOffsetY = new InstancedBufferAttribute( offsetsY, 1 );
+		const GPGPU_target = new InstancedBufferAttribute( targets, 2 );
+
+		function setInstancedAttributes( geometry ) {
+
+			geometry.setAttribute( 'aOffsetX', aOffsetX );
+			geometry.setAttribute( 'aOffsetY', aOffsetY );
+			geometry.setAttribute( 'GPGPU_target', GPGPU_target );
+
+		}
+
+		// Cores
+
+		const coreBase = new PlaneGeometry( dotSize, dotSize );
 
 		const coreGeometry = new InstancedBufferGeometry();
 		coreGeometry.instanceCount = dotCount;
 		coreGeometry.setAttribute(
 			'position',
-			new Float32BufferAttribute().copy( box.attributes.position )
+			new Float32BufferAttribute().copy( coreBase.attributes.position )
 		);
 		coreGeometry.setIndex(
-			new Uint16BufferAttribute().copy( box.index )
+			new Uint16BufferAttribute().copy( coreBase.index )
 		);
-		coreGeometry.setAttribute(
-			'aOffset',
-			new InstancedBufferAttribute( offsets, 3 )
-		);
-		coreGeometry.setAttribute(
-			'GPGPU_target',
-			new InstancedBufferAttribute( targets, 2 )
-		);
+		setInstancedAttributes( coreGeometry );
 
 		const coreMaterial = new MeshBasicMaterial( settings.material );
 		coreMaterial.onBeforeCompile = this.editCoreShader.bind( this );
 
 		const cores = new Mesh( coreGeometry, coreMaterial );
-		this.add( cores );
-		this.cores = cores;
+		container.add( cores );
 
 		// Shells
 
-		const shellScale = 2;
-		edges.scale( shellScale, shellScale, shellScale );
+		const shellBase = new EdgesGeometry( coreBase );
 
 		const shellGeometry = new InstancedBufferGeometry();
 		shellGeometry.instanceCount = dotCount;
 		shellGeometry.setAttribute(
 			'position',
-			new Float32BufferAttribute().copy( edges.attributes.position )
+			new Float32BufferAttribute().copy( shellBase.attributes.position )
 		);
-		shellGeometry.setAttribute(
-			'aOffset',
-			new InstancedBufferAttribute( offsets, 3 )
-		);
-		shellGeometry.setAttribute(
-			'GPGPU_target',
-			new InstancedBufferAttribute( targets, 2 )
-		);
+		setInstancedAttributes( shellGeometry );
 
 		const shellMaterial = new LineBasicMaterial( settings.material );
 		shellMaterial.onBeforeCompile = this.editShellShader.bind( this );
 
 		const shells = new LineSegments( shellGeometry, shellMaterial );
-		this.add( shells );
-		this.shells = shells;
+		container.add( shells );
 
 		// Wrap-up
 
-		box.dispose();
-		edges.dispose();
+		coreBase.dispose();
+		shellBase.dispose();
 
-		this.size = totalSize;
+		this.container = container;
+		this.cores = cores;
+		this.shells = shells;
+		this.dotCount = dotCount;
+		this.tileSize = tileSize;
+		this.totalSize = totalSize;
 
 		this.initGPGPU( offsetsX, offsetsY );
 
@@ -156,22 +150,22 @@ class Backgrid extends Sketch {
 
 	initGPGPU( offsetsX, offsetsY ) {
 
-		//const { settings } = this;
+		const { settings } = this;
 
-		this.activeColor = new Color( this.settings.activeColor );
-		this.color = new Color( this.settings.material.color );
-		this.cores.material.color = this.color;
-		this.shells.material.color = this.color;
+		this.activeColor = new Color( settings.activeColor );
+		this.inactiveColor = new Color( settings.inactiveColor );
+		this.cores.material.color = this.inactiveColor;
+		this.shells.material.color = this.inactiveColor;
 
-		this.cursor = new Uniform();
+		this.cursor = new Uniform( null );
 		this.time = new Uniform( 0 );
 		this.delta = new Uniform( 0 );
-		this.scale = new Uniform( 0.2 );
-		this.depth = new Uniform( 0.3 );
+		this.depth = new Uniform( settings.depth.min );
+		this.noiseScale = new Uniform( settings.noiseScale.max );
 
 		GPGPU.init( this.sketchpad.renderer );
 
-		const gpgpu = new GPGPU( 64 * 64 );
+		const gpgpu = new GPGPU( this.dotCount );
 
 		gpgpu.addConstant( 'offsetX', offsetsX );
 		gpgpu.addConstant( 'offsetY', offsetsY );
@@ -183,7 +177,7 @@ class Backgrid extends Sketch {
 				GPGPU_offsetY: gpgpu.offsetY,
 				uCursor: this.cursor,
 				uDelta: this.delta,
-				uScale: this.scale,
+				uNoiseScale: this.noiseScale,
 				uTime: this.time,
 			}
 		} );
@@ -210,8 +204,6 @@ class Backgrid extends Sketch {
 		Object.assign( shader.uniforms, this.uniforms );
 		shader.uniforms.uDepth = this.depth;
 
-		this.coreShader = shader;
-
 	}
 
 	editShellShader( shader ) {
@@ -225,19 +217,17 @@ class Backgrid extends Sketch {
 		);
 
 		Object.assign( shader.uniforms, this.uniforms );
-		this.shellShader = shader;
 
 	}
 
 	tick( delta ) {
 
-		this.delta.value = delta * 0.003;
-		this.time.value += delta * 0.0003;
+		this.delta.value = delta * this.settings.deltaScale;
+		this.time.value += delta * this.settings.timeScale;
 
 		this.gpgpu.tick();
 
-		//this.cores.position.y = ( this.cores.position.y - 0.02 ) % 0.34;
-		//this.shells.position.copy( this.cores.position );
+		//this.container.position.y = ( this.container.position.y - 0.02 ) % this.tileSize;
 
 		super.tick( delta );
 

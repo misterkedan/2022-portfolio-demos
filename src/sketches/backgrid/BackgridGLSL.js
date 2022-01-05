@@ -16,7 +16,7 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 	uniform sampler2D GPGPU_offsetY;
 	uniform vec3 uCursor;
 	uniform float uDelta;
-	uniform float uScale;
+	uniform float uNoiseScale;
 	uniform float uTime;
 
 	${ FloatPack.glsl }
@@ -35,7 +35,11 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 
 	// Modify
 
-	float simplex = simplex3D( offsetX * uScale, offsetY * uScale, uTime );
+	float simplex = simplex3D( 
+		offsetX * uNoiseScale, 
+		offsetY * uNoiseScale, 
+		uTime
+	);
 	
 	float waves = simplex;
 	
@@ -65,7 +69,8 @@ BackgridGLSL.GPGPU_intensity = /*glsl*/`
 BackgridGLSL.core = {};
 
 BackgridGLSL.core.vertexHead = /*glsl*/`
-attribute vec3 aOffset;
+attribute float aOffsetX;
+attribute float aOffsetY;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
 uniform float uDepth;
@@ -75,9 +80,8 @@ ${ FloatPack.glsl }
 BackgridGLSL.core.vertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
-	transformed *= 0.2 + vIntensity;
-	transformed += aOffset;
-	transformed.z -= vIntensity * uDepth;
+	transformed *= ( vIntensity + 0.2 );
+	transformed += vec3( aOffsetX, aOffsetY, - vIntensity * uDepth );
 `;
 
 BackgridGLSL.core.fragmentHead = /*glsl*/`
@@ -97,7 +101,8 @@ BackgridGLSL.core.fragmentBody = /*glsl*/`
 BackgridGLSL.shell = {};
 
 BackgridGLSL.shell.vertexHead = /*glsl*/`
-	attribute vec3 aOffset;
+	attribute float aOffsetX;
+attribute float aOffsetY;
 	attribute vec2 GPGPU_target;
 	uniform sampler2D GPGPU_intensity;
 	varying float vIntensity;
@@ -107,8 +112,8 @@ BackgridGLSL.shell.vertexHead = /*glsl*/`
 BackgridGLSL.shell.vertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
-	transformed *= intensity * 0.2;
-	transformed += aOffset;
+	transformed *= intensity * 0.38;
+	transformed += vec3( aOffsetX, aOffsetY, 0.0 );
 `;
 
 BackgridGLSL.shell.fragmentHead = /*glsl*/`

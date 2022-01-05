@@ -2,20 +2,29 @@ const BackgridSettings = {
 
 	name: 'Backgrid',
 
+	// Sketch
+
 	background: {
 		color1: '#0a0a0a',
 		color2: '#1c1c21',
 	},
+	activeColor: '#40484b',
+	inactiveColor: '#22222a',
 
-	activeColor: '#435056',
-	material: {
-		color: '#22222a',
-		//opacity: 0.5,
-		//transparent: true,
+	dot: {
+		size: 0.04,
+		margin: 0.3,
+		rows: 64,
 	},
 
-	cameraStart: { x: 0, y: 0, z: 8 },
-	//cameraLookAt: false,
+	deltaScale: 0.0025,
+	timeScale: 0.0004,
+
+	// Controls
+
+	lerpSpeed: 0.05,
+	depth: { min: 0.1, max: 0.5 },
+	noiseScale: { min: 0.1, max: 1 },
 
 	hitbox: {
 		material: {
@@ -24,7 +33,6 @@ const BackgridSettings = {
 			transparent:true,
 		},
 	},
-
 	cursor: {
 		size: 0.1,
 		material: {
@@ -33,6 +41,8 @@ const BackgridSettings = {
 		},
 		lerpSpeed: 0.01,
 	},
+
+	cameraStart: { x: 0, y: 0, z: 8 },
 
 };
 
