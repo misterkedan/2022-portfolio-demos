@@ -24,7 +24,7 @@ class Controls {
 
 	initTracker() {
 
-		this.tracker = new CursorTracker( { margin: 0 } );
+		this.tracker = new CursorTracker();
 		this.trackerEnabled = true;
 
 	}

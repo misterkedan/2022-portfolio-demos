@@ -34,7 +34,6 @@ const BackgridSettings = {
 	depth: { min: 0.01, max: 0.1 },
 	noiseScale: { min: 0.001, max: 3 },
 
-
 };
 
 export { BackgridSettings };

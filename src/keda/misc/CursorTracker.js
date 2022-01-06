@@ -4,7 +4,7 @@ class CursorTracker {
 		target = window,
 		width = window.innerWidth,
 		height = window.innerHeight,
-		margin = 0.02,
+		margin = 0,
 		marginTop, marginRight, marginBottom, marginLeft,
 		enabled = true,
 		debug = false,
