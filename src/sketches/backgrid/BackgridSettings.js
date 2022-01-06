@@ -5,8 +5,8 @@ const BackgridSettings = {
 	// Sketch
 
 	background: {
-		color1: '#030303',
-		color2: '#18181b',
+		color1: '#080809',
+		color2: '#201f23',
 	},
 	inactiveColor: '#222226',
 	activeColor: '#3a4045',

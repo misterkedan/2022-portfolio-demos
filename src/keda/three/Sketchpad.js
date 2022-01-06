@@ -7,7 +7,7 @@ class Sketchpad {
 		container = 'sketch',
 		width,
 		height,
-		fps = 60,
+		fps,
 		renderer = new WebGLRenderer( {
 			powerPreference: 'high-performance',
 			antialias: false,

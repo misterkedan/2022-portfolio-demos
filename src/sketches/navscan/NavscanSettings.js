@@ -8,12 +8,12 @@ const NavscanSettings = {
 	tileDepth: 0.4,
 
 	background: {
-		color1: 0x003e8f,
-		color2: 0x680085,
+		color1: '#003e8f',
+		color2: '#680085',
 	},
 
 	material: {
-		color: 0xff582e,
+		color: '#ff582e',
 		opacity: 0.8,
 		transparent: true,
 	},
