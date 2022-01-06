@@ -4,7 +4,7 @@ class AblazeControls extends Controls {
 
 	constructor( sketch ) {
 
-		super( sketch, { cameraRig: false } );
+		super( sketch );
 
 		this.tracker.x = 1;
 		this.orientation = 1;
@@ -21,13 +21,14 @@ class AblazeControls extends Controls {
 
 	initGUI() {
 
-		const { sketch } = this;
+		super.initGUI();
+
+		const { gui, sketch } = this;
 		const { settings, background, particles } = sketch;
 		const { passes } = sketch.effects;
 		const { uniforms } = sketch.shader;
 		const { VALUE } = Controls;
 
-		const gui = new Controls.GUI();
 		gui.add( this, 'trackerEnabled' ).name( 'cursorTracker' );
 
 		const curl = gui.addFolder( 'Curl Noise' );
@@ -61,8 +62,6 @@ class AblazeControls extends Controls {
 		bloom.add( passes.bloom, 'strength', 0, 1 );
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );
-
-		this.gui = gui;
 
 	}
 

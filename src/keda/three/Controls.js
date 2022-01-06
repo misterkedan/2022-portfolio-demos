@@ -1,24 +1,18 @@
 import { MathUtils } from 'three';
 import { CursorTracker } from 'keda/misc/CursorTracker';
 import { CameraRig } from 'keda/three/misc/CameraRig';
+import { CursorProjector } from 'keda/three/misc/CursorProjector';
 
 class Controls {
 
-	constructor( sketch, {
-		cameraRig = true,
-		tracker = true,
-	} = {} ) {
+	constructor( sketch ) {
 
 		this.sketch = sketch;
-		if ( tracker ) this.initTracker();
-		if ( cameraRig ) this.initCamera();
-		if ( sketch.settings.gui ) {
 
-			this.initGUI();
-			this.gui.title( sketch.name.toUpperCase() );
-			this.autoCloseGUI();
-
-		}
+		if ( sketch.settings.cursorTracker !== false ) this.initTracker();
+		if ( sketch.settings.cursorProjector ) this.initProjector();
+		if ( sketch.settings.cameraRig ) this.initCameraRig();
+		if ( sketch.settings.gui ) this.initGUI();
 
 	}
 
@@ -30,22 +24,32 @@ class Controls {
 
 	initTracker() {
 
-		this.tracker = new CursorTracker();
+		this.tracker = new CursorTracker( { margin: 0 } );
 		this.trackerEnabled = true;
 
 	}
 
-	initCamera() {
+	initProjector() {
 
-		const { settings, stage } = this.sketch;
+		this.projector = new CursorProjector(
+			this.sketch,
+			this.sketch.settings.cursorProjector
+		);
+		this.cursor = this.projector.cursor;
 
-		const lookAt = settings.cameraLookAt;
-		const bounds = settings.cameraBounds;
-		const speed = settings.cameraLerpSpeed;
-		const intro = settings.cameraIntro;
+	}
+
+	initCameraRig() {
+
+		const { settings } = this.sketch;
+
+		const lookAt = settings.camera.lookAt;
+		const bounds = settings.cameraRig.bounds;
+		const speed = settings.cameraRig.speed;
+		const intro = settings.cameraRig.intro;
 
 		this.cameraRig = new CameraRig(
-			stage.camera,
+			this.sketch.camera,
 			{ lookAt, bounds, speed, intro }
 		);
 		this.cameraRigEnabled = true;
@@ -54,7 +58,9 @@ class Controls {
 
 	initGUI() {
 
-		this.gui = new GUI();
+		this.gui = new Controls.GUI();
+		this.gui.title( this.sketch.name.toUpperCase() );
+		this.autoCloseGUI();
 
 	}
 

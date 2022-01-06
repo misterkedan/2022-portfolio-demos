@@ -1,11 +1,3 @@
-import {
-	BoxGeometry,
-	Mesh,
-	MeshBasicMaterial,
-	PlaneGeometry,
-	Raycaster,
-	Vector3,
-} from 'three';
 import { Controls } from 'keda/three/Controls';
 
 class BlockflowControls extends Controls {
@@ -14,52 +6,35 @@ class BlockflowControls extends Controls {
 
 		super( sketch );
 
-		this.initRaycaster();
-
-		this.cameraRig.speed = this.sketch.settings.cameraRigSpeed;
 		this.amplitude = 0.5;
 		this.intensity = 0.5;
 
-	}
+		const { multiplier } = this.sketch.settings.cursorProjector;
+		const halfWidth = 0.5 * sketch.width * multiplier;
+		const halfDepth = 0.5 * sketch.depth * multiplier;
 
-	initRaycaster() {
-
-		const { settings } = this.sketch;
-
-		this.raycaster = new Raycaster();
-		this.hitbox = new Mesh(
-			new PlaneGeometry(
-				this.sketch.width * settings.hitbox.sizeMultiplier,
-				this.sketch.depth * settings.hitbox.sizeMultiplier
-			),
-			new MeshBasicMaterial( settings.hitbox.material )
-		);
-		this.hitbox.rotateX( - Math.PI / 2 );
-		this.sketch.add( this.hitbox );
-
-		const { size } = settings.cursor;
-		this.cursor = new Mesh(
-			new BoxGeometry( size, size, size ),
-			new MeshBasicMaterial( settings.cursor.material )
-		);
-		this.sketch.add( this.cursor );
-		this.cursor.tracker = new Vector3();
-
-		if ( this.sketch.debug ) return;
-		this.hitbox.visible = false;
-		this.cursor.visible = false;
+		this.projector.bounds = {
+			x: {
+				min: - halfWidth,
+				max: halfWidth,
+			},
+			z: {
+				min: - halfDepth,
+				max: halfDepth
+			},
+		};
 
 	}
 
 	initGUI() {
 
-		const { sketch } = this;
+		super.initGUI();
+
+		const { gui, sketch } = this;
 		const { settings } = sketch;
 		const { uniforms } = sketch.shader;
 		const { passes } = sketch.effects;
 		const { VALUE } = Controls;
-
-		const gui = new Controls.GUI();
 
 		const animation = gui.addFolder( 'Animation' );
 		animation.add( settings.speed, VALUE, 1, 10 ).name( 'speed' )
@@ -85,8 +60,6 @@ class BlockflowControls extends Controls {
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );
 
-		this.gui = gui;
-
 	}
 
 	tick( delta ) {
@@ -95,19 +68,23 @@ class BlockflowControls extends Controls {
 
 		if ( ! this.trackerEnabled ) return;
 
-		const { sketch, tracker, cursor, raycaster } = this;
+		const { sketch, tracker, projector } = this;
 		const { settings } = sketch;
 		const { clamp, lerp } = Controls;
 
-		// Raycaster
+		// CursorProjector
 
-		const cursorLerpSpeed = clamp( settings.cursor.lerpSpeed * delta, 0, 1 );
-		cursor.tracker.set( tracker.polarizeX, tracker.reversePolarizeY );
-		raycaster.setFromCamera( cursor.tracker, sketch.camera );
-		const intersection = raycaster.intersectObjects( [ this.hitbox ] )[ 0 ];
-		if ( intersection?.point ) cursor.position.lerp(
-			intersection?.point,
-			cursorLerpSpeed
+		projector.set( tracker.polarizeX, tracker.reversePolarizeY );
+		projector.tick( delta );
+		projector.cursor.position.x = clamp(
+			projector.cursor.position.x,
+			projector.bounds.x.min,
+			projector.bounds.x.max,
+		);
+		projector.cursor.position.z = clamp(
+			projector.cursor.position.z,
+			projector.bounds.z.min,
+			projector.bounds.z.max,
 		);
 
 		// Tracker

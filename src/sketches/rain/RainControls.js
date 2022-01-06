@@ -12,9 +12,9 @@ class RainControls extends Controls {
 
 	initGUI() {
 
-		const { sketch } = this;
+		super.initGUI();
 
-		const gui = new Controls.GUI();
+		const { gui, sketch } = this;
 
 		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
@@ -25,18 +25,6 @@ class RainControls extends Controls {
 		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
-
-		this.gui = gui;
-
-	}
-
-	initCamera() {
-
-		super.initCamera();
-
-		const { cameraBounds, cameraIntro } = this.sketch.settings;
-		this.cameraRig.bounds.set( cameraBounds.x, cameraBounds.y, cameraBounds.z );
-		this.cameraRig.set( cameraIntro.x, cameraIntro.y, cameraIntro.z );
 
 	}
 

@@ -15,7 +15,7 @@ const sketchpad = new Sketchpad( {
 
 const options = {
 	sketchpad,
-	gui: true,
+	//gui: true,
 };
 const sketches = {
 	rain: () => new Rain( options ),

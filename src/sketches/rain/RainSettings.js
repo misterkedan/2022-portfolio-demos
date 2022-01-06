@@ -5,17 +5,11 @@ const RainSettings = {
 
 	name: 'Rain II',
 
+	random: true,
+
 	// Scene
 
-	cameraStart: { x: 0, y: 5, z: 10 },
-
-	background: {
-		color1: 0x26004d,
-		color2: 0x0065d1,
-	},
-
 	instances: 2000,
-
 	offsetY,
 	originZ: offsetY * 2,
 	maxAngle: Math.PI * 2,
@@ -27,8 +21,13 @@ const RainSettings = {
 		thetaSegments: 6
 	},
 
+	background: {
+		color1: '#26004d',
+		color2: '#0065d1',
+	},
+
 	material: {
-		color: 0x62adfe,
+		color: '#62adfe',
 		transparent: true,
 	},
 
@@ -38,12 +37,15 @@ const RainSettings = {
 		threshold: 0.33,
 	},
 
-	random: true,
-
 	// Controls
 
-	cameraBounds: { x: 3, y: 10, z: 0 },
-	cameraIntro: { x: 0, y: 4, z: 4 },
+	camera: {
+		start: { x: 0, y: 5, z: 10 },
+	},
+	cameraRig: {
+		bounds: { x: 3, y: 10, z: 0 },
+		intro: { x: 0, y: 4, z: 4 },
+	},
 
 	lerpSpeed: 0.001,
 	opacity: { min: 0.5, max: 1 },

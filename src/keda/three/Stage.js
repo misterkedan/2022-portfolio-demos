@@ -1,26 +1,36 @@
-import { PerspectiveCamera, Scene } from 'three';
+import { Camera, PerspectiveCamera, Scene } from 'three';
 
 class Stage {
 
 	constructor( {
 		background,
-		camera = new PerspectiveCamera(),
-		cameraNear = 0.1,
-		cameraFar = 1000,
-		cameraFov = 50,
-		cameraStart = { x: 10, y: 10, z: 10 },
-		cameraLookAt = { x: 0, y: 0, z: 0 },
+		camera
 	} = {} ) {
 
 		this.scene = new Scene();
 
 		if ( background ) this.scene.background = background;
 
-		camera.near = cameraNear;
-		camera.far = cameraFar;
-		camera.fov = cameraFov;
-		if ( cameraStart ) camera.position.set( cameraStart.x, cameraStart.y, cameraStart.z );
-		if ( cameraLookAt ) camera.lookAt( cameraLookAt.x, cameraLookAt.y, cameraLookAt.z );
+		if ( ! camera ) camera = new PerspectiveCamera();
+		else if ( camera instanceof Camera === false ) {
+
+			console.log( camera );
+
+			const start = camera.start;
+			const lookAt = camera.lookAt;
+
+			camera = new PerspectiveCamera(
+				camera.fov,
+				camera.aspect,
+				camera.near,
+				camera.far
+			);
+
+			if ( start ) camera.position.set( start.x, start.y, start.z );
+			if ( lookAt ) camera.lookAt( lookAt.x, lookAt.y, lookAt.z );
+
+		}
+
 		this.camera = camera;
 
 	}

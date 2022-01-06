@@ -1,5 +1,4 @@
-import { Vector3 } from 'three';
-import { clamp } from 'three/src/math/MathUtils';
+import { MathUtils, Vector3 } from 'three';
 
 class CameraRig {
 
@@ -7,6 +6,7 @@ class CameraRig {
 		lookAt = { x: 0, y: 0, z: 0 },
 		bounds = { x: 5, y: 5, z: 0 },
 		speed = 0.002,
+		intro,
 	} = {} ) {
 
 		this.camera = camera;
@@ -15,8 +15,10 @@ class CameraRig {
 		this.bounds = new Vector3( bounds.x, bounds.y, bounds.z );
 		this.speed = speed;
 
-		this.target = new Vector3();
 		this.origin = new Vector3().copy( camera.position );
+		this.target = new Vector3();
+
+		if ( intro ) this.set( intro.x, intro.y, intro.z );
 
 	}
 
@@ -38,7 +40,7 @@ class CameraRig {
 
 	tick( delta ) {
 
-		const lerpSpeed = clamp( this.speed * delta, 0, 1 );
+		const lerpSpeed = MathUtils.clamp( this.speed * delta, 0, 1 );
 		this.camera.position.lerp( this.target, lerpSpeed );
 		this.camera.lookAt( this.lookAt );
 		return this;

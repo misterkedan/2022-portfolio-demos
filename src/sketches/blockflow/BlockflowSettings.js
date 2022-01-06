@@ -44,35 +44,28 @@ const BlockflowSettings = {
 
 	// Controls
 
-	cameraRigSpeed:  0.00075,
-	cameraStart: { x: 10, y: 5, z: 10 },
-	cameraBounds: { x: 8, y: 25, z: 0 },
-
-	hitbox: {
-		sizeMultiplier: 1.5,
-		material: {
-			color: '#ff0000',
-			opacity: 0.25,
-			transparent:true,
-		},
+	camera: {
+		start: { x: 10, y: 5, z: 10 },
 	},
-	cursor: {
-		size: 1,
-		material: {
-			color: '#ff0000',
-			wireframe: true
-		},
-		lerpSpeed: 0.007,
+	cameraRig: {
+		bounds: { x: 8, y: 25, z: 0 },
+		speed: 0.00075,
+	},
+
+	cursorProjector: {
+		horizontal: true,
+		cursorSize: 0.5,
+		lerp: 0.007,
+		multiplier: 1.5,
 	},
 
 	lerpSpeed: 0.0007,
-
 	speed: 		{ min: 2.5, max: 3.5, value: 3 },
 	amplitude: 	{ min: 150, max: 250, value: 200 },
 	scale: 		{ min: 0.2, max: 0.8, value: 0.5 },
 	thickness: 	{ min: 0.5, max: 1.5, value: 1 },
 	turbulence: { min: 0.2, max: 1.5, value: 1 },
-	opacity: { min: 0.4, max: 0.6 },
+	opacity: 	{ min: 0.4, max: 0.6 },
 
 };
 

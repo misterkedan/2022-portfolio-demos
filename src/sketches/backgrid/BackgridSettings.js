@@ -22,27 +22,18 @@ const BackgridSettings = {
 
 	// Controls
 
+	camera: {
+		start: { x: 0, y: 0, z: 0 },
+	},
+
+	cursorProjector: {
+		lerp: 0.007,
+	},
+
 	lerpSpeed: 0.048,
 	depth: { min: 0.01, max: 0.1 },
 	noiseScale: { min: 0.001, max: 3 },
 
-	hitbox: {
-		material: {
-			color: '#ff0000',
-			opacity: 0.25,
-			transparent:true,
-		},
-	},
-	cursor: {
-		size: 0.1,
-		material: {
-			color: '#ff0000',
-			wireframe: true
-		},
-		lerpSpeed: 0.01,
-	},
-
-	cameraStart: { x: 0, y: 0, z: 0 },
 
 };
 

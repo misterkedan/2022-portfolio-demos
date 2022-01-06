@@ -57,14 +57,10 @@ const AblazeSettings = {
 	timeFactor: 0.03,
 	lerpSpeed: 0.0015,
 
-	cameraStart: false,
-	cameraLookAt: false,
-	cameraRig: false,
-
 	bloom: {
 		strength: 0.55,
 		radius: 0.4,
-		threshold: 0.45,
+		threshold: 0.455,
 	},
 
 	random: true,

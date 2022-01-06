@@ -19,9 +19,14 @@ const NavscanSettings = {
 	},
 
 	offsetZ: 10,
-	cameraStart: { x: 0, y: 0, z: 5 },
-	cameraLookAt: { x: 0, y: 0, z: - 5 },
-	cameraBounds: { x: 5, y: 10, z: 0 },
+
+	camera: {
+		start: { x: 0, y: 0, z: 5 },
+		lookAt: { x: 0, y: 0, z: - 5 },
+	},
+	cameraRig: {
+		bounds: { x: 5, y: 10, z: 0 }
+	},
 
 	bloom: {
 		strength: 0.8,
@@ -30,8 +35,6 @@ const NavscanSettings = {
 	},
 
 	// Controls
-
-	gui: false,
 
 	lerpSpeed: 0.0007,
 	noiseScaleX: { min: 0.01, max: 0.25 },

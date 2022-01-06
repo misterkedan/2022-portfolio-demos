@@ -2,9 +2,9 @@ import { Controls } from 'keda/three/Controls';
 
 class NavscanControls extends Controls {
 
-	initCamera() {
+	constructor( sketch ) {
 
-		super.initCamera();
+		super( sketch );
 
 		this.amplitude = 0.5;
 		this.intensity = 0.5;
@@ -13,9 +13,9 @@ class NavscanControls extends Controls {
 
 	initGUI() {
 
-		const { sketch } = this;
+		super.initGUI();
 
-		const gui = new Controls.GUI();
+		const { gui, sketch } = this;
 
 		const colors = gui.addFolder( 'Colors' );
 		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
@@ -26,8 +26,6 @@ class NavscanControls extends Controls {
 		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
 		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
-
-		this.gui = gui;
 
 	}
 

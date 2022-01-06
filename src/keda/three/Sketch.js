@@ -13,14 +13,13 @@ class Sketch {
 		settings = {},
 		stage,
 		background,
-		camera,
 		random,
 	} = {} ) {
 
 		settings = { ...defaults, ...settings };
 		this.settings = settings;
 
-		if ( ! stage ) stage = new Stage( { ...settings, background, camera } );
+		if ( ! stage ) stage = new Stage( settings );
 		this.stage = stage;
 
 		const sketchpad = settings.sketchpad || new Sketchpad();
