@@ -1,5 +1,5 @@
 import { Color } from 'three';
-import { Random } from 'vesuna';
+import { Random } from 'keda/random/Random';
 import { LinearGradient } from './misc/LinearGradient';
 import { Effects } from './postprocessing/Effects';
 import { Controls } from './Controls';

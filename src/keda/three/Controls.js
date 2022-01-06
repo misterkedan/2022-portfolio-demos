@@ -1,5 +1,5 @@
 import { MathUtils } from 'three';
-import { CursorTracker } from 'keda/misc/CursorTracker';
+import { CursorTracker } from 'keda/CursorTracker';
 import { CameraRig } from 'keda/three/misc/CameraRig';
 import { CursorProjector } from 'keda/three/misc/CursorProjector';
 

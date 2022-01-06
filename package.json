@@ -1,6 +1,6 @@
 {
   "name": "portfolio-covers",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Pierre Keda's portfolio cover animations.",
   "author": "Pierre Keda",
   "license": "MIT",
@@ -8,8 +8,7 @@
     "animejs": "^3.2.1",
     "lil-gui": "^0.16.0",
     "stats.js": "^0.17.0",
-    "three": "^0.136.0",
-    "vesuna": "^2.0.0"
+    "three": "^0.136.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.5",

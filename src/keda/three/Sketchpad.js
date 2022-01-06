@@ -1,5 +1,5 @@
 import { WebGLRenderer } from 'three';
-import { Ticker } from 'keda/misc/Ticker';
+import { Ticker } from 'keda/Ticker';
 
 class Sketchpad {
 
