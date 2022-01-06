@@ -1,5 +1,4 @@
 import { MathUtils } from 'three';
-import { GUI } from 'lil-gui';
 import { CursorTracker } from 'keda/misc/CursorTracker';
 import { CameraRig } from 'keda/three/misc/CameraRig';
 
@@ -105,7 +104,7 @@ class Controls {
 
 /-----------------------------------------------------------------------------*/
 
-Controls.GUI = GUI;
+Controls.GUI = window.GUI; // External
 Controls.VALUE = 'value';
 Controls.clamp = MathUtils.clamp;
 Controls.lerp = MathUtils.lerp;

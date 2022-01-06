@@ -40,15 +40,19 @@ BackgridShaders.GPGPU_intensity = /*glsl*/`
 		uTime
 	);
 	
-	float waves = simplex;
+	float waves = ( simplex + 1.0 ) * 5.0;
 	
-	float cursorReaction = ( 1.0 + abs( simplex ) ) * clamp(
-		6.674 / ( length( uCursor - offset ) + 0.1 ),
+	float cursorReaction = ( 0.5 + abs( simplex ) ) * clamp(
+		7.0 / ( length( uCursor - offset ) + 0.1 ),
 		0.0,
 		10.0
-	) * 0.2;
+	);
 
-	float targetIntensity = waves + cursorReaction;
+	float targetIntensity = clamp( 
+		( clamp( waves + cursorReaction, 0.0, 20.0 ) - 10.0 ) * 0.2,
+		-1.0,
+		1.0
+	);
 
 	intensity = mix( intensity, targetIntensity, uDelta );
 
@@ -77,9 +81,9 @@ ${ Shaders.floatPack }
 
 const coreVertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
-	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
-	transformed *= ( vIntensity + 0.2 );
-	transformed += vec3( aOffsetX, aOffsetY, - vIntensity * uDepth );
+	vIntensity = ( intensity + 1.0 ) / 2.0;
+	transformed *= vIntensity;
+	transformed += vec3( aOffsetX, aOffsetY, ( intensity - 1.0) * uDepth );
 `;
 
 const coreFragmentHead = /*glsl*/`
@@ -110,15 +114,16 @@ attribute float aOffsetX;
 attribute float aOffsetY;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
+uniform float uDepth;
 varying float vIntensity;
 ${ Shaders.floatPack }
 `;
 
 const shellVertexBody = /*glsl*/`
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
-	vIntensity = clamp( ( 1.0 + intensity ) * 0.25, 0.0, 1.0 );
-	transformed *= intensity * 0.38;
-	transformed += vec3( aOffsetX, aOffsetY, 0.0 );
+	vIntensity = ( intensity + 1.0 ) / 2.0;
+	transformed *= vIntensity;
+	transformed += vec3( aOffsetX, aOffsetY, vIntensity * uDepth );
 `;
 
 const shellFragmentHead = /*glsl*/`

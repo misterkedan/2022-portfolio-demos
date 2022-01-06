@@ -100,7 +100,7 @@ class BackgridControls extends Controls {
 		sketch.noiseScale.value = lerp(
 			settings.noiseScale.min,
 			settings.noiseScale.max,
-			this.intensity
+			Math.pow( this.intensity * 2.0, 2.0 )
 		);
 
 	}

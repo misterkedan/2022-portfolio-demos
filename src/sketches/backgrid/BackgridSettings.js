@@ -5,26 +5,26 @@ const BackgridSettings = {
 	// Sketch
 
 	background: {
-		color1: '#0a0a0a',
-		color2: '#1c1c21',
+		color1: '#030303',
+		color2: '#18181b',
 	},
-	activeColor: '#40484b',
-	inactiveColor: '#22222a',
+	inactiveColor: '#222226',
+	activeColor: '#3a4045',
 
 	dot: {
-		size: 0.04,
-		margin: 0.3,
-		rows: 64,
+		size: 0.038,
+		margin: 0.18,
+		rows: 128,
 	},
 
 	deltaScale: 0.0025,
-	timeScale: 0.0004,
+	timeScale: 0.0002,
 
 	// Controls
 
-	lerpSpeed: 0.05,
-	depth: { min: 0.1, max: 0.5 },
-	noiseScale: { min: 0.1, max: 1 },
+	lerpSpeed: 0.048,
+	depth: { min: 0.01, max: 0.1 },
+	noiseScale: { min: 0.001, max: 3 },
 
 	hitbox: {
 		material: {
@@ -42,7 +42,7 @@ const BackgridSettings = {
 		lerpSpeed: 0.01,
 	},
 
-	cameraStart: { x: 0, y: 0, z: 8 },
+	cameraStart: { x: 0, y: 0, z: 0 },
 
 };
 

@@ -186,7 +186,10 @@ class Backgrid extends Sketch {
 		this.uniforms = {
 			GPGPU_intensity: gpgpu.intensity,
 			uActiveColor: new Uniform( this.activeColor ),
+			uDepth: this.depth,
 		};
+
+		this.resize( this.sketchpad.canvas.width, this.sketchpad.canvas.height );
 
 	}
 
@@ -202,6 +205,15 @@ class Backgrid extends Sketch {
 
 		BackgridShaders.editShell( shader );
 		Object.assign( shader.uniforms, this.uniforms );
+
+	}
+
+	resize( width, height, pixelRatio ) {
+
+		const narrowness = Math.abs( 1 - this.camera.aspect );
+		this.camera.position.z = Math.max( 8 - narrowness, 1 );
+
+		super.resize( width, height, pixelRatio );
 
 	}
 
