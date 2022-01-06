@@ -14,8 +14,6 @@ class Stage {
 		if ( ! camera ) camera = new PerspectiveCamera();
 		else if ( camera instanceof Camera === false ) {
 
-			console.log( camera );
-
 			const start = camera.start;
 			const lookAt = camera.lookAt;
 

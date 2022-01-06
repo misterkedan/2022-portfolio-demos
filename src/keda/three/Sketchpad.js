@@ -14,7 +14,8 @@ class Sketchpad {
 			stencil: false,
 			depth: false
 		} ),
-		debug = false,
+		debug,
+		stats,
 	} = {} ) {
 
 		this.renderer = renderer;
@@ -32,8 +33,21 @@ class Sketchpad {
 
 		this.debug = debug;
 		this.fps = ( debug ) ? 0 : fps;
-		this.onTick = this.tick.bind( this );
-		this.ticker = new Ticker( this.onTick, fps );
+		this.ticker = new Ticker( this.tick.bind( this ), fps );
+
+		if ( stats || debug ) {
+
+			this.stats = new Sketchpad.Stats();
+			container.appendChild( this.stats.domElement );
+
+			const updateStats = function () {
+
+				this.stats.update();
+
+			}.bind( this );
+			this.ticker.add( updateStats );
+
+		}
 
 	}
 
@@ -89,5 +103,7 @@ class Sketchpad {
 	}
 
 }
+
+Sketchpad.Stats = window.Stats; // External
 
 export { Sketchpad };
