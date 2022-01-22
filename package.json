@@ -1,6 +1,6 @@
 {
   "name": "2022-portfolio-demos",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "Pierre Keda's 2022 portfolio demo animations.",
   "author": "Pierre Keda",
   "license": "MIT",
@@ -22,6 +22,7 @@
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.7.2"
   },
+  "browserslist": [ "since 2010" ],
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack serve --mode development"

@@ -37,7 +37,3 @@ const sketch = generator();
 sketchpad.init( sketch );
 
 document.title = `${sketch.settings.name} - Pierre Keda`;
-
-const main = document.getElementById( 'main' );
-main.classList.add( 'show' );
-setTimeout( () => main.classList.remove( 'show' ), 2500 );
