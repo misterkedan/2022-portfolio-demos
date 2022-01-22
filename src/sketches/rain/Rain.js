@@ -1,12 +1,21 @@
 import {
+	CircleGeometry,
+	Color,
 	DynamicDrawUsage,
+	EdgesGeometry,
+	Float32BufferAttribute,
 	InstancedBufferAttribute,
+	InstancedBufferGeometry,
 	InstancedMesh,
+	LineSegments,
 	MeshBasicMaterial,
 	Object3D,
 	RingGeometry,
+	ShaderMaterial,
+	Uniform,
 } from 'three';
 
+import { Simplex } from 'keda/random/Simplex';
 import { CameraBounds } from 'keda/three/misc/CameraBounds';
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
 import { Sketch } from 'keda/three/Sketch';
@@ -21,9 +30,19 @@ class Rain extends Sketch {
 
 		super( { defaults: RainSettings, settings } );
 
+		// Random
 		this.y = this.settings.offsetY;
 		this.speed = this.settings.speed.min;
 		this.originZ = this.settings.originZ;
+
+		// Targeted
+		this.simplex = new Simplex( this.random );
+		this.instance = 0;
+		this.counter = 0;
+		this.baseDelay = 3;
+		this.delay = 0.00001;
+		this.noise = 0;
+		this.activity = 0;
 
 	}
 
@@ -33,9 +52,37 @@ class Rain extends Sketch {
 
 		super.init( RainControls );
 
+		this.controls.projector.plane.position.set( 0, this.y, 0 );
+
 	}
 
 	initScene() {
+
+		this.initRandomImpacts();
+		this.initTargetedImpacts();
+
+	}
+
+	tick( delta ) {
+
+		if ( ! this.speed ) return super.tick( delta );
+
+		const speed = this.speed * delta;
+
+		this.tickRandom( speed );
+		this.tickCursor( speed );
+
+		super.tick( delta );
+
+	}
+
+	/*-----------------------------------------------------------------------------/
+
+		Random Impacts
+
+	/-----------------------------------------------------------------------------*/
+
+	initRandomImpacts() {
 
 		// Create InstancedMesh
 
@@ -106,7 +153,7 @@ class Rain extends Sketch {
 		this.width = CameraBounds.getVisibleWidth(
 			this.camera,
 			this.settings.originZ
-		);
+		) * this.settings.spread;
 		this.depth = this.width * this.settings.ratio / aspect;
 
 	}
@@ -118,11 +165,7 @@ class Rain extends Sketch {
 
 	}
 
-	tick( delta ) {
-
-		const speed = this.speed * delta;
-
-		if ( ! speed ) return super.tick( delta );
+	tickRandom( speed ) {
 
 		const progressArray = this.mesh.geometry.attributes.aProgress.array;
 
@@ -153,7 +196,120 @@ class Rain extends Sketch {
 		this.mesh.instanceMatrix.needsUpdate = true;
 		this.mesh.geometry.attributes.aProgress.needsUpdate = true;
 
-		super.tick( delta );
+	}
+
+	/*-------------------------------------------------------------------------/
+
+		Targeted impacts
+
+	/-------------------------------------------------------------------------*/
+
+	initTargetedImpacts() {
+
+		const { settings } = this;
+
+		const base = new CircleGeometry( settings.outerRadius, 6 );
+		base.rotateX( - Math.PI / 2 );
+
+		const edges = new EdgesGeometry( base );
+
+		const instanceCount = settings.instanceCount;
+
+		const geometry = new InstancedBufferGeometry();
+		geometry.instanceCount = instanceCount;
+
+		//geometry.setIndex( new Uint16BufferAttribute().copy( base.index ) );
+		geometry.setAttribute(
+			'position',
+			new Float32BufferAttribute().copy( edges.attributes.position )
+		);
+		geometry.setAttribute(
+			'aOffset',
+			new InstancedBufferAttribute( new Float32Array( instanceCount * 3 ), 3 )
+		);
+		geometry.setAttribute(
+			'aLife',
+			new InstancedBufferAttribute(
+				new Float32Array( instanceCount ).fill( 1 ),
+				1
+			)
+		);
+
+		// Material
+
+		this.targeted = { geometry };
+		this.targeted.uniforms = {
+			uScaleMin: new Uniform( settings.targeted.scale.min ),
+			uScaleMax: new Uniform( settings.targeted.scale.max ),
+			// Fragment shader
+			color: new Uniform( new Color( settings.material.color ) ),
+			opacity: new Uniform( 1 ),
+		};
+		RainShaders.impact.uniforms = this.targeted.uniforms;
+		const material = new ShaderMaterial( RainShaders.impact );
+
+		// Final
+
+		this.cursorImpacts = new LineSegments( geometry, material );
+		this.cursorImpacts.position.set( 0, this.y, 0 );
+		this.add( this.cursorImpacts );
+
+	}
+
+	generateAt( position ) {
+
+		const { random } = this;
+		const { noise, amplitude } = this.settings.targeted;
+
+		const { aOffset, aLife } = this.targeted.geometry.attributes;
+
+		const randomly = random.chance( noise );
+
+		const x = ( randomly )
+			? position.x + random.noise() * amplitude * this.activity
+			: position.x;
+		const z = ( randomly )
+			? position.z + random.noise() * amplitude * this.activity
+			: position.z;
+
+		const index = this.instance * 3;
+		aOffset.array[ index ] = x;
+		aOffset.array[ index + 2 ] = z;
+
+		aLife.array[ this.instance ] = 0;
+		this.instance = ( this.instance + 1 ) % this.settings.instanceCount;
+
+		aOffset.needsUpdate = true;
+
+	}
+
+	tickCursor( speed ) {
+
+		this.counter += speed;
+
+		if ( this.counter > this.delay ) {
+
+			const { position } = this.controls.cursor;
+			this.generateAt( position );
+			this.noise = this.simplex.noise3D(
+				position.x, position.y, this.counter
+			);
+			this.counter = 0;
+
+		}
+
+		//let actives = 0;
+
+		for ( let i = 0; i < this.settings.instanceCount; i ++ ) {
+
+			this.targeted.geometry.attributes.aLife.array[ i ] += speed;
+			//if ( this.targeted.geometry.attributes.aLife.array[ i ] < 1 ) actives ++;
+
+		}
+
+		//console.log( { actives } );
+
+		this.targeted.geometry.attributes.aLife.needsUpdate = true;
 
 	}
 

@@ -12,9 +12,7 @@ class NewSketch extends Sketch {
 
 	init() {
 
-		super.init();
-
-		this.controls = new NewSketchControls( this );
+		super.init( NewSketchControls );
 
 	}
 

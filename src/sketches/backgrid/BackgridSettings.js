@@ -5,19 +5,19 @@ const BackgridSettings = {
 	// Sketch
 
 	background: {
-		color1: '#080809',
-		color2: '#201f23',
+		color1: 0x080809,
+		color2: 0x201f23,
 	},
-	inactiveColor: '#222226',
-	activeColor: '#3a4045',
+	colorInactive: 	0x222226,
+	colorActive: 	0x3a4045,
 
 	dot: {
 		size: 0.038,
-		margin: 0.18,
+		margin: 0.14,
 		rows: 128,
 	},
 
-	deltaScale: 0.0025,
+	deltaScale: 0.002,
 	timeScale: 0.0002,
 
 	// Controls
@@ -31,8 +31,8 @@ const BackgridSettings = {
 	},
 
 	lerpSpeed: 0.048,
-	depth: { min: 0.01, max: 0.1 },
-	noiseScale: { min: 0.001, max: 3 },
+	depth: { min: 0.05, max: 0.15 },
+	noiseScale: { min: 0.001, max: 4 },
 
 };
 

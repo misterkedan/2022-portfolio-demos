@@ -5,9 +5,10 @@ import {
 	Float32BufferAttribute,
 	InstancedBufferAttribute,
 	InstancedBufferGeometry,
-	LineBasicMaterial,
 	LineSegments,
-	PlaneGeometry
+	PlaneGeometry,
+	ShaderMaterial,
+	Uniform
 } from 'three';
 
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
@@ -15,7 +16,7 @@ import { Sketch } from 'keda/three/Sketch';
 
 import { BlockflowSettings } from './BlockflowSettings';
 import { BlockflowControls } from './BlockflowControls';
-import { BlockflowShaders } from './BlockflowShaders';
+import { BlockflowShader } from './BlockflowShader';
 
 class Blockflow extends Sketch {
 
@@ -23,7 +24,6 @@ class Blockflow extends Sketch {
 
 		super( { defaults: BlockflowSettings, settings } );
 
-		this.time = 0;
 		this.setSpeed();
 
 	}
@@ -34,7 +34,7 @@ class Blockflow extends Sketch {
 
 		super.init( BlockflowControls );
 
-		this.shader.uniforms.uCursor.value = this.controls.cursor.position;
+		this.cursor.value = this.controls.cursor.position;
 
 	}
 
@@ -56,6 +56,7 @@ class Blockflow extends Sketch {
 		const offsetZ = - ( this.depth - tile.depth ) / 2;
 
 		if ( this.debug ) console.log( { instances } );
+
 
 		// Geometry
 
@@ -87,23 +88,32 @@ class Blockflow extends Sketch {
 
 		// Material
 
-		this.shader = {
-			uniforms: {
-				// Vertex
-				uCursor: { value: null },
-				uAmplitude:  { value: settings.amplitude.value },
-				uScale: 	 { value: settings.scale.value },
-				uThickness:  { value: settings.thickness.value },
-				uTurbulence: { value: settings.turbulence.value },
-				uTime: { value: 0 },
+		this.cursor = new Uniform( null );
+		this.amplitude = new Uniform( settings.amplitude.value );
+		this.scale = new Uniform( settings.scale.value );
+		this.thickness = new Uniform( settings.thickness.value );
+		this.turbulence = new Uniform( settings.turbulence.value );
+		this.time = new Uniform( 0 );
 
-				// Fragment
-				uHighColor: { value: new Color( settings.highColor ) },
-			},
+		this.opacity = new Uniform( settings.opacity.value );
+		this.colorLow = new Uniform( new Color( settings.colorLow ) );
+		this.colorHigh = new Uniform( new Color( settings.colorHigh ) );
+
+		BlockflowShader.uniforms = {
+			// Vertex
+			uCursor: 	 this.cursor,
+			uAmplitude:  this.amplitude,
+			uScale: 	 this.scale,
+			uThickness:  this.thickness,
+			uTurbulence: this.turbulence,
+			uTime: 		 this.time,
+			// Fragment
+			opacity: 	this.opacity,
+			uColorLow: 	this.colorLow,
+			uColorHigh: this.colorHigh,
 		};
 
-		const material = new LineBasicMaterial( settings.material );
-		material.onBeforeCompile = this.initShader.bind( this );
+		const material = new ShaderMaterial( BlockflowShader );
 
 		// Grid
 
@@ -128,18 +138,9 @@ class Blockflow extends Sketch {
 
 	}
 
-	initShader( shader ) {
-
-		BlockflowShaders.edit( shader );
-		Object.assign( shader.uniforms, this.shader.uniforms );
-		this.shader = shader;
-
-	}
-
 	tick( delta ) {
 
-		this.time += delta * this.speed;
-		this.shader.uniforms.uTime.value = this.time;
+		this.time.value += delta * this.speed;
 
 		super.tick( delta );
 

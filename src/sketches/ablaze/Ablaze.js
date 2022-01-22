@@ -10,6 +10,7 @@ import {
 	MathUtils,
 	Mesh,
 	MeshBasicMaterial,
+	ShaderMaterial,
 	Uniform,
 	Vector3,
 } from 'three';
@@ -52,8 +53,7 @@ class Ablaze extends Sketch {
 		// Disc
 
 		const discGeometry = new CircleGeometry(
-			settings.disc.size,
-			settings.disc.segments
+			settings.disc.size, settings.disc.segments
 		);
 		const discMaterial = new MeshBasicMaterial( settings.disc.fill );
 		const disc = new Mesh( discGeometry, discMaterial );
@@ -61,14 +61,8 @@ class Ablaze extends Sketch {
 		this.add( disc );
 
 		const circleGeometry = new EdgesGeometry( discGeometry );
-		const circleMaterial = new LineBasicMaterial( {
-			...settings.particle.material,
-			...settings.disc.stroke,
-		} );
-		const circle = new LineSegments(
-			circleGeometry,
-			circleMaterial
-		);
+		const circleMaterial = new LineBasicMaterial( settings.disc.stroke );
+		const circle = new LineSegments( circleGeometry, circleMaterial );
 		circle.position.copy( disc.position );
 		this.add( circle );
 
@@ -118,37 +112,34 @@ class Ablaze extends Sketch {
 			new InstancedBufferAttribute( noises, 1 )
 		);
 
-		// Particle
+		// Material
 
-		const material = new LineBasicMaterial( settings.particle.material );
-		material.onBeforeCompile = this.initShader.bind( this );
+		this.particleCountMax = particleCount;
+		this.particleCountMin = Math.round( particleCount * 0.1 );
+
+		this.initUniforms( positionsX, positionsY, positionsZ );
+
+		const material = new ShaderMaterial( AblazeShaders.material );
+
+		// Complete
 
 		const particles = new LineSegments( geometry, material );
 		particles.frustumCulled = false;
 		this.particles = particles;
 		this.add( particles );
 
-		// Complete
-
-		this.particleCountMax = particleCount;
-		this.particleCountMin = Math.round( particleCount * 0.1 );
 		this.updateInstanceCount();
 
 		shape.dispose();
 		edges.dispose();
 
-		this.initGPGPU( positionsX, positionsY, positionsZ );
-
 	}
 
-	initGPGPU( positionsX, positionsY, positionsZ ) {
+	initUniforms( positionsX, positionsY, positionsZ ) {
 
 		const { settings } = this;
 
-		GPGPU.init( this.sketchpad.renderer );
-
-		const gpgpu = new GPGPU( this.particleCountMax );
-		this.gpgpu = gpgpu;
+		// Uniforms
 
 		const { epsilon, speed, scale, strength } = settings.curl;
 		this.curlEpsilon = new Uniform( epsilon );
@@ -172,6 +163,11 @@ class Ablaze extends Sketch {
 			uTime: this.time,
 			uWind: this.wind,
 		};
+
+		// GPGPU
+
+		const gpgpu = new GPGPU( this.particleCountMax );
+		this.gpgpu = gpgpu;
 
 		gpgpu.addVariable( 'x', {
 			data: positionsX,
@@ -207,30 +203,27 @@ class Ablaze extends Sketch {
 		gpgpu.assign( 'z', 'x' );
 		gpgpu.assign( 'z', 'y' );
 
-		this.shader = {
-			uniforms: {
-				uTime: this.time,
-				uColorTop: { value: new Color( settings.particle.colorTop ) },
-				uRotation: { value: settings.rotation },
-				uBounds: { value: this.bounds.y },
-				uScale: { value: new Vector3(
-					settings.scale.top,
-					settings.scale.bottom,
-					settings.scale.gradient,
-				) },
-				GPGPU_x: gpgpu.x,
-				GPGPU_y: gpgpu.y,
-				GPGPU_z: gpgpu.z,
-			},
+		// Material uniforms
+
+		const colorLow = new Color( settings.colorLow );
+		const colorHigh = new Color( settings.colorHigh );
+
+		AblazeShaders.material.uniforms = {
+			opacity: 	new Uniform( settings.opacity ),
+			uBounds: 	new Uniform( this.bounds.y ),
+			uColorLow: 	new Uniform( colorLow ),
+			uColorHigh: new Uniform( colorHigh ),
+			uRotation: 	new Uniform( settings.rotation ),
+			uScale: 	new Uniform( new Vector3(
+				settings.scale.top,
+				settings.scale.bottom,
+				settings.scale.gradient,
+			) ),
+			uTime: this.time,
+			GPGPU_x: gpgpu.x,
+			GPGPU_y: gpgpu.y,
+			GPGPU_z: gpgpu.z,
 		};
-
-	}
-
-	initShader( shader ) {
-
-		AblazeShaders.edit( shader );
-		Object.assign( shader.uniforms, this.shader.uniforms );
-		this.shader = shader;
 
 	}
 

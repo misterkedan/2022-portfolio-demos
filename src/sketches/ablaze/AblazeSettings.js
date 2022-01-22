@@ -3,17 +3,15 @@ const AblazeSettings = {
 	name: 'Ablaze',
 
 	background: {
-		color1: '#a8002a',
-		color2: '#dd5500',
+		color1: 0xa8002a,
+		color2: 0xdd5500,
 	},
+	colorHigh:	0xcc6600,
+	colorLow:	0xffaa00,
+
+	opacity: 0.9,
 
 	particle: {
-		colorTop:  '#cc6600',
-		material: {
-			color: '#ffaa00',
-			opacity: 0.9,
-			transparent: true,
-		},
 		count: 10000,
 		size: 0.04,
 		near: - 2,
@@ -30,7 +28,9 @@ const AblazeSettings = {
 			transparent: true,
 		},
 		stroke: {
+			color: 0xcc6600,
 			opacity: 0.1,
+			transparent: true,
 		},
 	},
 

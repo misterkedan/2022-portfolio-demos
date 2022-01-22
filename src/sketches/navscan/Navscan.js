@@ -1,9 +1,11 @@
 import {
 	BufferGeometry,
-	BufferAttribute,
-	LineBasicMaterial,
+	Color,
 	LineSegments,
-	Vector3
+	Vector3,
+	Uniform,
+	Float32BufferAttribute,
+	ShaderMaterial
 } from 'three';
 
 import { BloomPass } from 'keda/three/postprocessing/BloomPass';
@@ -11,7 +13,7 @@ import { Sketch } from 'keda/three/Sketch';
 
 import { NavscanControls } from './NavscanControls';
 import { NavscanSettings } from './NavscanSettings';
-import { NavscanShaders } from './NavscanShaders';
+import { NavscanShader } from './NavscanShader';
 
 class Navscan extends Sketch {
 
@@ -31,17 +33,17 @@ class Navscan extends Sketch {
 
 	initScene() {
 
-		const { tilesX, tilesZ, tileWidth, tileDepth } = this.settings;
+		const { settings } = this;
 
-		const width = tilesX * tileWidth;
-		const depth = tilesZ * tileDepth;
+		const width = settings.tiles.x * settings.tiles.width;
+		const depth = settings.tiles.z * settings.tiles.depth;
 		const offsetX = - width / 2;
 		const offsetZ = - depth;
 
-		const pointsX = tilesX + 1;
-		const pointsZ = tilesZ + 1;
+		const pointsX = settings.tiles.x + 1;
+		const pointsZ = settings.tiles.z + 1;
 
-		const tiles = tilesX * tilesZ;
+		const tiles = settings.tiles.x * settings.tiles.z;
 		const points = pointsX * pointsZ;
 		const vertices = tiles * 8; // 2 points * 4 lines
 
@@ -60,8 +62,8 @@ class Navscan extends Sketch {
 
 		for ( let point = 0; point < points; point ++ ) {
 
-			positionsX[ positionX ++ ] = offsetX + tileWidth * pointX;
-			positionsZ[ positionZ ++ ] = offsetZ + tileDepth * pointZ;
+			positionsX[ positionX ++ ] = offsetX + settings.tiles.width * pointX;
+			positionsZ[ positionZ ++ ] = offsetZ + settings.tiles.depth * pointZ;
 
 			pointX = ( pointX + 1 ) % pointsX;
 			if ( pointX === 0 ) pointZ ++;
@@ -106,50 +108,44 @@ class Navscan extends Sketch {
 			addLine( frontRight, frontLeft );
 			addLine( frontLeft, backLeft );
 
-			tileX = ( tileX + 1 ) % tilesX;
+			tileX = ( tileX + 1 ) % settings.tiles.x;
 			if ( tileX === 0 ) tileZ ++;
 
 		}
 
 		const geometry = new BufferGeometry();
-		geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
+		geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
 
-		// Lines
+		// Material
 
-		const material = new LineBasicMaterial( this.settings.material );
-		material.onBeforeCompile = this.initShader.bind( this );
+		this.amp = new Uniform( 2 );
+		this.distance = new Uniform( 0 );
+		this.noiseScale = new Uniform( new Vector3( 0.1, 0.03, 0.07 ) );
+		this.color = new Uniform( new Color( settings.grid.color ) );
+		this.opacity = new Uniform( settings.grid.opacity );
+
+		NavscanShader.uniforms = {
+			color: this.color,
+			opacity: this.opacity,
+			uAmp: this.amp,
+			uDistance: this.distance,
+			uNoiseScale: this.noiseScale,
+		};
+
+		const material = new ShaderMaterial( NavscanShader );
+
+		// Result
 
 		const grid = new LineSegments( geometry, material );
-		grid.position.set( 0, 0, this.settings.offsetZ );
+		grid.position.set( 0, 0, settings.grid.z );
 		this.add( grid );
 		this.grid = grid;
 
-		// Define uniforms
-
-		this.shader = {
-			uniforms: {
-				uAmp: { value: 2.0 },
-				uDistance: { value: 0.0 },
-				uNoiseScale: { value: new Vector3( 0.1, 0.03, 0.07 ) },
-			},
-		};
-
 	}
-
-	initShader( shader ) {
-
-		NavscanShaders.edit( shader );
-		Object.assign( shader.uniforms, this.shader.uniforms );
-		this.shader = shader;
-
-	}
-
-
 
 	tick( delta ) {
 
-		this.shader.uniforms.uDistance.value += this.settings.speed.value * delta;
-
+		this.distance.value += this.settings.speed.value * delta;
 		super.tick( delta );
 
 	}

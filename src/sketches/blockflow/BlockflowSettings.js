@@ -25,16 +25,11 @@ const BlockflowSettings = {
 	border: 2.5 * ( tileSize + tileMargin ),
 
 	background: {
-		color1: '#0095b3',
-		color2: '#009966',
+		color1: 0x0095b3,
+		color2: 0x009966,
 	},
-
-	highColor: '#cbe600',
-	material: {
-		color: '#00c8d6',
-		opacity: 0.5,
-		transparent: true,
-	},
+	colorLow: 	0x00c8d6,
+	colorHigh: 	0xcbe600,
 
 	bloom: {
 		strength: 0.2,
@@ -65,7 +60,7 @@ const BlockflowSettings = {
 	scale: 		{ min: 0.2, max: 0.8, value: 0.5 },
 	thickness: 	{ min: 0.5, max: 1.5, value: 1 },
 	turbulence: { min: 0.2, max: 1.5, value: 1 },
-	opacity: 	{ min: 0.4, max: 0.6 },
+	opacity: 	{ min: 0.4, max: 0.6, value: 0.5 },
 
 };
 

@@ -1,14 +1,8 @@
-import { Shaders } from 'keda/three/Shaders';
+import { ShaderUtils } from 'keda/three/misc/ShaderUtils';
 
-class BlockflowShaders extends Shaders {}
+const BlockflowShader = ShaderUtils.getBase();
 
-/*-----------------------------------------------------------------------------/
-
-	Main
-
-/-----------------------------------------------------------------------------*/
-
-const vertexHead = /*glsl*/`
+BlockflowShader.vertexShader = /*glsl*/`
 attribute vec3 aOffset;
 uniform float uAmplitude;
 uniform float uScale;
@@ -18,11 +12,11 @@ uniform float uTurbulence;
 uniform vec3 uCursor;
 varying float vHeight;
 
-${ Shaders.simplex3D }
-`;
+${ ShaderUtils.simplex3D }
 
-const vertexBody =  /*glsl*/`
-	transformed += aOffset;
+void main() {
+
+	vec3 transformed = position + aOffset;
 
 	float distanceToCursor = length( uCursor - aOffset );
 	float force = - 1.0 / ( 1.618 + sqrt( distanceToCursor ) );
@@ -44,19 +38,25 @@ const vertexBody =  /*glsl*/`
 	transformed.y *= position.y * noise * uAmplitude;
 
 	vHeight = transformed.y;
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+
+}
 `;
 
-const fragmentHead = /*glsl*/`
-uniform vec3 uHighColor;
+BlockflowShader.fragmentShader = /*glsl*/`
+uniform float opacity;
+uniform vec3 uColorLow;
+uniform vec3 uColorHigh;
 varying float vHeight;
+
+void main() {
+
+	vec3 dynamicColor = mix( uColorLow, uColorHigh, vHeight );
+
+	gl_FragColor = vec4( dynamicColor, opacity );
+
+}
 `;
 
-const fragmentBody = /*glsl*/`
-	diffuseColor.rgb = mix( diffuse, uHighColor, vHeight );
-`;
-
-BlockflowShaders.edit = ( shader ) => Shaders.editBasic(
-	shader, vertexHead, vertexBody, fragmentHead, fragmentBody
-);
-
-export { BlockflowShaders };
+export { BlockflowShader };

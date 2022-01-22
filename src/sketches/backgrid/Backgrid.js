@@ -5,11 +5,10 @@ import {
 	Group,
 	InstancedBufferAttribute,
 	InstancedBufferGeometry,
-	LineBasicMaterial,
 	LineSegments,
 	Mesh,
-	MeshBasicMaterial,
 	PlaneGeometry,
+	ShaderMaterial,
 	Uint16BufferAttribute,
 	Uniform,
 } from 'three';
@@ -26,6 +25,8 @@ class Backgrid extends Sketch {
 	constructor( settings = {} ) {
 
 		super( { defaults: BackgridSettings, settings } );
+
+		this.offset = 0;
 
 	}
 
@@ -80,6 +81,14 @@ class Backgrid extends Sketch {
 
 		}
 
+		this.dotCount = dotCount;
+		this.tileSize = tileSize;
+		this.totalSize = totalSize;
+
+		this.initUniforms( offsetsX, offsetsY );
+
+		// Geometry preparations
+
 		const aOffsetX = new InstancedBufferAttribute( offsetsX, 1 );
 		const aOffsetY = new InstancedBufferAttribute( offsetsY, 1 );
 		const GPGPU_target = new InstancedBufferAttribute( targets, 2 );
@@ -107,8 +116,7 @@ class Backgrid extends Sketch {
 		);
 		setInstancedAttributes( coreGeometry );
 
-		const coreMaterial = new MeshBasicMaterial( settings.material );
-		coreMaterial.onBeforeCompile = this.initCoreShader.bind( this );
+		const coreMaterial = new ShaderMaterial( BackgridShaders.cores );
 
 		const cores = new Mesh( coreGeometry, coreMaterial );
 		container.add( cores );
@@ -125,36 +133,29 @@ class Backgrid extends Sketch {
 		);
 		setInstancedAttributes( shellGeometry );
 
-		const shellMaterial = new LineBasicMaterial( settings.material );
-		shellMaterial.onBeforeCompile = this.initShellShader.bind( this );
+		const shellMaterial = new ShaderMaterial( BackgridShaders.shells );
 
 		const shells = new LineSegments( shellGeometry, shellMaterial );
 		container.add( shells );
 
 		// Wrap-up
 
-		coreBase.dispose();
-		shellBase.dispose();
-
 		this.container = container;
 		this.cores = cores;
 		this.shells = shells;
-		this.dotCount = dotCount;
-		this.tileSize = tileSize;
-		this.totalSize = totalSize;
-
-		this.initGPGPU( offsetsX, offsetsY );
+		coreBase.dispose();
+		shellBase.dispose();
 
 	}
 
-	initGPGPU( offsetsX, offsetsY ) {
+	initUniforms( offsetsX, offsetsY ) {
 
 		const { settings } = this;
 
-		this.activeColor = new Color( settings.activeColor );
-		this.inactiveColor = new Color( settings.inactiveColor );
-		this.cores.material.color = this.inactiveColor;
-		this.shells.material.color = this.inactiveColor;
+		// Uniforms
+
+		this.colorActive = new Color( settings.colorActive );
+		this.colorInactive = new Color( settings.colorInactive );
 
 		this.cursor = new Uniform( null );
 		this.time = new Uniform( 0 );
@@ -162,7 +163,7 @@ class Backgrid extends Sketch {
 		this.depth = new Uniform( settings.depth.min );
 		this.noiseScale = new Uniform( settings.noiseScale.max );
 
-		GPGPU.init( this.sketchpad.renderer );
+		// GPGPU
 
 		const gpgpu = new GPGPU( this.dotCount );
 
@@ -183,37 +184,26 @@ class Backgrid extends Sketch {
 
 		this.gpgpu = gpgpu;
 
-		this.uniforms = {
+		// Material uniforms
+
+		const uniforms = {
 			GPGPU_intensity: gpgpu.intensity,
-			uActiveColor: new Uniform( this.activeColor ),
+			uColorActive: new Uniform( this.colorActive ),
+			uColorInactive: new Uniform( this.colorInactive ),
 			uDepth: this.depth,
 		};
 
-		this.resize( this.sketchpad.canvas.width, this.sketchpad.canvas.height );
-
-	}
-
-	initCoreShader( shader ) {
-
-		BackgridShaders.editCore( shader );
-		Object.assign( shader.uniforms, this.uniforms );
-		shader.uniforms.uDepth = this.depth;
-
-	}
-
-	initShellShader( shader ) {
-
-		BackgridShaders.editShell( shader );
-		Object.assign( shader.uniforms, this.uniforms );
+		BackgridShaders.cores.uniforms = uniforms;
+		BackgridShaders.shells.uniforms = uniforms;
 
 	}
 
 	resize( width, height, pixelRatio ) {
 
+		super.resize( width, height, pixelRatio );
+
 		const narrowness = Math.abs( 1 - this.camera.aspect );
 		this.camera.position.z = Math.max( 8 - narrowness, 1 );
-
-		super.resize( width, height, pixelRatio );
 
 	}
 
@@ -224,7 +214,7 @@ class Backgrid extends Sketch {
 
 		this.gpgpu.tick();
 
-		//this.container.position.y = ( this.container.position.y - 0.02 ) % this.tileSize;
+		this.container.position.x = this.offset % this.tileSize;
 
 		super.tick( delta );
 

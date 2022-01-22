@@ -1,22 +1,17 @@
-import { Shaders } from 'keda/three/Shaders';
+import { ShaderUtils } from 'keda/three/misc/ShaderUtils';
 
 import GPGPU_x from './shaders/GPGPU_x.frag';
 import GPGPU_y from './shaders/GPGPU_y.frag';
 import GPGPU_z from './shaders/GPGPU_z.frag';
 
-class AblazeShaders extends Shaders {}
+const AblazeShaders = {};
 
 AblazeShaders.GPGPU_x = GPGPU_x;
 AblazeShaders.GPGPU_y = GPGPU_y;
 AblazeShaders.GPGPU_z = GPGPU_z;
 
-/*-----------------------------------------------------------------------------/
-
-	Main
-
-/-----------------------------------------------------------------------------*/
-
-const vertexHead = /*glsl*/`
+AblazeShaders.material = ShaderUtils.getBase();
+AblazeShaders.material.vertexShader = /*glsl*/`
 attribute float aNoise;
 attribute vec2 GPGPU_target;
 uniform float uRotation;
@@ -28,11 +23,11 @@ uniform vec3 uBounds;
 uniform vec3 uScale;
 varying float vAltitude;
 
-${ Shaders.rotateZ }
-${ Shaders.floatPack }
-`;
+${ ShaderUtils.rotateZ }
+${ ShaderUtils.floatPack }
 
-const vertexBody =  /*glsl*/`
+void main() {
+
 	float translateX = unpackFloat( texture2D( GPGPU_x, GPGPU_target ) );
 	float translateY = unpackFloat( texture2D( GPGPU_y, GPGPU_target ) );
 	float translateZ = unpackFloat( texture2D( GPGPU_z, GPGPU_target ) );
@@ -45,21 +40,29 @@ const vertexBody =  /*glsl*/`
 		vAltitude * mix( uScale.z, 1.0, aNoise )
 	);
 
+	vec3 transformed = position;
 	transformed *= scale * rotateZ( uTime * uRotation * aNoise );
 	transformed += vec3( translateX, translateY, translateZ );
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+
+}
 `;
 
-const fragmentHead = /*glsl*/`
-uniform vec3 uColorTop;
+AblazeShaders.material.fragmentShader = /*glsl*/`
+uniform float opacity;
+uniform vec3 uColorLow;
+uniform vec3 uColorHigh;
 varying float vAltitude;
+
+void main() {
+
+	vec3 dynamicColor = mix( uColorHigh, uColorLow, vAltitude );
+
+	gl_FragColor = vec4( dynamicColor, opacity );
+
+}
 `;
 
-const fragmentBody = /*glsl*/`
-	diffuseColor.rgb = mix( uColorTop, diffuse, vAltitude );
-`;
-
-AblazeShaders.edit = ( shader ) => Shaders.editBasic(
-	shader, vertexHead, vertexBody, fragmentHead, fragmentBody
-);
 
 export { AblazeShaders };

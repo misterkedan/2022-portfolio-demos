@@ -8,6 +8,7 @@ class CursorTracker {
 		marginTop, marginRight, marginBottom, marginLeft,
 		enabled = true,
 		debug = false,
+		preventDefault = false,
 		onChange,
 	} = {} ) {
 
@@ -31,13 +32,13 @@ class CursorTracker {
 		this.target = target;
 		this.onMouseMove = function ( event ) {
 
-			if ( event.preventDefault ) event.preventDefault();
+			if ( preventDefault && event.preventDefault ) event.preventDefault();
 			this.track( event.clientX, event.clientY );
 
 		}.bind( this );
 		this.onTouchMove = function ( event ) {
 
-			event.preventDefault();
+			if ( preventDefault ) event.preventDefault();
 			this.onMouseMove( event.targetTouches[ 0 ] );
 
 		}.bind( this );

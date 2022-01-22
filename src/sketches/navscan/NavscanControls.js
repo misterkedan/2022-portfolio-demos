@@ -1,3 +1,4 @@
+import { CursorTracker } from 'keda/CursorTracker';
 import { Controls } from 'keda/three/Controls';
 
 class NavscanControls extends Controls {
@@ -11,21 +12,10 @@ class NavscanControls extends Controls {
 
 	}
 
-	initGUI() {
+	initTracker() {
 
-		super.initGUI();
-
-		const { gui, sketch } = this;
-
-		const colors = gui.addFolder( 'Colors' );
-		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
-		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
-		colors.addColor( sketch.grid.material, 'color' );
-
-		const bloom = gui.addFolder( 'Bloom' );
-		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
-		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
-		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
+		this.tracker = new CursorTracker( { margin: 0.2 } );
+		this.trackerEnabled = true;
 
 	}
 
@@ -37,7 +27,7 @@ class NavscanControls extends Controls {
 		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
 
 		if ( this.cameraRigEnabled ) this.cameraRig
-			.update( tracker.reversePolarizeX, tracker.reverseY )
+			.update( tracker.reversePolarizeX, tracker.y )
 			.tick( delta );
 
 		// X
@@ -45,7 +35,7 @@ class NavscanControls extends Controls {
 		const targetAmplitude = tracker.x;
 		this.amplitude = lerp( this.amplitude, targetAmplitude, lerpSpeed );
 
-		const noiseScale = sketch.shader.uniforms.uNoiseScale.value;
+		const noiseScale = sketch.noiseScale.value;
 		noiseScale.x = lerp(
 			settings.noiseScaleX.min,
 			settings.noiseScaleX.max,
@@ -58,7 +48,7 @@ class NavscanControls extends Controls {
 			this.amplitude
 		);
 
-		sketch.shader.uniforms.uAmp.value = lerp(
+		sketch.amp.value = lerp(
 			settings.amp.min,
 			settings.amp.max,
 			this.amplitude
@@ -66,10 +56,10 @@ class NavscanControls extends Controls {
 
 		// Y
 
-		const targetIntensity = tracker.y;
+		const targetIntensity = tracker.reverseY;
 		this.intensity = lerp( this.intensity, targetIntensity, lerpSpeed );
 
-		sketch.grid.material.opacity = lerp(
+		sketch.opacity.value = lerp(
 			settings.opacity.min,
 			settings.opacity.max,
 			this.intensity

@@ -1,22 +1,18 @@
-import { Shaders } from 'keda/three/Shaders';
+import { ShaderUtils } from 'keda/three/misc/ShaderUtils';
 
-class NavscanShaders extends Shaders {}
+const NavscanShader = ShaderUtils.getBase();
 
-/*-----------------------------------------------------------------------------/
-
-	Main
-
-/-----------------------------------------------------------------------------*/
-
-const vertexHead = /*glsl*/`
+NavscanShader.vertexShader = /*glsl*/`
 uniform float uAmp;
 uniform float uDistance;
 uniform vec3 uNoiseScale;
 
-${ Shaders.simplex3D }
-`;
+${ ShaderUtils.simplex3D }
 
-const vertexBody =  /*glsl*/`
+void main() {
+
+	vec3 transformed = position;
+
 	// Z
 	transformed.z += mod( uDistance, 0.4 );
 
@@ -34,10 +30,21 @@ const vertexBody =  /*glsl*/`
 	);
 
 	transformed.y = uAmp * ( clamp( noise * uAmp, -0.3, 0.3 ) + largeNoise );
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+
+}
 `;
 
-NavscanShaders.edit = ( shader ) => Shaders.editBasic(
-	shader, vertexHead, vertexBody
-);
+NavscanShader.fragmentShader = /*glsl*/`
+uniform vec3 color;
+uniform float opacity;
 
-export { NavscanShaders };
+void main() {
+
+	gl_FragColor = vec4( color, opacity );
+
+}
+`;
+
+export { NavscanShader };

@@ -64,9 +64,6 @@ class Sketchpad {
 		}.bind( this );
 		window.addEventListener( 'resize', this.onResize );
 
-		this.onTouchStart = event => event.preventDefault();
-		this.canvas.addEventListener( 'touchstart', this.onTouchStart );
-
 		this.tick( 0, 0 );
 		this.ticker.start();
 
@@ -98,6 +95,7 @@ class Sketchpad {
 	tick( delta, time ) {
 
 		if ( this.needsResize ) this.resize();
+		this.renderer.clear();
 		this.sketch.tick( delta, time );
 
 	}

@@ -1,6 +1,6 @@
-import { Shaders } from 'keda/three/Shaders';
+import { ShaderUtils } from 'keda/three/misc/ShaderUtils';
 
-class BackgridShaders extends Shaders {}
+const BackgridShaders = {};
 
 /*-----------------------------------------------------------------------------/
 
@@ -9,17 +9,16 @@ class BackgridShaders extends Shaders {}
 /-----------------------------------------------------------------------------*/
 
 BackgridShaders.GPGPU_intensity = /*glsl*/`
+uniform sampler2D GPGPU_intensity;
+uniform sampler2D GPGPU_offsetX;
+uniform sampler2D GPGPU_offsetY;
+uniform vec3 uCursor;
+uniform float uDelta;
+uniform float uNoiseScale;
+uniform float uTime;
 
-	uniform sampler2D GPGPU_intensity;
-	uniform sampler2D GPGPU_offsetX;
-	uniform sampler2D GPGPU_offsetY;
-	uniform vec3 uCursor;
-	uniform float uDelta;
-	uniform float uNoiseScale;
-	uniform float uTime;
-
-	${ Shaders.floatPack }
-	${ Shaders.simplex3D }
+${ ShaderUtils.floatPack }
+${ ShaderUtils.simplex3D }
 
 	void main() {
 	
@@ -69,39 +68,44 @@ BackgridShaders.GPGPU_intensity = /*glsl*/`
 
 /-----------------------------------------------------------------------------*/
 
-const coreVertexHead = /*glsl*/`
+BackgridShaders.cores = ShaderUtils.getBase();
+
+BackgridShaders.cores.vertexShader = /*glsl*/`
 attribute float aOffsetX;
 attribute float aOffsetY;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
 uniform float uDepth;
 varying float vIntensity;
-${ Shaders.floatPack }
-`;
+${ ShaderUtils.floatPack }
 
-const coreVertexBody = /*glsl*/`
+void main() {
+
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = ( intensity + 1.0 ) / 2.0;
+
+	vec3 transformed = position;
 	transformed *= vIntensity;
 	transformed += vec3( aOffsetX, aOffsetY, ( intensity - 1.0) * uDepth );
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+
+}
 `;
 
-const coreFragmentHead = /*glsl*/`
-uniform vec3 uActiveColor;
+BackgridShaders.cores.fragmentShader = /*glsl*/`
+uniform vec3 uColorActive;
+uniform vec3 uColorInactive;
 varying float vIntensity;
-`;
 
-const coreFragmentBody = /*glsl*/`
-	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
-`;
+void main() {
 
-BackgridShaders.editCore = ( shader ) => Shaders.editBasic(
-	shader,
-	coreVertexHead,
-	coreVertexBody,
-	coreFragmentHead,
-	coreFragmentBody
-);
+	vec3 dynamicColor = mix( uColorInactive, uColorActive, vIntensity );
+
+	gl_FragColor = vec4( dynamicColor, 1.0 );
+
+}
+`;
 
 /*-----------------------------------------------------------------------------/
 
@@ -109,38 +113,43 @@ BackgridShaders.editCore = ( shader ) => Shaders.editBasic(
 
 /-----------------------------------------------------------------------------*/
 
-const shellVertexHead = /*glsl*/`
+BackgridShaders.shells = ShaderUtils.getBase();
+
+BackgridShaders.shells.vertexShader = /*glsl*/`
 attribute float aOffsetX;
 attribute float aOffsetY;
 attribute vec2 GPGPU_target;
 uniform sampler2D GPGPU_intensity;
 uniform float uDepth;
 varying float vIntensity;
-${ Shaders.floatPack }
-`;
+${ ShaderUtils.floatPack }
 
-const shellVertexBody = /*glsl*/`
+void main() {
+
 	float intensity = unpackFloat( texture2D( GPGPU_intensity, GPGPU_target ) );
 	vIntensity = ( intensity + 1.0 ) / 2.0;
+
+	vec3 transformed = position;
 	transformed *= vIntensity;
 	transformed += vec3( aOffsetX, aOffsetY, vIntensity * uDepth );
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1.0 );
+
+}
 `;
 
-const shellFragmentHead = /*glsl*/`
-uniform vec3 uActiveColor;
+BackgridShaders.shells.fragmentShader = /*glsl*/`
+uniform vec3 uColorActive;
+uniform vec3 uColorInactive;
 varying float vIntensity;
-`;
 
-const shellFragmentBody = /*glsl*/`
-	diffuseColor.rgb = mix( diffuseColor.rgb, uActiveColor, vIntensity );
-`;
+void main() {
 
-BackgridShaders.editShell = ( shader ) => Shaders.editBasic(
-	shader,
-	shellVertexHead,
-	shellVertexBody,
-	shellFragmentHead,
-	shellFragmentBody
-);
+	vec3 dynamicColor = mix( uColorInactive, uColorActive, vIntensity );
+
+	gl_FragColor = vec4( dynamicColor, 1.0 );
+
+}
+`;
 
 export { BackgridShaders };

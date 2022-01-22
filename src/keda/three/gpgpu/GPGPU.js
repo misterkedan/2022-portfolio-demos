@@ -22,7 +22,7 @@ import {
 	NearestFilter,
 	PlaneGeometry,
 	RGBAFormat,
-	OrthographicCamera,
+	Camera,
 	Scene,
 	UnsignedByteType,
 	WebGLRenderTarget
@@ -125,7 +125,7 @@ GPGPU.init = ( renderer ) => {
 
 	GPGPU.renderer = renderer;
 	GPGPU.scene = new Scene();
-	GPGPU.camera = new OrthographicCamera();
+	GPGPU.camera = new Camera();
 	GPGPU.mesh = new Mesh( new PlaneGeometry( 2, 2 ) );
 	GPGPU.scene.add( GPGPU.mesh );
 

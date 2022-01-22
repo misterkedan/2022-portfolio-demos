@@ -10,20 +10,6 @@ class BackgridControls extends Controls {
 
 	}
 
-	initGUI() {
-
-		super.initGUI();
-
-		const { gui, sketch } = this;
-
-		const colors = gui.addFolder( 'Colors' );
-		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
-		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
-		colors.addColor( sketch, 'inactiveColor' );
-		colors.addColor( sketch, 'activeColor' );
-
-	}
-
 	tick( delta ) {
 
 		const { sketch, tracker } = this;
@@ -38,9 +24,10 @@ class BackgridControls extends Controls {
 		// Tracker
 
 		const targetIntensity = ( sketch.camera.aspect > 1 )
-			? tracker.reverseCenterX
-			: tracker.reverseCenterY
+			? tracker.centerX
+			: tracker.centerY
 		;
+
 		this.intensity = lerp(
 			this.intensity,
 			targetIntensity,

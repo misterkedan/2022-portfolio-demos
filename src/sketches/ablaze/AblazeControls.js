@@ -19,52 +19,6 @@ class AblazeControls extends Controls {
 
 	}
 
-	initGUI() {
-
-		super.initGUI();
-
-		const { gui, sketch } = this;
-		const { settings, background, particles } = sketch;
-		const { passes } = sketch.effects;
-		const { uniforms } = sketch.shader;
-		const { VALUE } = Controls;
-
-		gui.add( this, 'trackerEnabled' ).name( 'cursorTracker' );
-
-		const curl = gui.addFolder( 'Curl Noise' );
-		curl.add( settings.curl, 'speed', 0.01, 0.5 )
-			.onChange( () => this.applyCurlSpeed() );
-		curl.add( sketch.curlScale, VALUE, 0.01, 2.0 ).name( 'scale' );
-		curl.add( sketch.curlStrength.value, 'x', 0.0, 1.0 ).name( 'strength.x' );
-		curl.add( sketch.curlStrength.value, 'y', 0.0, 1.0 ).name( 'strength.y' );
-		curl.add( sketch.curlStrength.value, 'z', 0.0, 1.0 ).name( 'strength.z' );
-
-		const wind = gui.addFolder( 'Wind' );
-		wind.add( sketch.wind.value, 'x', - 1.5, 1.5 );
-		wind.add( sketch.wind.value, 'y', - 1.5, 1.5 );
-		wind.add( sketch.wind.value, 'z', - 10, 10 );
-
-		const animation = gui.addFolder( 'Animation' );
-		animation.add( settings, 'speed', 0.0001, 0.002 );
-		animation.add( uniforms.uRotation, VALUE, 0, 360 ).step( 1 )
-			.name( 'rotation' );
-		animation.add( uniforms.uScale.value, 'x', 0, 1 ).name( 'scale.top' );
-		animation.add( uniforms.uScale.value, 'y', 0, 1 ).name( 'scale.bottom' );
-		animation.add( uniforms.uScale.value, 'z', 0, 1 ).name( 'scale.gradient' );
-
-		const colors = gui.addFolder( 'Colors' );
-		colors.addColor( background, 'color1' ).name( 'background1' );
-		colors.addColor( background, 'color2' ).name( 'background2' );
-		colors.addColor( uniforms.uColorTop, VALUE ).name( 'particle1' );
-		colors.addColor( particles.material, 'color' ).name( 'particle2' );
-
-		const bloom = gui.addFolder( 'Bloom' );
-		bloom.add( passes.bloom, 'strength', 0, 1 );
-		bloom.add( passes.bloom, 'radius', 0, 1 );
-		bloom.add( passes.bloom, 'threshold', 0, 1 );
-
-	}
-
 	tick( delta ) {
 
 		if ( ! this.trackerEnabled ) return;
@@ -85,8 +39,6 @@ class AblazeControls extends Controls {
 		this.sketch.settings.speed = lerp( 0.0006, 0.0018, this.intensity );
 		sketch.settings.curl.speed = lerp( 0.12, 0.04, this.intensity );
 		this.applyCurlSpeed();
-
-		this.refreshGUI();
 
 	}
 

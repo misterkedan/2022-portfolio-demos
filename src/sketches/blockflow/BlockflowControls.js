@@ -26,42 +26,6 @@ class BlockflowControls extends Controls {
 
 	}
 
-	initGUI() {
-
-		super.initGUI();
-
-		const { gui, sketch } = this;
-		const { settings } = sketch;
-		const { uniforms } = sketch.shader;
-		const { passes } = sketch.effects;
-		const { VALUE } = Controls;
-
-		const animation = gui.addFolder( 'Animation' );
-		animation.add( settings.speed, VALUE, 1, 10 ).name( 'speed' )
-			.onFinishChange( () => sketch.setSpeed() );
-		animation.add( uniforms.uAmplitude, VALUE, 1, 300 ).name( 'amplitude' );
-		animation.add( uniforms.uThickness, VALUE, 0, 4 ).name( 'thickness' );
-		animation.add( uniforms.uTurbulence, VALUE, 0, 5 ).name( 'turbulence' );
-		animation.add( uniforms.uScale, VALUE, 0, 1 ).name( 'scale' );
-
-		const controls = gui.addFolder( 'Controls' );
-		controls.add( this, 'trackerEnabled' ).name( 'cursorTracker' );
-		controls.add( this, 'cameraRigEnabled' ).name( 'cameraRig' );
-
-		const colors = gui.addFolder( 'Colors' );
-		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
-		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
-		colors.addColor( uniforms.uHighColor, VALUE ).name( 'grid1' );
-		colors.addColor( sketch.grid.material, 'color' ).name( 'grid2' );
-		colors.add( sketch.grid.material, 'opacity', 0, 1 );
-
-		const bloom = gui.addFolder( 'Bloom' );
-		bloom.add( passes.bloom, 'strength', 0, 1 );
-		bloom.add( passes.bloom, 'radius', 0, 1 );
-		bloom.add( passes.bloom, 'threshold', 0, 1 );
-
-	}
-
 	tick( delta ) {
 
 		super.tick( delta );
@@ -89,17 +53,16 @@ class BlockflowControls extends Controls {
 
 		// Tracker
 
-		const { uniforms } = sketch.shader;
 		const lerpSpeed = clamp( settings.lerpSpeed * delta, 0, 1 );
 
 		this.amplitude = lerp( this.amplitude, tracker.reverseY, lerpSpeed );
 
-		uniforms.uAmplitude.value = lerp(
+		sketch.amplitude.value = lerp(
 			settings.amplitude.min,
 			settings.amplitude.max,
 			this.amplitude
 		);
-		sketch.grid.material.opacity = lerp(
+		sketch.opacity.value = lerp(
 			settings.opacity.max,
 			settings.opacity.min,
 			this.amplitude
@@ -113,23 +76,21 @@ class BlockflowControls extends Controls {
 
 		this.intensity = lerp( this.intensity, tracker.x, lerpSpeed );
 
-		uniforms.uScale.value = lerp(
+		sketch.scale.value = lerp(
 			settings.scale.min,
 			settings.scale.max,
 			this.intensity
 		);
-		uniforms.uThickness.value = lerp(
+		sketch.thickness.value = lerp(
 			settings.thickness.max,
 			settings.thickness.min,
 			this.intensity
 		);
-		uniforms.uTurbulence.value = lerp(
+		sketch.turbulence.value = lerp(
 			settings.turbulence.min,
 			settings.turbulence.max,
 			this.intensity
 		);
-
-		this.refreshGUI();
 
 	}
 

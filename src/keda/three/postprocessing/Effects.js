@@ -1,4 +1,3 @@
-import { WebGLRenderTarget } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 
@@ -7,13 +6,11 @@ class Effects {
 	constructor( {
 		renderer,
 		stage,
-		useRenderTarget = false,
+		renderToScreen = true,
 	} = {} ) {
 
-		if ( useRenderTarget ) this.renderTarget = new WebGLRenderTarget();
-
-		this.composer = new EffectComposer( renderer, this.renderTarget );
-		this.composer.renderToScreen = ( ! useRenderTarget );
+		this.composer = new EffectComposer( renderer );
+		this.composer.renderToScreen = renderToScreen;
 
 		this.passes = {};
 		this.add( 'render', new RenderPass( stage.scene, stage.camera ) );
