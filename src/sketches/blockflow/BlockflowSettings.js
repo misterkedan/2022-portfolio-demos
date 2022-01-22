@@ -40,12 +40,12 @@ const BlockflowSettings = {
 	// Controls
 
 	camera: {
-		start: { x: 10, y: 5, z: 10 },
+		start: { x: 10, y: 15, z: 10 },
 	},
-	cameraRig: {
-		bounds: { x: 8, y: 25, z: 0 },
-		speed: 0.00075,
-	},
+	//cameraRig: {
+	//	bounds: { x: 8, y: 25, z: 0 },
+	//	speed: 0.00075,
+	//},
 
 	cursorProjector: {
 		horizontal: true,

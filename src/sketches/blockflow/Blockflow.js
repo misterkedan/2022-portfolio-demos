@@ -24,6 +24,20 @@ class Blockflow extends Sketch {
 
 		super( { defaults: BlockflowSettings, settings } );
 
+		settings = this.settings;
+
+		this.cursor = new Uniform( null );
+
+		this.amplitude = new Uniform( settings.amplitude.value );
+		this.scale = new Uniform( settings.scale.value );
+		this.thickness = new Uniform( settings.thickness.value );
+		this.turbulence = new Uniform( settings.turbulence.value );
+		this.time = new Uniform( 0 );
+
+		this.opacity = new Uniform( settings.opacity.value );
+		this.colorLow = new Uniform( new Color( settings.colorLow ) );
+		this.colorHigh = new Uniform( new Color( settings.colorHigh ) );
+
 		this.setSpeed();
 
 	}
@@ -57,7 +71,6 @@ class Blockflow extends Sketch {
 
 		if ( this.debug ) console.log( { instances } );
 
-
 		// Geometry
 
 		const box = new BoxGeometry( tile.width, tile.height, tile.depth );
@@ -87,17 +100,6 @@ class Blockflow extends Sketch {
 		geometry.setAttribute( 'aOffset', new InstancedBufferAttribute( offsets, 3 ) );
 
 		// Material
-
-		this.cursor = new Uniform( null );
-		this.amplitude = new Uniform( settings.amplitude.value );
-		this.scale = new Uniform( settings.scale.value );
-		this.thickness = new Uniform( settings.thickness.value );
-		this.turbulence = new Uniform( settings.turbulence.value );
-		this.time = new Uniform( 0 );
-
-		this.opacity = new Uniform( settings.opacity.value );
-		this.colorLow = new Uniform( new Color( settings.colorLow ) );
-		this.colorHigh = new Uniform( new Color( settings.colorHigh ) );
 
 		BlockflowShader.uniforms = {
 			// Vertex
@@ -132,6 +134,9 @@ class Blockflow extends Sketch {
 
 		// Cleanup
 
+		this.geometry = geometry;
+		this.material = material;
+
 		box.dispose();
 		edges.dispose();
 		plane.dispose();
@@ -149,6 +154,26 @@ class Blockflow extends Sketch {
 	setSpeed( speed = this.settings.speed.value, multiplier = 0.0001 ) {
 
 		this.speed = speed * multiplier;
+
+	}
+
+	clear() {
+
+		this.remove( this.grid );
+		this.geometry.dispose();
+		this.material.dispose();
+
+		this.remove( this.border );
+		this.border.geometry.dispose();
+		this.border.material.dispose();
+
+	}
+
+	rebuild() {
+
+		this.clear();
+		this.initScene();
+		this.controls.updateProjectorBounds();
 
 	}
 
