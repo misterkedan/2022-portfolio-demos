@@ -1,7 +1,7 @@
 {
-  "name": "portfolio-covers",
-  "version": "0.14.1",
-  "description": "Pierre Keda's portfolio cover animations.",
+  "name": "2022-portfolio-demos",
+  "version": "0.15.0",
+  "description": "Pierre Keda's 2022 portfolio demo animations.",
   "author": "Pierre Keda",
   "license": "MIT",
   "dependencies": {
