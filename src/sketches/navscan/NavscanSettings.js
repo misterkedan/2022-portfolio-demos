@@ -27,7 +27,7 @@ const NavscanSettings = {
 	},
 
 	cameraRig: {
-		bounds: { x: 5, y: 5, z: 0 },
+		bounds: { x: 5, y: 10, z: 0 },
 		speed: 0.0012,
 	},
 

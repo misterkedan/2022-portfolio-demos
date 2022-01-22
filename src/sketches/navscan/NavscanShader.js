@@ -5,6 +5,7 @@ const NavscanShader = ShaderUtils.getBase();
 NavscanShader.vertexShader = /*glsl*/`
 uniform float uAmp;
 uniform float uDistance;
+uniform float uTileDepth;
 uniform vec3 uNoiseScale;
 
 ${ ShaderUtils.simplex3D }
@@ -14,14 +15,14 @@ void main() {
 	vec3 transformed = position;
 
 	// Z
-	transformed.z += mod( uDistance, 0.4 );
+	transformed.z += mod( uDistance, uTileDepth );
 
 	// Y
 	float x = position.x;
 	float z = uDistance - transformed.z;
 	float noise = simplex3D( 
 		x * uNoiseScale.x,
-		mod( x, 2.0 ) *uNoiseScale.y,
+		mod( x, 2.0 ) * uNoiseScale.y,
 		z * uNoiseScale.z
 	);
 

@@ -23,19 +23,17 @@ const options = {
 };
 
 const sketches = {
-	rain: () => new Rain( options ),
-	navscan: () => new Navscan( options ),
-	blockflow: () => new Blockflow( options ),
 	ablaze: () => new Ablaze( options ),
 	backgrid: () => new Backgrid( options ),
+	blockflow: () => new Blockflow( options ),
 	cyberdark: () => new Cyberdark( options ),
+	navscan: () => new Navscan( options ),
+	rain: () => new Rain( options ),
 };
 
 const hash = window.location.hash.replace( '#', '' );
 const generator = sketches[ hash ] || sketches.navscan;
-
 const sketch = generator();
-
 sketchpad.init( sketch );
 
 document.title = `${sketch.settings.name} - Pierre Keda`;

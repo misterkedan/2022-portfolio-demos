@@ -21,6 +21,14 @@ class Navscan extends Sketch {
 
 		super( { defaults: NavscanSettings, settings } );
 
+		settings = this.settings;
+		this.amp = new Uniform( 2 );
+		this.distance = new Uniform( 0 );
+		this.tileDepth = new Uniform( settings.tiles.depth );
+		this.noiseScale = new Uniform( new Vector3( 0.1, 0.03, 0.07 ) );
+		this.color = new Uniform( new Color( settings.grid.color ) );
+		this.opacity = new Uniform( settings.grid.opacity );
+
 	}
 
 	init() {
@@ -118,18 +126,13 @@ class Navscan extends Sketch {
 
 		// Material
 
-		this.amp = new Uniform( 2 );
-		this.distance = new Uniform( 0 );
-		this.noiseScale = new Uniform( new Vector3( 0.1, 0.03, 0.07 ) );
-		this.color = new Uniform( new Color( settings.grid.color ) );
-		this.opacity = new Uniform( settings.grid.opacity );
-
 		NavscanShader.uniforms = {
 			color: this.color,
 			opacity: this.opacity,
 			uAmp: this.amp,
 			uDistance: this.distance,
 			uNoiseScale: this.noiseScale,
+			uTileDepth: this.tileDepth,
 		};
 
 		const material = new ShaderMaterial( NavscanShader );
@@ -147,6 +150,23 @@ class Navscan extends Sketch {
 
 		this.distance.value += this.settings.speed.value * delta;
 		super.tick( delta );
+
+	}
+
+	clear() {
+
+		this.remove( this.grid );
+		this.grid.geometry.dispose();
+		this.grid.material.dispose();
+
+	}
+
+	rebuild() {
+
+		this.clear();
+
+		this.tileDepth.value = this.settings.tiles.depth;
+		this.initScene();
 
 	}
 
