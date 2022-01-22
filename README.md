@@ -1,6 +1,6 @@
-# Portfolio Covers
+# 2022 Portfolio Demos
 
-Pierre Keda's portfolio cover animations.
+Pierre Keda's 2022 portfolio demo animations.
 
 ***
-*Pierre Keda - 2021*
+*Pierre Keda - 2022*
