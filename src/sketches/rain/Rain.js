@@ -218,6 +218,16 @@ class Rain extends Sketch {
 		const geometry = new InstancedBufferGeometry();
 		geometry.instanceCount = instanceCount;
 
+		const attributeCount = instanceCount * 3;
+		const offsets = new Float32Array( attributeCount );
+
+		for ( let i = 0; i < attributeCount; i += 3 ) {
+
+			offsets[ i ] = - 100;
+			offsets[ i + 2 ] = - 100;
+
+		}
+
 		//geometry.setIndex( new Uint16BufferAttribute().copy( base.index ) );
 		geometry.setAttribute(
 			'position',
@@ -225,13 +235,12 @@ class Rain extends Sketch {
 		);
 		geometry.setAttribute(
 			'aOffset',
-			new InstancedBufferAttribute( new Float32Array( instanceCount * 3 ), 3 )
+			new InstancedBufferAttribute( offsets, 3 )
 		);
 		geometry.setAttribute(
 			'aLife',
 			new InstancedBufferAttribute(
-				new Float32Array( instanceCount ).fill( 1 ),
-				1
+				new Float32Array( instanceCount ).fill( 1 ), 1
 			)
 		);
 
@@ -259,17 +268,17 @@ class Rain extends Sketch {
 	generateAt( position ) {
 
 		const { random } = this;
-		const { noise, amplitude } = this.settings.targeted;
+		const { scatter, spread } = this.settings.targeted;
 
 		const { aOffset, aLife } = this.targeted.geometry.attributes;
 
-		const randomly = random.chance( noise );
+		const randomly = random.chance( scatter );
 
 		const x = ( randomly )
-			? position.x + random.noise() * amplitude * this.activity
+			? position.x + random.noise() * spread * this.activity
 			: position.x;
 		const z = ( randomly )
-			? position.z + random.noise() * amplitude * this.activity
+			? position.z + random.noise() * spread * this.activity
 			: position.z;
 
 		const index = this.instance * 3;

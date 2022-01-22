@@ -62,7 +62,7 @@ class AblazeControls extends Controls {
 		colors.addColor( uniforms.uColorHigh, VALUE ).name( 'particle high' );
 		colors.addColor( uniforms.uColorLow, VALUE ).name( 'particle low' );
 
-		const bloom = gui.addFolder( 'Bloom' );
+		const bloom = gui.addFolder( 'Bloom' ).close();
 		bloom.add( passes.bloom, 'strength', 0, 1 );
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );

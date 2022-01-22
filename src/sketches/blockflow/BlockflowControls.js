@@ -73,11 +73,10 @@ class BlockflowControls extends Controls {
 		colors.addColor( uniforms.uColorLow, VALUE ).name( 'grid low' );
 		colors.add( uniforms.opacity, VALUE, 0.1, 1 ).name( 'opacity' );
 
-		const bloom = gui.addFolder( 'Bloom' );
+		const bloom = gui.addFolder( 'Bloom' ).close();
 		bloom.add( passes.bloom, 'strength', 0, 1 );
 		bloom.add( passes.bloom, 'radius', 0, 1 );
 		bloom.add( passes.bloom, 'threshold', 0, 1 );
-		bloom.close();
 
 	}
 

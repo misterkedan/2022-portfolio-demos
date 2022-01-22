@@ -9,7 +9,7 @@ const RainSettings = {
 
 	// Scene
 
-	instances: 700,
+	instances: 1000,
 	offsetY,
 	originZ: offsetY * 2,
 	maxAngle: Math.PI * 2,
@@ -43,11 +43,11 @@ const RainSettings = {
 	camera: {
 		start: { x: 0, y: 10, z: 10 },
 	},
-	cameraRig: {
-		speed: 0.0008,
-		bounds: { x: 3, y: 10, z: 0 },
-		intro: { x: 0, y: 4, z: 4 },
-	},
+	//cameraRig: {
+	//	speed: 0.0008,
+	//	bounds: { x: 3, y: 10, z: 0 },
+	//	intro: { x: 0, y: 4, z: 4 },
+	//},
 
 	lerpSpeed: 0.001,
 	opacity: { min: 0.7, max: 1 },
@@ -56,7 +56,7 @@ const RainSettings = {
 
 	// Targeted impacts
 
-	instanceCount: 200,
+	instanceCount: 1000,
 
 	cursorProjector: {
 		horizontal: true,
@@ -65,8 +65,8 @@ const RainSettings = {
 	},
 
 	targeted: {
-		noise: 0.8,
-		amplitude: 4,
+		scatter: 0.8,
+		spread: 4,
 
 		growth: 10,
 		decay: 0.001,

@@ -1,4 +1,6 @@
 import { Vector2 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
 import { Controls } from 'keda/three/Controls';
 
 class RainControls extends Controls {
@@ -12,13 +14,58 @@ class RainControls extends Controls {
 		this.cursorPrevious = new Vector2( 0.5, 0.5 );
 		this.cursorCurrent = new Vector2();
 
+		this.orbit = new OrbitControls( sketch.camera, sketch.sketchpad.canvas );
+		this.trackerEnabled = false;
+
+	}
+
+	initGUI() {
+
+		super.initGUI();
+
+		const { gui, sketch } = this;
+		const { settings } = sketch;
+		const { targeted } = settings;
+
+		const matchMaterials = () => {
+
+			sketch.targeted.uniforms.color.value.copy(
+				sketch.mesh.material.color
+			);
+
+			sketch.targeted.uniforms.opacity.value = sketch.mesh.material.opacity;
+
+		};
+
+		const animation = gui.addFolder( 'Animation' );
+		animation.add( this, 'trackerEnabled' ).name( 'cursorTracker' ).listen();
+		animation.add( sketch.mesh, 'count', 0, settings.instances )
+			.step( 1 ).name( 'density' );
+		animation.add( sketch, 'speed', 0.0001, 0.002 );
+		animation.add( settings, 'spread', 0.1, 2 )
+			.onFinishChange( () => sketch.updateAspect() );
+
+		const cursor = gui.addFolder( 'Cursor Generation' );
+		cursor.add( targeted, 'scatter', 0, 1 );
+		cursor.add( targeted, 'spread', 0, 10 );
+		cursor.add( targeted.delay, 'min', 0, 0.02 ).name( 'spacing' );
+
+		const colors = gui.addFolder( 'Colors' );
+		colors.addColor( sketch.background, 'color1' ).name( 'background1' );
+		colors.addColor( sketch.background, 'color2' ).name( 'background2' );
+		colors.addColor( sketch.mesh.material, 'color' ).onChange( matchMaterials );
+		colors.add( sketch.mesh.material, 'opacity', 0, 1 ).onChange( matchMaterials );
+
+		const bloom = gui.addFolder( 'Bloom' ).close();
+		bloom.add( sketch.effects.passes.bloom, 'strength', 0, 1 );
+		bloom.add( sketch.effects.passes.bloom, 'radius', 0, 1 );
+		bloom.add( sketch.effects.passes.bloom, 'threshold', 0, 1 );
+
 	}
 
 	tick( delta ) {
 
 		super.tick( delta );
-
-		if ( ! this.trackerEnabled ) return;
 
 		const { clamp, lerp } = Controls;
 		const { sketch, tracker, projector } = this;
@@ -28,31 +75,36 @@ class RainControls extends Controls {
 
 		// Random impacts
 
-		const targetIntensity = tracker.centerX;
-		this.intensity = lerp(
-			this.intensity,
-			targetIntensity,
-			lerpSpeed
-		);
+		if ( this.trackerEnabled ) {
 
-		sketch.mesh.material.opacity = lerp(
-			settings.opacity.min,
-			settings.opacity.max,
-			this.intensity
-		);
+			const targetIntensity = tracker.centerX;
+			this.intensity = lerp(
+				this.intensity,
+				targetIntensity,
+				lerpSpeed
+			);
 
-		sketch.speed = lerp(
-			settings.speed.min,
-			settings.speed.max,
-			this.intensity
-		);
+			sketch.mesh.material.opacity = lerp(
+				settings.opacity.min,
+				settings.opacity.max,
+				this.intensity
+			);
 
-		const targetCount = lerp(
-			settings.minCount,
-			sketch.maxCount,
-			tracker.centerY
-		);
-		sketch.mesh.count = lerp( sketch.mesh.count, targetCount, lerpSpeed );
+			sketch.speed = lerp(
+				settings.speed.min,
+				settings.speed.max,
+				this.intensity
+			);
+
+			const targetCount = lerp(
+				settings.minCount,
+				sketch.maxCount,
+				tracker.centerY
+			);
+			sketch.mesh.count = lerp( sketch.mesh.count, targetCount, lerpSpeed );
+
+		}
+
 
 		// Targeted impacts
 
@@ -82,9 +134,7 @@ class RainControls extends Controls {
 
 		sketch.delay = delay.min + sketch.baseDelay;
 
-		//sketch.delay = delay.min
-		//	+ ( 0.5 + sketch.noise * 0.5 ) * sketch.baseDelay
-		//	* ( 0.5 + tracker.reverseCenterY * 0.5 );
+		if ( this.trackerEnabled ) this.refreshGUI();
 
 	}
 
