@@ -17,7 +17,10 @@ const sketchpad = new Sketchpad( {
 
 GPGPU.init( sketchpad.renderer );
 
-const options = { sketchpad };
+const options = {
+	sketchpad,
+	gui: true,
+};
 
 const sketches = {
 	rain: () => new Rain( options ),
@@ -36,3 +39,7 @@ const sketch = generator();
 sketchpad.init( sketch );
 
 document.title = `${sketch.settings.name} - Pierre Keda`;
+
+const main = document.getElementById( 'main' );
+main.classList.add( 'show' );
+setTimeout( () => main.classList.remove( 'show' ), 2500 );

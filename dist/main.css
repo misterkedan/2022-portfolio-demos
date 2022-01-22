@@ -29,7 +29,13 @@ body, div, canvas, p, h1, h2 {
 	justify-content: center;
 	align-items: center;
 	text-align: center;
+
+	transition: opacity 1500ms ease-in-out;
+	opacity: 0;
 }
+	#main.show {
+		opacity: 1;
+	}
 
 #title {
 	text-transform: uppercase;
