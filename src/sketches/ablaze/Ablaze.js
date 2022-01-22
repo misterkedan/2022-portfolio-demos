@@ -3,6 +3,7 @@ import {
 	Color,
 	EdgesGeometry,
 	Float32BufferAttribute,
+	Group,
 	InstancedBufferAttribute,
 	InstancedBufferGeometry,
 	LineBasicMaterial,
@@ -52,19 +53,23 @@ class Ablaze extends Sketch {
 
 		// Disc
 
+		const core = new Group();
+		this.add( core );
+		this.core = core;
+
 		const discGeometry = new CircleGeometry(
 			settings.disc.size, settings.disc.segments
 		);
 		const discMaterial = new MeshBasicMaterial( settings.disc.fill );
 		const disc = new Mesh( discGeometry, discMaterial );
 		disc.position.z = settings.particle.near + settings.disc.offset;
-		this.add( disc );
+		core.add( disc );
 
 		const circleGeometry = new EdgesGeometry( discGeometry );
 		const circleMaterial = new LineBasicMaterial( settings.disc.stroke );
 		const circle = new LineSegments( circleGeometry, circleMaterial );
 		circle.position.copy( disc.position );
-		this.add( circle );
+		core.add( circle );
 
 		// Particle Geometry
 
